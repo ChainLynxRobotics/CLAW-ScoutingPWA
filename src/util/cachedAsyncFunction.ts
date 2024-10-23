@@ -3,9 +3,10 @@
  * If there is another call to the function while it is already executing, the same promise will be returned.
  * 
  * @param fn The async function
+ * @param persist Whether to persist the promise after it resolves, so that it will never be executed again
  * @returns The wrapped function
  */
-export default function cachedAsyncFunction<T>(fn: ()=>Promise<T>) {
+export default function cachedAsyncFunction<T>(fn: ()=>Promise<T>, persist: boolean = false): ()=>Promise<T> {
 
     let pending: Promise<any> | null = null;
 
@@ -19,7 +20,7 @@ export default function cachedAsyncFunction<T>(fn: ()=>Promise<T>) {
             pending = resultPromise;
             return await resultPromise;
         } finally {
-            pending = null;
+            if (!persist) pending = null; // Clear the pending promise if we're not persisting it
         }
     }
 }

@@ -1,5 +1,6 @@
 import { DBSchema, IDBPDatabase, openDB } from "idb";
 import { MatchData, MatchDataHeader } from "../../types/MatchData";
+import cachedAsyncFunction from "../cachedAsyncFunction";
 
 interface MatchDatabaseSchema extends DBSchema {
     entries: {
@@ -16,17 +17,13 @@ interface MatchDatabaseSchema extends DBSchema {
 
 let dbCache: IDBPDatabase<MatchDatabaseSchema> | null = null;
 
-let dbOpenCallback: null|Promise<IDBPDatabase<MatchDatabaseSchema>> = null;
 /**
  * Tries to open the database, if it is already open it will return the cached database
  * If a database open is already in effect, will return the promise to the already existing open operation
  * 
  * @returns - The database object
  */
-function tryOpenDatabase() {
-    if (dbOpenCallback) return dbOpenCallback;
-    return dbOpenCallback = openDatabase();
-}
+const tryOpenDatabase = cachedAsyncFunction(openDatabase, true);
 
 async function openDatabase() {
     if (dbCache) {

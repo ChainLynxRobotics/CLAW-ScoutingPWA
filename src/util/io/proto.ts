@@ -1,9 +1,9 @@
 import protobuf from "protobufjs";
+import cachedAsyncFunction from "../cachedAsyncFunction";
 
 const Protobuf_File = "/protobuf/data_transfer.proto";
 
 let protoCache: protobuf.Root | null = null;
-let protoLoadCallback: Promise<protobuf.Root> | null = null;
 
 /**
  * Attempts to load the protobuf root object, if it is already loaded it will return the cached object
@@ -11,10 +11,7 @@ let protoLoadCallback: Promise<protobuf.Root> | null = null;
  * 
  * @returns - The protobuf root object
  */
-function tryLoadProtos() {
-    if (protoLoadCallback) return protoLoadCallback;
-    return protoLoadCallback = loadProtos();
-}
+const tryLoadProtos = cachedAsyncFunction(loadProtos, true);
 
 async function loadProtos() {
     if (protoCache) return protoCache;

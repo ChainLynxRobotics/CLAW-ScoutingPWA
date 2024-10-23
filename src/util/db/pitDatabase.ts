@@ -1,4 +1,5 @@
 import { DBSchema, IDBPDatabase, openDB } from "idb";
+import cachedAsyncFunction from "../cachedAsyncFunction";
 
 interface PitDatabaseSchema extends DBSchema {
     pit: {
@@ -14,17 +15,13 @@ interface PitDatabaseSchema extends DBSchema {
 
 let dbCache: IDBPDatabase<PitDatabaseSchema> | null = null;
 
-let dbOpenCallback: null|Promise<IDBPDatabase<PitDatabaseSchema>> = null;
 /**
  * Tries to open the database, if it is already open it will return the cached database
  * If a database open is already in effect, will return the promise to the already existing open operation
  * 
  * @returns - The database object
  */
-function tryOpenDatabase() {
-    if (dbOpenCallback) return dbOpenCallback;
-    return dbOpenCallback = openDatabase();
-}
+const tryOpenDatabase = cachedAsyncFunction(openDatabase, true);
 
 async function openDatabase() {
     if (dbCache) {
