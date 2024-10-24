@@ -12,3 +12,9 @@ export type RadioPacketData = {
         knownMatches: number[],
     },
 };
+
+export type RadioPacketGroup = {
+    packetId: bigint,
+    data: (Uint8Array|undefined)[],
+    total: number,
+}
