@@ -19,7 +19,7 @@ type EventMap = {
 }
 const events = new EventEmitter() as TypedEventEmitter<EventMap>;
 
-let isReconnecting = false;
+let _isReconnecting = false;
 let reconnectAttemptsLeft = 0;
 
 // connect to the device, using cachedAsyncFunction to ensure that only one connection is attempted at a time
@@ -84,11 +84,11 @@ async function connectToDevice() {
 
 async function tryReconnect() {
     if (reconnectAttemptsLeft <= 0) {
-        isReconnecting = false;
+        _isReconnecting = false;
         return;
     }
     reconnectAttemptsLeft--;
-    isReconnecting = true;
+    _isReconnecting = true;
     
     try {
         console.log('Reconnecting to radio...');
@@ -103,14 +103,19 @@ function isConnected() {
     return server !== null;
 }
 
+function isReconnecting() {
+    return _isReconnecting;
+}
+
 async function sendPacket(data: ArrayBuffer) {
     if (!txCharacteristic) throw new Error('Not connected');
     await txCharacteristic.writeValue(data);
 }
 
-export {
+export default {
     connect,
     isConnected,
+    isReconnecting,
     sendPacket,
     events
 }
