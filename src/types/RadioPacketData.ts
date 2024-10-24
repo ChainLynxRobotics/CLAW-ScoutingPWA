@@ -14,7 +14,8 @@ export type RadioPacketData = {
 };
 
 export type RadioPacketGroup = {
-    packetId: bigint,
+    packetId: number,
     data: (Uint8Array|undefined)[],
     total: number,
+    lastReceivedAt?: number, // Timestamp of when the last packet was received, used for cleanup of incomplete packets
 }
