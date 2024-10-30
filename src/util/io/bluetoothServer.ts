@@ -13,6 +13,7 @@ let txCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
 let rxCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
 
 type EventMap = {
+    connecting: () => void,
     connected: () => void,
     disconnected: () => void,
     packet: (data: DataView) => void
@@ -27,12 +28,6 @@ const connect = cachedAsyncFunction(async () => {
     device = await navigator.bluetooth.requestDevice({
         filters: [{ services: [serviceUuid] }]
     });
-    await connectToDevice();
-});
-
-// This function being separate from connect() allows us to reconnect to the same device if it disconnects
-async function connectToDevice() {
-    if (device === null) throw new Error('No device selected');
 
     device.addEventListener('gattserverdisconnected', () => {
         console.log('Radio disconnected');
@@ -48,40 +43,62 @@ async function connectToDevice() {
         }
     });
 
-    server = (await device.gatt?.connect()) || null;
-    if (server !== null) {
-        console.log('Connected to radio');
-    } else {
-        throw new Error('Failed to connect to radio');
-    }
+    await connectToDevice();
+});
+
+// This function being separate from connect() allows us to reconnect to the same device if it disconnects
+async function connectToDevice() {
+    if (device === null) throw new Error('No device selected');
+    if (server !== null) throw new Error('Already connected');
 
     try {
-        const service = await server.getPrimaryService(serviceUuid);
-        if (!service) throw new Error('Failed to get service');
+        events.emit('connecting');
+        server = (await device.gatt?.connect()) || null;
+        if (server !== null) {
+            console.log('Connected to radio');
+        } else {
+            throw new Error('Failed to connect to radio');
+        }
 
-        txCharacteristic = await service.getCharacteristic(txCharacteristicUuid);
-        if (!txCharacteristic) throw new Error('Failed to get tx characteristic');
-
-        rxCharacteristic = await service.getCharacteristic(rxCharacteristicUuid);
-        if (!rxCharacteristic) throw new Error('Failed to get rx characteristic');
-
-        await rxCharacteristic.startNotifications();
-        rxCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
-            if (rxCharacteristic && rxCharacteristic.value) {
-                events.emit('packet', rxCharacteristic.value);
-            }
-        });
-
-        events.emit('connected');
+        try {
+            await getCharacteristics();
+            events.emit('connected');
+        } catch (e) {
+            device = null; // Clear device so we can't reconnect to it, as it doesn't have the correct characteristics
+            throw e;
+        }
     } catch (e) {
-        device = null; // Clear device so we can't reconnect to it, as it doesn't have the correct characteristics
+        // Clear all the variables before throwing the error
         server = null;
         txCharacteristic = null;
         rxCharacteristic = null;
+        events.emit('disconnected');
         throw e;
     }
 };
 
+// Populates the txCharacteristic and rxCharacteristic variables with the correct characteristics
+async function getCharacteristics() {
+    if (server === null) throw new Error('Not connected');
+
+    const service = await server.getPrimaryService(serviceUuid);
+    if (!service) throw new Error('Failed to get service');
+
+    txCharacteristic = await service.getCharacteristic(txCharacteristicUuid);
+    if (!txCharacteristic) throw new Error('Failed to get tx characteristic');
+
+    rxCharacteristic = await service.getCharacteristic(rxCharacteristicUuid);
+    if (!rxCharacteristic) throw new Error('Failed to get rx characteristic');
+
+    await rxCharacteristic.startNotifications();
+    rxCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+        if (rxCharacteristic && rxCharacteristic.value) {
+            events.emit('packet', rxCharacteristic.value);
+        }
+    });
+}
+
+// Attempts to reconnect to the radio, with a delay of 1 second between each attempt
 async function tryReconnect() {
     if (reconnectAttemptsLeft <= 0) {
         _isReconnecting = false;
@@ -96,6 +113,27 @@ async function tryReconnect() {
     } catch (e) {
         console.error('Failed to reconnect to radio:', e);
         setTimeout(tryReconnect, 1000);
+    }
+}
+
+/**
+ * Disconnect from the radio
+ */
+function disconnect() {
+    if (server) {
+        server.disconnect();
+        server = null;
+    }
+}
+
+/**
+ * Forget the device, disconnecting from it and removing it from the cache
+ */
+async function forgetDevice() {
+    disconnect();
+    if (device) {
+        await device.forget();
+        device = null;
     }
 }
 
@@ -114,6 +152,8 @@ async function sendPacket(data: ArrayBuffer) {
 
 export default {
     connect,
+    disconnect,
+    forgetDevice,
     isConnected,
     isReconnecting,
     sendPacket,
