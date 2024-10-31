@@ -2,6 +2,7 @@ import RadioPacketType from "../../enums/RadioPacketType";
 import { MatchData } from "../../types/MatchData";
 import { RadioPacketData, RadioPacketGroup } from "../../types/RadioPacketData";
 import matchDatabase from "../db/matchDatabase";
+import { generateRandomUint32 } from "../id";
 import bluetoothServer from "./bluetoothServer";
 import { compressBytes, decompressBytes } from "./compression";
 import proto from "./proto";
@@ -75,7 +76,7 @@ async function _queueFullPacket(data: RadioPacketData) {
     const encoded = radioPacketDataProto.encode(radioPacketDataProto.create(data)).finish();
     const compressed = await compressBytes(encoded);
 
-    const packetId = crypto.getRandomValues(new DataView(new ArrayBuffer(4))).getUint32(0); // Generate a random packet ID
+    const packetId = generateRandomUint32();
     const totalPackets = Math.ceil(compressed.byteLength / MAX_PACKET_DATA_SIZE);
 
     if (totalPackets > MAX_PACKET_GROUP_LENGTH) throw new Error('Packet too large');

@@ -6,3 +6,14 @@
 export function generateRandomId(): number {
     return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 }
+
+/**
+ * Generates a new random 32-bit unsigned int. This is more secure than generateRandomId.
+ * 
+ * Ranges from `0` inclusive to `2^32` exclusive.
+ * 
+ * @returns A new Id
+ */
+export function generateRandomUint32(): number {
+    return crypto.getRandomValues(new DataView(new ArrayBuffer(4))).getUint32(0);
+}

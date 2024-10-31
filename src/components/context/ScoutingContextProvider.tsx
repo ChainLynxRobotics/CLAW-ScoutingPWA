@@ -6,7 +6,7 @@ import CurrentMatchContext from "./CurrentMatchContext";
 import { useNavigate } from "react-router-dom";
 import SettingsContext from "./SettingsContext";
 import { MatchDataFieldInformation, MatchDataFields } from "../../MatchDataValues";
-import { generateRandomId } from "../../util/id";
+import { generateRandomId, generateRandomUint32 } from "../../util/id";
 
 /**
  * Gets the ScoutingContextProvider data.
@@ -43,7 +43,7 @@ function useScoutingContextData(matchId: string, teamNumber: number, allianceCol
         await matchDatabase.put(
             {
                 // Header data
-                id: generateRandomId(),
+                id: generateRandomUint32(),
                 matchId: settings.competitionId+"_"+matchId,
                 teamNumber,
                 allianceColor,
