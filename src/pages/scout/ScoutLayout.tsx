@@ -7,6 +7,7 @@ import AllianceColor from "../../enums/AllianceColor";
 import CurrentMatchContext from "../../components/context/CurrentMatchContext";
 import SettingsContext from "../../components/context/SettingsContext";
 import ConfettiDisplay from "../../components/ConfettiDisplay";
+import BluetoothStatus from "../../components/BluetoothStatus";
 
 const ScoutPage = () => {
     
@@ -55,13 +56,16 @@ const ScoutPage = () => {
             {context ?
                 <>
                 <div className="w-full bg-background-secondary shadow">
-                    <h1 className="text-lg m-2 flex-1 flex items-center">
-                        <span className={`flex-1 flex items-center gap-2`}>
+                    <h1 className="text-lg m-2 flex justify-between">
+                        <span className="flex items-center gap-2">
                             <span className={`font-bold ${context.allianceColor == AllianceColor.Red ? 'text-red-400' : 'text-blue-400'}`}>
                                 {context.teamNumber}
                             </span>
                             <span className="text-sm italic">({context.matchId})</span>
                         </span>
+                        <div className="text-lg m-2 flex items-end justify-center">
+                            <BluetoothStatus />
+                        </div>
                     </h1>
                 </div>
                 <Outlet />

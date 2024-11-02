@@ -130,6 +130,7 @@ function _processQueue() {
 bluetoothServer.events.on('packet', _onPacket);
 function _onPacket(data: DataView) {
     console.log('Received packet:', data);
+    if (data.byteLength < 6) throw new Error('Invalid packet length');
 
     let packetId = data.getUint32(0, true); // Packet ID
     let packetIndex = data.getUint8(4) // Packet index
