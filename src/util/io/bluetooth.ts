@@ -107,7 +107,16 @@ function _processQueue() {
     const data = group.data[i];
     if (data) {
         console.log('Sending packet:', data);
-        bluetoothServer.sendPacket(data.buffer).then(()=>{
+        
+        const packetHeader = new DataView(new Uint8Array(6).buffer);
+        packetHeader.setUint32(0, group.packetId); // Packet ID
+        packetHeader.setUint8(4, i); // Packet index
+        packetHeader.setUint8(5, group.total); // Total packets
+        const packet = new Uint8Array(packetHeader.buffer.byteLength + data.byteLength);
+        packet.set(new Uint8Array(packetHeader.buffer), 0);
+        packet.set(data, packetHeader.buffer.byteLength);
+
+        bluetoothServer.sendPacket(packet.buffer).then(()=>{
             group.data[i] = undefined;
             if (group.data.every((p) => p === undefined)) queue.shift(); // Remove the group if all packets have been sent
         }).catch((e) => {
@@ -137,6 +146,8 @@ function _onPacket(data: DataView) {
     let totalPackets = data.getUint8(5); // Total packets
     let packetData = new Uint8Array(data.buffer, 6); // Packet data
 
+    console.log('Received packet:', packetId, packetIndex, totalPackets, packetData);
+
     // Check to see if we already received a packet with this ID
     if (received.has(packetId)) {
         let group = received.get(packetId) as RadioPacketGroup;
@@ -158,11 +169,14 @@ function _onPacket(data: DataView) {
             total: totalPackets,
             lastReceivedAt: Date.now(),
         });
+
+        if (packets.every((p) => p !== undefined)) _decodeFullPacket(received.get(packetId)!);
     }
 }
 
 // Decode a full packet from a group of packets to a RadioPacketData object
 async function _decodeFullPacket(group: RadioPacketGroup) {
+    console.log('Decoding full packet:', group);
     try {
         let fullPacket = new Uint8Array(group.data.reduce((acc, packet) => { // Get the total length of all the packet data
             if (packet === undefined) throw new Error('Missing packet');

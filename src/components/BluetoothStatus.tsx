@@ -22,19 +22,16 @@ const BluetoothStatus = () => {
         const onDisconnect = () => setStatus(BluetoothStatusEnum.DISCONNECTED);
         const onConnecting = () => setStatus(BluetoothStatusEnum.CONNECTING);
         const onConnect = () => setStatus(BluetoothStatusEnum.CONNECTED);
-        const onPacket = (data: DataView) => console.log('Received packet:', data);
 
         bluetoothServer.events.on('disconnected', onDisconnect);
         bluetoothServer.events.on('connecting', onConnecting);
         bluetoothServer.events.on('connected', onConnect);
-        bluetoothServer.events.on('packet', onPacket);
 
 
         return () => {
             bluetoothServer.events.off('disconnected', onDisconnect);
             bluetoothServer.events.off('connecting', onConnecting);
             bluetoothServer.events.off('connected', onConnect);
-            bluetoothServer.events.off('packet', onPacket);
         };
     }, []);
 

@@ -101,10 +101,10 @@ async function getCharacteristics() {
     rxCharacteristic = await service.getCharacteristic(rxCharacteristicUuid);
     if (!rxCharacteristic) throw new Error('Failed to get rx characteristic');
 
-    await rxCharacteristic.startNotifications();
-    rxCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
-        if (rxCharacteristic && rxCharacteristic.value) {
-            events.emit('packet', rxCharacteristic.value);
+    await txCharacteristic.startNotifications();
+    txCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+        if (txCharacteristic && txCharacteristic.value) {
+            events.emit('packet', txCharacteristic.value);
         }
     });
 }
@@ -134,6 +134,7 @@ async function tryReconnect() {
  */
 function disconnect() {
     if (server) {
+        reconnectAttemptsLeft = 0;
         device = null;
         server.disconnect(); // Will trigger the gattserverdisconnected event, which will clear the other variables
     }
@@ -156,8 +157,8 @@ function getKnownDeviceName() {
 }
 
 async function sendPacket(data: ArrayBuffer) {
-    if (!txCharacteristic) throw new Error('Not connected');
-    await txCharacteristic.writeValue(data);
+    if (!rxCharacteristic) throw new Error('Not connected');
+    await rxCharacteristic.writeValue(data);
 }
 
 export default {

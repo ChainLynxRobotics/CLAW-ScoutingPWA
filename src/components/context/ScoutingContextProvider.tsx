@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import SettingsContext from "./SettingsContext";
 import { MatchDataFieldInformation, MatchDataFields } from "../../MatchDataValues";
 import { generateRandomId, generateRandomUint32 } from "../../util/id";
+import bluetooth from "../../util/io/bluetooth";
 
 /**
  * Gets the ScoutingContextProvider data.
@@ -40,20 +41,20 @@ function useScoutingContextData(matchId: string, teamNumber: number, allianceCol
 
     // Submit the match data to the database
     const submit = async () => {
-        await matchDatabase.put(
-            {
-                // Header data
-                id: generateRandomUint32(),
-                matchId: settings.competitionId+"_"+matchId,
-                teamNumber,
-                allianceColor,
-                // Custom fields
-                ...matchFields,
-                // Footer data
-                scoutName: settings.scoutName,
-                submitTime: Date.now()
-            }
-        );
+        const matchData = {
+            // Header data
+            id: generateRandomUint32(),
+            matchId: settings.competitionId+"_"+matchId,
+            teamNumber,
+            allianceColor,
+            // Custom fields
+            ...matchFields,
+            // Footer data
+            scoutName: settings.scoutName,
+            submitTime: Date.now()
+        };
+        await matchDatabase.put(matchData);
+        bluetooth.broadcastMatchData([matchData]);
         currentMatchContext?.incrementAndUpdate();
         currentMatchContext?.setShowConfetti(true);
         navigate("/scout");

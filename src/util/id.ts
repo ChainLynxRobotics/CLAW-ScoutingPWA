@@ -15,5 +15,5 @@ export function generateRandomId(): number {
  * @returns A new Id
  */
 export function generateRandomUint32(): number {
-    return crypto.getRandomValues(new DataView(new ArrayBuffer(4))).getUint32(0);
+    return new DataView(crypto.getRandomValues(new Uint8Array(4)).buffer).getUint32(0);
 }
