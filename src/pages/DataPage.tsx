@@ -71,11 +71,10 @@ const DataPage = () => {
         
         setLoading(true);
         try {
-            let currentCount = entries?.length || 0;
-            await matchDatabase.putAll(data.matchScoutingData.entries);
-            const newEntries = await updateEntries();
-            currentCount = newEntries.length - currentCount;
-            enqueueSnackbar(`Imported ${currentCount} entries ${data.matchScoutingData.entries.length !== currentCount ? `(${data.matchScoutingData.entries.length-currentCount} duplicates were omitted)` : ''}`, {variant: "success"});
+            const count = data.matchScoutingData.entries.length || 0;
+            const imported = await matchDatabase.putAll(data.matchScoutingData.entries);
+            await updateEntries();
+            enqueueSnackbar(`Imported ${imported} entries ${imported != count ? `(${count - imported} duplicates were omitted)` : ''}`, {variant: "success"});
         } catch (e) {
             console.error(e);
             enqueueSnackbar(e+"", {variant: "error"});
@@ -112,12 +111,12 @@ const DataPage = () => {
 
         setLoading(true);
         try {
-            let currentCount = entries?.length || 0;
             const data = await zip.importDataFromZip(file);
-            await matchDatabase.putAll(data.entries);
-            const newEntries = await updateEntries();
-            currentCount = newEntries.length - currentCount;
-            enqueueSnackbar(`Imported ${currentCount} entries ${data.entries.length !== currentCount ? `(${data.entries.length-currentCount} duplicates were omitted)` : ''}`, {variant: "success"});
+            
+            const count = data.entries.length || 0;
+            const imported = await matchDatabase.putAll(data.entries);
+            await updateEntries();
+            enqueueSnackbar(`Imported ${imported} entries ${imported != count ? `(${count - imported} duplicates were omitted)` : ''}`, {variant: "success"});
         } catch (e) {
             console.error(e);
             enqueueSnackbar(e+"", {variant: "error"});

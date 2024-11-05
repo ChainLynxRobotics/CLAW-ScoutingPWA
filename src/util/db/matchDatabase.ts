@@ -54,27 +54,42 @@ async function openDatabase() {
  * Saves the match data to the database
  * 
  * @param entry MatchData object
+ * @returns true if the entry was saved, false if it already exists
  */
 async function put(entry: MatchData) {
     const db = await tryOpenDatabase();
+
+    if (await db.getKeyFromIndex('entries', 'by-id', entry.id)) {
+        return false; // Entry already exists
+    }
+
     await db.put('entries', entry);
+    return true;
 }
 
 /**
  * Imports data from another source into the database
  * 
  * @param entries - List of entries to import
+ * @returns Number of entries that were imported, entries that already existed are not counted
  */
 async function putAll(entries: MatchData[]) {
     const db = await tryOpenDatabase();
 
-    const store = db.transaction('entries', 'readwrite').objectStore('entries')
+    const tx = db.transaction('entries', 'readwrite');
+    const store = tx.objectStore('entries');
 
-    await Promise.all(
-        entries.map(match => store.add(match))
-    );
+    let count = 0;
+    for (const entry of entries) {
+        if (!(await store.getKey(entry.id))) {
+            store.put(entry);
+            count++;
+        }
+    }
 
-    await store.transaction.done;
+    await tx.done;
+
+    return count;
 }
 
 /**

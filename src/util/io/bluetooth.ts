@@ -212,7 +212,8 @@ async function _onDecodedPacket(packet: RadioPacketData) {
 
     switch (packet.packetType) {
         case RadioPacketType.MatchDataBroadcast:
-            matchDatabase.putAll(packet.matchScoutingData!.entries);
+            const imported = matchDatabase.putAll(packet.matchScoutingData!.entries);
+            console.log(`Imported ${imported} matches`);
             break;
         case RadioPacketType.MatchDataRequest:
             const req = packet.matchRequestData!;
