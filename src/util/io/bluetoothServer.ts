@@ -23,6 +23,10 @@ const events = new EventEmitter() as TypedEventEmitter<EventMap>;
 let _isReconnecting = false;
 let reconnectAttemptsLeft = 0;
 
+function isSupported() {
+    return 'bluetooth' in navigator;
+}
+
 // connect to the device, using cachedAsyncFunction to ensure that only one connection is attempted at a time
 const connect = cachedAsyncFunction(async () => {
 
@@ -162,6 +166,7 @@ async function sendPacket(data: ArrayBuffer) {
 }
 
 export default {
+    isSupported,
     connect,
     disconnect,
     isConnected,

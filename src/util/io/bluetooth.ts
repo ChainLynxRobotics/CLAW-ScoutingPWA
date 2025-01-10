@@ -1,6 +1,6 @@
 import RadioPacketType from "../../enums/RadioPacketType";
 import { MatchData } from "../../types/MatchData";
-import { RadioPacketData, RadioPacketGroup } from "../../types/RadioPacketData";
+import { QueuedRadioPacketGroup, RadioPacketData, RadioPacketGroup } from "../../types/RadioPacketData";
 import matchDatabase from "../db/matchDatabase";
 import { generateRandomUint32 } from "../id";
 import bluetoothServer from "./bluetoothServer";
@@ -14,7 +14,7 @@ const PACKET_SEND_INTERVAL = 100; // Interval between sending packets in millise
 const PACKET_CLEANUP_TIMEOUT = 5000; // How long to wait since last received packet to clean up incomplete groups in milliseconds
 
 
-const queue: RadioPacketGroup[] = [];
+const queue: QueuedRadioPacketGroup[] = [];
 const received: Map<number, RadioPacketGroup> = new Map(); // Map of packet IDs to packets
 
 let interval: NodeJS.Timeout | null = null;
@@ -23,15 +23,17 @@ let interval: NodeJS.Timeout | null = null;
  * Encodes, splits, and queues a list of packets to be sent to the server, and then broadcasts the match data to all connected clients.
  * 
  * @param entries The match data entries to broadcast
+ * @param onComplete A callback to run when all packets have been sent successfully
+ * @param onError A callback to run if an error occurs while sending the packets (NOT if there is an error with encoding the data, which will reject the promise)
  */
-async function broadcastMatchData(entries: MatchData[]) {
+async function broadcastMatchData(entries: MatchData[], onComplete?: () => void, onError?: (e: any) => void) {
     await _queueFullPacket({
         packetType: RadioPacketType.MatchDataBroadcast,
         version: APP_VERSION,
         matchScoutingData: {
             entries: entries,
         },
-    });
+    }, onComplete, onError);
 }
 
 /**
@@ -40,8 +42,10 @@ async function broadcastMatchData(entries: MatchData[]) {
  * The new data will be added to this clients database automatically as its received.
  * @param competitionId The competition ID to request match data for
  * @param knownMatches An array of match IDs that the server already knows about, and will not be sent by other clients
+ * @param onComplete A callback to run when all packets have been sent successfully
+ * @param onError A callback to run if an error occurs while sending the packets (NOT if there is an error with encoding the data, which will reject the promise)
  */
-async function requestMatchData(competitionId: string, knownMatches: number[]) {
+async function requestMatchData(competitionId: string, knownMatches: number[], onComplete?: () => void, onError?: (e: any) => void) {
     await _queueFullPacket({
         packetType: RadioPacketType.MatchDataRequest,
         version: APP_VERSION,
@@ -49,7 +53,7 @@ async function requestMatchData(competitionId: string, knownMatches: number[]) {
             competitionId: competitionId,
             knownMatches: knownMatches,
         },
-    });
+    }, onComplete, onError);
 }
 
 /**
@@ -71,7 +75,7 @@ async function stopQueueInterval() {
     if (interval !== null) clearInterval(interval);
 }
 
-async function _queueFullPacket(data: RadioPacketData) {
+async function _queueFullPacket(data: RadioPacketData, onComplete?: () => void, onError?: (e: any) => void) {
     const radioPacketDataProto = await proto.getType("RadioPacketData");
     const encoded = radioPacketDataProto.encode(radioPacketDataProto.create(data)).finish();
     const compressed = await compressBytes(encoded);
@@ -91,6 +95,8 @@ async function _queueFullPacket(data: RadioPacketData) {
         packetId: packetId,
         data: packets,
         total: totalPackets,
+        onComplete: onComplete,
+        onError: onError,
     });
 
     // Start the queue interval if it's not already running, note this will never stop unless stopQueueInterval is called
@@ -98,30 +104,37 @@ async function _queueFullPacket(data: RadioPacketData) {
 }
 
 // Runs every PACKET_SEND_INTERVAL milliseconds to send packets in the queue
-function _processQueue() {
-    if (!bluetoothServer.isConnected) return; // Do nothing if the server is not connected
+async function _processQueue() {
+    if (!bluetoothServer.isConnected()) return; // Do nothing if the server is not connected
     if (queue.length === 0) return; // Do nothing if the queue is empty
     const group = queue[0];
 
-    const i = group.data.findIndex((p) => p !== undefined); // Find the first packet that hasn't been sent in the group
-    const data = group.data[i];
-    if (data) {
-        console.log('Sending packet:', data);
-        
-        const packetHeader = new DataView(new Uint8Array(6).buffer);
-        packetHeader.setUint32(0, group.packetId); // Packet ID
-        packetHeader.setUint8(4, i); // Packet index
-        packetHeader.setUint8(5, group.total); // Total packets
-        const packet = new Uint8Array(packetHeader.buffer.byteLength + data.byteLength);
-        packet.set(new Uint8Array(packetHeader.buffer), 0);
-        packet.set(data, packetHeader.buffer.byteLength);
+    try {
 
-        bluetoothServer.sendPacket(packet.buffer).then(()=>{
+        const i = group.data.findIndex((p) => p !== undefined); // Find the first packet that hasn't been sent in the group
+        const data = group.data[i];
+        if (data) {
+            console.log('Sending packet:', data);
+            
+            const packetHeader = new DataView(new Uint8Array(6).buffer);
+            packetHeader.setUint32(0, group.packetId); // Packet ID
+            packetHeader.setUint8(4, i); // Packet index
+            packetHeader.setUint8(5, group.total); // Total packets
+            const packet = new Uint8Array(packetHeader.buffer.byteLength + data.byteLength);
+            packet.set(new Uint8Array(packetHeader.buffer), 0);
+            packet.set(data, packetHeader.buffer.byteLength);
+
+            await bluetoothServer.sendPacket(packet.buffer)
             group.data[i] = undefined;
-            if (group.data.every((p) => p === undefined)) queue.shift(); // Remove the group if all packets have been sent
-        }).catch((e) => {
-            console.error('Failed to send packet:', e);
-        });
+            if (group.data.every((p) => p === undefined)) { // If all packets have been sent
+                group.onComplete?.(); // Run the onComplete callback
+                queue.shift(); // Remove the group
+            }
+        }
+
+    } catch (e) {
+        console.error('Failed to process queue:', e);
+        group.onError?.(e);
     }
 
     // Now is also a good time to cleanup old incomplete packets

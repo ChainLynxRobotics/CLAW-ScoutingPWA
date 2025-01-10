@@ -14,6 +14,8 @@ import QrCodeScanner from "../components/qr/QrCodeScanner";
 import DataList from "../components/DataList";
 import { useSnackbar } from "notistack";
 import LoadingBackdrop from "../components/LoadingBackdrop";
+import bluetooth from "../util/io/bluetooth";
+import bluetoothServer from "../util/io/bluetoothServer";
 
 const DataPage = () => {
 
@@ -24,8 +26,6 @@ const DataPage = () => {
 
     const [qrData, setQrData] = useState<QRCodeData>(); // Signals the qr code data to be generated
     const [scannerOpen, setScannerOpen] = useState(false);
-
-    const [infoOpen, setInfoOpen] = useState(false);
 
     const [loading, setLoading] = useState(false);
 
@@ -40,6 +40,8 @@ const DataPage = () => {
     useEffect(() => {
         updateEntries();
     }, []);
+
+    const bluetoothSupported = bluetoothServer.isSupported();
 
     async function openQrData() {
         setLoading(true);
@@ -65,7 +67,7 @@ const DataPage = () => {
     }
 
     // Decodes a fully assembled qr code and imports the match data
-    async function onData(data: QRCodeData) {
+    async function onQrData(data: QRCodeData) {
         if (data.qrType !== QrCodeType.MatchData || !data.matchScoutingData) throw new Error("QR Codes do not contain match data");
         setScannerOpen(false);
         
@@ -75,6 +77,45 @@ const DataPage = () => {
             const imported = await matchDatabase.putAll(data.matchScoutingData.entries);
             await updateEntries();
             enqueueSnackbar(`Imported ${imported} entries ${imported != count ? `(${count - imported} duplicates were omitted)` : ''}`, {variant: "success"});
+        } catch (e) {
+            console.error(e);
+            enqueueSnackbar(e+"", {variant: "error"});
+        }
+        setLoading(false);
+    }
+
+    async function broadcastData() {
+        setLoading(true);
+        try {
+            if (!bluetoothServer.isConnected()) throw new Error("Connect to a radio using the bluetooth button first");
+
+            const allEntries = await matchDatabase.getAll();
+            if (allEntries.length === 0) throw new Error("No data to share");
+            
+            await bluetooth.broadcastMatchData(allEntries, ()=>{
+                enqueueSnackbar("Match data sent successfully", {variant: "success"});
+            }, (e)=>{
+                enqueueSnackbar("Error sending data: "+e, {variant: "error"});
+            });
+        } catch (e) {
+            console.error(e);
+            enqueueSnackbar(e+"", {variant: "error"});
+        }
+        setLoading(false);
+    }
+
+    async function requestData() {
+        setLoading(true);
+        try {
+            if (!bluetoothServer.isConnected()) throw new Error("Connect to a radio using the bluetooth button first");
+
+            const knownMatches = await matchDatabase.getAllIds();
+            
+            await bluetooth.requestMatchData(settings!.competitionId, knownMatches, ()=>{
+                enqueueSnackbar("Sent request, awaiting responses", {variant: "success"});
+            }, (e)=>{
+                enqueueSnackbar("Error sending request: "+e, {variant: "error"});
+            });
         } catch (e) {
             console.error(e);
             enqueueSnackbar(e+"", {variant: "error"});
@@ -152,48 +193,69 @@ const DataPage = () => {
 
         <h1 className="text-xl text-center my-4 pt-4 font-bold">Manage Saved Data</h1>
 
-        <div className="mb-4 flex flex-wrap gap-2 justify-center items-center">
-            <Button 
-                color="primary"
-                variant="contained"
-                size="small"
-                onClick={openQrData} 
-                startIcon={<span className="material-symbols-outlined">qr_code_2</span>}
-            >
-                Share
-            </Button>
-            <Button 
-                variant="contained"
-                color="secondary"
-                size="small"
-                onClick={() => setScannerOpen(true)}
-                startIcon={<span className="material-symbols-outlined">photo_camera</span>}
-            >
-                Collect
-            </Button>
-            <Button 
-                variant="contained"
-                color="secondary"
-                size="small"
-                onClick={exportData} 
-                startIcon={<span className="material-symbols-outlined">download</span>}
-            >
-                Export
-            </Button>
-            <Button 
-                variant="contained"
-                color="secondary"
-                size="small"
-                onClick={()=>fileUpload.current?.click()} 
-                startIcon={<span className="material-symbols-outlined">upload</span>}
-            >
-                Import
-            </Button>
-            <input type="file" ref={fileUpload} id="data-import" accept=".zip" style={{display: "none"}} onChange={importData} />
-            
-            <IconButton onClick={()=>setInfoOpen(true)}>
-                <span className="material-symbols-outlined">info</span>
-            </IconButton>
+        <div className="mb-4">
+            <div className="grid grid-cols-3 gap-x-2 md:gap-x-6 gap-y-2 px-2">
+                <div className="text-center">QR Codes</div>
+                <div className="text-center">Bluetooth</div>
+                <div className="text-center">ZIP Files</div>
+                <Button 
+                    color="primary"
+                    variant="contained"
+                    size="small"
+                    onClick={openQrData} 
+                    startIcon={<span className="material-symbols-outlined">qr_code_2</span>}
+                >
+                    Share
+                </Button>
+                <Button 
+                    color="primary"
+                    variant="contained"
+                    size="small"
+                    onClick={broadcastData} 
+                    startIcon={<span className="material-symbols-outlined">cloud_upload</span>}
+                    disabled={!bluetoothSupported}
+                >
+                    Broadcast
+                </Button>
+                <Button 
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={exportData} 
+                    startIcon={<span className="material-symbols-outlined">download</span>}
+                >
+                    Export
+                </Button>
+                <Button 
+                    variant="contained"
+                    color="secondary"
+                    size="small"
+                    onClick={() => setScannerOpen(true)}
+                    startIcon={<span className="material-symbols-outlined">photo_camera</span>}
+                >
+                    Collect
+                </Button>
+                <Button 
+                    variant="contained"
+                    color="secondary"
+                    size="small"
+                    onClick={requestData}
+                    startIcon={<span className="material-symbols-outlined">cloud_download</span>}
+                    disabled={!bluetoothSupported}
+                >
+                    Request
+                </Button>
+                <Button 
+                    variant="contained"
+                    color="secondary"
+                    size="small"
+                    onClick={()=>fileUpload.current?.click()} 
+                    startIcon={<span className="material-symbols-outlined">upload_file</span>}
+                >
+                    Import
+                </Button>
+                <input type="file" ref={fileUpload} id="data-import" accept=".zip" style={{display: "none"}} onChange={importData} />
+            </div>
         </div>
 
         <div className="max-w-lg w-full mb-16 px-1">
@@ -205,27 +267,6 @@ const DataPage = () => {
                 markRead={markRead}
             />
         </div>
-
-        {/* Info popup */}
-        <Dialog 
-            open={infoOpen} 
-            onClose={()=>setInfoOpen(false)}
-            aria-labelledby="info-dialog-title"
-            maxWidth="sm"
-        >
-            <DialogTitle id="info-dialog-title">Information</DialogTitle>
-            <DialogContent>
-                <ul className="text-md list-disc pl-2">
-                    <li>One device is designated as the &quot;host&quot; device.</li>
-                    <li>When asked by the scouting lead, press the share button to generate QR codes containing your new scouting data.</li>
-                    <li>Sharing a qr code only includes the &quot;new&quot; entries, to share other entries, select them and tap the (<span className="material-symbols-outlined inline-icon">mark_email_unread</span>) icon.</li>
-                    <li>Exporting and importing data as a <code>.zip file</code> allows you to backup and restore match data for in between competition days, or for an alternate way of transferring data to others.</li>
-                </ul>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={()=>setInfoOpen(false)}>Close</Button>
-            </DialogActions>
-        </Dialog>
 
         {/* Share match data popup */}
         <Dialog
@@ -278,7 +319,7 @@ const DataPage = () => {
             <DialogContent sx={{paddingX: 0}}>
                 <div className="w-full h-full flex flex-col items-center justify-center">
                     <div className="w-full max-w-xl">
-                        {scannerOpen ? <QrCodeScanner onReceiveData={onData} /> : ''}
+                        {scannerOpen ? <QrCodeScanner onReceiveData={onQrData} /> : ''}
                     </div>
                 </div>
             </DialogContent>
