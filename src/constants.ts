@@ -46,6 +46,12 @@ export const TBA_API_BASE = "https://www.thebluealliance.com/api/v3";
 export const TBA_API_KEY = "LDcEXFW8I1T9JKMmfMCog29Ilyw45pdHgKUY7dNosZmoxOjs1MIO7B7yG8IMHDRQ";
 
 /**
+ * Auto fetch interval for the match schedule, in milliseconds
+ * This is how often the app will update the match schedule from blue alliance
+ */
+export const AUTO_MATCH_FETCH_INTERVAL = 1000 * 60 * 5; // 5 minutes
+
+/**
  * The max size of each chunk of data in the qr code, in characters of base64 data.
  * Larger number means less chunks, but more data per chunk (larger qr codes, harder to scan).
  */

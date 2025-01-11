@@ -11,7 +11,7 @@ const SettingsPage = () => {
 
     if (!settings) return (<ErrorPage msg="Settings context not found?!?!?!" />)
     return (
-    <div className="w-full flex flex-col items-center gap-5 px-4">
+    <div className="w-full flex flex-col items-center gap-5 px-4 pb-24">
         <PageTitle>Settings</PageTitle>
 
         <div className="mb-2 flex flex-col items-center">
@@ -58,6 +58,13 @@ const SettingsPage = () => {
                 control={<Checkbox checked={settings.fieldRotated} onChange={(e)=>settings.setFieldRotated(e.target.checked)} color="primary" />}
             />
             <FormHelperText>Change this based on the perspective you are viewing the field for when you are scouting</FormHelperText>
+        </FormControl>
+
+        <FormControl className="max-w-96">
+            <FormControlLabel label="Auto Update Matches" 
+                control={<Checkbox checked={settings.autoFetchMatches} onChange={(e)=>settings.setAutoFetchMatches(e.target.checked)} color="primary" />}
+            />
+            <FormHelperText>When enabled, the match schedule will get automatically downloaded from Blue Alliance every so often</FormHelperText>
         </FormControl>
     </div>
     );
