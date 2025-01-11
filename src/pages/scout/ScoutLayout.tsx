@@ -2,13 +2,12 @@ import { useContext, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import ScoutingContext from "../../components/context/ScoutingContext";
 import NoMatchAvailable from "./NoMatchAvailable";
-import { Alert, Button } from "@mui/material";
-import AllianceColor from "../../enums/AllianceColor";
+import { Alert, Button, ButtonGroup } from "@mui/material";
 import CurrentMatchContext from "../../components/context/CurrentMatchContext";
 import SettingsContext from "../../components/context/SettingsContext";
 import ConfettiDisplay from "../../components/ui/ConfettiDisplay";
-import BluetoothStatus from "../../components/BluetoothStatus";
 import WakeLock from "../../components/ui/WakeLock";
+import ScoutNavBar from "../../components/ScoutNavBar";
 
 const ScoutPage = () => {
     
@@ -38,6 +37,7 @@ const ScoutPage = () => {
                 <>
                     <Outlet />
                     <div className="pt-16 w-full"></div>
+                    <ScoutNavBar />
                 </>
             :
                 <NoMatchAvailable />

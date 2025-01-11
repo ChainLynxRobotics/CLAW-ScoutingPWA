@@ -1,13 +1,11 @@
 import { useContext } from "react";
 import ScoutingContext from "../../components/context/ScoutingContext";
 import NoMatchAvailable from "./NoMatchAvailable";
-import { Button } from "@mui/material";
-import { NavLink } from "react-router-dom";
 import AllianceColor from "../../enums/AllianceColor";
 import SettingsContext from "../../components/context/SettingsContext";
 
 
-const DuringMatch = () => {
+const Teleop = () => {
 
     const settings = useContext(SettingsContext);
 
@@ -22,26 +20,10 @@ const DuringMatch = () => {
     const reverseY = rotateField;
     return (
         <>
-        <div className="w-full mb-2 flex">
-            <div className="flex-1 flex justify-start items-center">
-                <NavLink to="/scout">
-                    <Button variant="text">
-                        <span className="material-symbols-outlined text-sm">chevron_left</span>
-                        Pre
-                    </Button>
-                </NavLink>
-            </div>
-            <h1 className="text-lg m-2 flex-1 flex justify-center items-center">
-                During Match
+        <div className="w-full flex justify-center">
+            <h1 className="m-4 mt-8 text-2xl">
+                Tele-Operated
             </h1>
-            <div className="flex-1 flex justify-end items-center">
-                <NavLink to="/scout/post">
-                    <Button variant="text">
-                        Post
-                        <span className="material-symbols-outlined text-sm">chevron_right</span>
-                    </Button>
-                </NavLink>
-            </div>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
             
@@ -63,4 +45,4 @@ const DuringMatch = () => {
     );
 };
   
-export default DuringMatch;
+export default Teleop;

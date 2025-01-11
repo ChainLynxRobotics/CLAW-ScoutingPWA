@@ -48,19 +48,10 @@ const PostMatch = () => {
     }
     return (
         <>
-        <div className="w-full mb-2 flex">
-            <div className="flex-1 flex justify-start items-center">
-                <NavLink to="/scout/during">
-                    <Button variant="text">
-                        <span className="material-symbols-outlined text-sm">chevron_left</span>
-                        Match
-                    </Button>
-                </NavLink>
-            </div>
-            <h1 className="text-lg m-2 flex-1 flex justify-center items-center">
+        <div className="w-full flex justify-center">
+            <h1 className="m-4 mt-8 text-2xl">
                 Post Match
             </h1>
-            <div className="flex-1 flex justify-end items-center"></div>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-left px-4 gap-4">
 

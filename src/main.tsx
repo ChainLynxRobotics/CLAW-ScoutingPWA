@@ -9,7 +9,6 @@ import DataPage from './pages/DataPage';
 import SettingsPage from './pages/SettingsPage';
 import IndexPage from './pages/IndexPage';
 import PreMatch from './pages/scout/PreMatch';
-import DuringMatch from './pages/scout/DuringMatch';
 import PostMatch from './pages/scout/PostMatch';
 import createTheme from '@mui/material/styles/createTheme';
 import { ThemeProvider } from '@emotion/react';
@@ -21,6 +20,8 @@ import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import AnalyticsTeamPage from './pages/analytics/AnalyticsTeamPage';
 import AnalyticsMatchPage from './pages/analytics/AnalyticsMatchPage';
 import AnalyticsLayout from './pages/analytics/AnalyticsLayout';
+import Teleop from './pages/scout/Teleop';
+import Auto from './pages/scout/Auto';
 
 const darkTheme = createTheme({
   palette: {
@@ -57,7 +58,8 @@ export default function App() {
               <Route path="/" element={<Layout />}>
                 <Route path="scout" element={<ScoutPage />}>
                   <Route index element={<PreMatch />} />
-                  <Route path="during" element={<DuringMatch />} />
+                  <Route path="auto" element={<Auto />} />
+                  <Route path="teleop" element={<Teleop />} />
                   <Route path="post" element={<PostMatch />} />
                   <Route path="*" element={<NoPage />} />
                 </Route>

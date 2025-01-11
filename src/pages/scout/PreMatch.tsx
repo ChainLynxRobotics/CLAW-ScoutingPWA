@@ -37,19 +37,10 @@ const PreMatch = () => {
 
     return (
         <>
-        <div className="w-full mb-2 flex">
-            <div className="flex-1 flex justify-start items-center"></div>
-            <h1 className="text-lg m-2 flex-1 flex justify-center items-center">
+        <div className="w-full flex justify-center">
+            <h1 className="m-4 mt-8 text-2xl">
                 Pre Match
             </h1>
-            <div className="flex-1 flex justify-end items-center">
-                <NavLink to="/scout/during">
-                    <Button variant="text">
-                        Match
-                        <span className="material-symbols-outlined text-sm">chevron_right</span>
-                    </Button>
-                </NavLink>
-            </div>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
             <h1 className="text-lg font-bold my-2">
