@@ -36,7 +36,7 @@ const ScoutPage = () => {
             {context ?
                 <>
                     <Outlet />
-                    <div className="pt-16 w-full"></div>
+                    <div className="pt-24 w-full"></div>
                     <ScoutNavBar />
                 </>
             :

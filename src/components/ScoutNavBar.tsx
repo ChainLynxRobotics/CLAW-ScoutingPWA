@@ -7,7 +7,7 @@ const ScoutNavBar = () => {
 
     return (
         <div className="fixed bottom-8 w-full flex justify-center">
-            <ButtonGroup variant="contained" color="secondary" size="large" aria-label="Basic button group">
+            <ButtonGroup variant="contained" color="primary" size="large" aria-label="Basic button group" sx={{background: "var(--background)"}}>
                 <Link to="/scout">
                     <Button disabled={location.pathname === "/scout"}>
                         <div className="flex flex-col items-center">
