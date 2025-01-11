@@ -22,9 +22,7 @@ const Teleop = () => {
     return (
         <>
         <div className="w-full flex justify-center">
-            <h1 className="m-4 mt-8 text-2xl">
-                <PageTitle>Tele Operated</PageTitle>
-            </h1>
+            <PageTitle>Tele Operated</PageTitle>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
             
