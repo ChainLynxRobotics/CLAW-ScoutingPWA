@@ -6,7 +6,7 @@ import { MAX_NOTE_LENGTH } from "../../constants";
 import MatchResult from "../../enums/MatchResult";
 import ClimbResult from "../../enums/ClimbResult";
 import { useSnackbar } from "notistack";
-import LoadingBackdrop from "../../components/LoadingBackdrop";
+import LoadingBackdrop from "../../components/ui/LoadingBackdrop";
 import { Button, FormControl, InputLabel, Select, MenuItem, Rating, TextField } from "@mui/material";
 
 const PostMatch = () => {

@@ -13,7 +13,7 @@ import QrCodeList from "../components/qr/QrCodeList";
 import QrCodeScanner from "../components/qr/QrCodeScanner";
 import DataList from "../components/DataList";
 import { useSnackbar } from "notistack";
-import LoadingBackdrop from "../components/LoadingBackdrop";
+import LoadingBackdrop from "../components/ui/LoadingBackdrop";
 import bluetooth from "../util/io/bluetooth";
 import bluetoothServer from "../util/io/bluetoothServer";
 

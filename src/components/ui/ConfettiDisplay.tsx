@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import Confetti from 'react-confetti'
-import CurrentMatchContext from './context/CurrentMatchContext';
+import CurrentMatchContext from '../context/CurrentMatchContext';
 
 /**
  * Controls a fixed full screen confetti display that will show when `showConfetti` is true in the `CurrentMatchContext`.

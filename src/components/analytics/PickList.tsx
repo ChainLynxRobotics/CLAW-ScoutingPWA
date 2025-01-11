@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import SettingsContext from "../context/SettingsContext";
 import { DragDropContext, Draggable, DropResult } from "react-beautiful-dnd";
-import { StrictModeDroppable } from "../StrictModeDroppable";
+import { StrictModeDroppable } from "../ui/StrictModeDroppable";
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import matchDatabase from "../../util/db/matchDatabase";
 import useLocalStorageState from "../hooks/localStorageState";
@@ -12,7 +12,7 @@ import QrCodeList from "../qr/QrCodeList";
 import QrCodeScanner from "../qr/QrCodeScanner";
 import { useSnackbar } from "notistack";
 import { getEventRankings } from "../../util/blueAllianceApi";
-import LoadingBackdrop from "../LoadingBackdrop";
+import LoadingBackdrop from "../ui/LoadingBackdrop";
 
 type PickListData = {
     pickList: number[],

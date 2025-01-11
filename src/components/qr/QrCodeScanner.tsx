@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeData } from "../../types/QRCodeData";
 import { useSnackbar } from "notistack";
 import { TextField } from "@mui/material";
-import LoadingBackdrop from "../LoadingBackdrop";
+import LoadingBackdrop from "../ui/LoadingBackdrop";
 import qr from "../../util/io/qr";
 
 export const QR_PROTOCOL_REGEX = /^scoutingdata:(\d+)\/(\d+):(.+)$/;

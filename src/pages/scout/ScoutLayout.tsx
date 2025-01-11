@@ -6,7 +6,7 @@ import { Alert, Button } from "@mui/material";
 import AllianceColor from "../../enums/AllianceColor";
 import CurrentMatchContext from "../../components/context/CurrentMatchContext";
 import SettingsContext from "../../components/context/SettingsContext";
-import ConfettiDisplay from "../../components/ConfettiDisplay";
+import ConfettiDisplay from "../../components/ui/ConfettiDisplay";
 import BluetoothStatus from "../../components/BluetoothStatus";
 
 const ScoutPage = () => {

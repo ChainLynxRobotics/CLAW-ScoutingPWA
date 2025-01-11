@@ -4,13 +4,13 @@ import SettingsContext from "../components/context/SettingsContext";
 import MatchSchedule from "../components/MatchSchedule";
 import QrCodeType from "../enums/QrCodeType";
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, FormHelperText, IconButton, InputLabel, MenuItem, Select, TextField } from "@mui/material";
-import Divider from "../components/Divider";
+import Divider from "../components/ui/Divider";
 import { QRCodeData } from "../types/QRCodeData";
 import QrCodeList from "../components/qr/QrCodeList";
 import QrCodeScanner from "../components/qr/QrCodeScanner";
 import { useSnackbar } from "notistack";
 import { getSchedule } from "../util/blueAllianceApi";
-import LoadingBackdrop from "../components/LoadingBackdrop";
+import LoadingBackdrop from "../components/ui/LoadingBackdrop";
 import { Link } from "react-router-dom";
 
 const SettingsPage = () => {

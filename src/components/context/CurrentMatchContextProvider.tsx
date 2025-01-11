@@ -2,7 +2,7 @@ import { ReactElement, useCallback, useContext, useEffect, useState } from "reac
 import SettingsContext from "./SettingsContext";
 import AllianceColor from "../../enums/AllianceColor";
 import CurrentMatchContext from "./CurrentMatchContext";
-import ConditionalWrapper from "../ConditionalWrapper";
+import ConditionalWrapper from "../ui/ConditionalWrapper";
 import ScoutingContextProvider from "./ScoutingContextProvider";
 
 export type CurrentMatchContextType = {

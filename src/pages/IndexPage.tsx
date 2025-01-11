@@ -1,6 +1,6 @@
 import Button from "@mui/material/Button/Button";
 import { useNavigate } from "react-router-dom";
-import Divider from "../components/Divider";
+import Divider from "../components/ui/Divider";
 import { useCallback, useEffect, useState } from "react";
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { BeforeInstallPromptEvent } from "../types/beforeInstallPromptEvent";

@@ -1,8 +1,8 @@
 import { SnackbarProvider, SnackbarProviderProps } from "notistack";
 import { Outlet, NavLink } from "react-router-dom";
-import SnackbarCloseButton from "../components/SnackbarCloseButton";
+import SnackbarCloseButton from "../components/ui/SnackbarCloseButton";
 import { ErrorBoundary } from "react-error-boundary";
-import ErrorFallback from "../components/ErrorFallback";
+import ErrorFallback from "../components/ui/ErrorFallback";
 
 const snackbarProps: SnackbarProviderProps = {
     maxSnack: 3,
