@@ -36,21 +36,8 @@ const ScoutPage = () => {
         <div className="w-full h-full flex flex-col relative">
             {context ?
                 <>
-                <div className="w-full bg-background-secondary shadow">
-                    <h1 className="text-lg m-2 flex justify-between">
-                        <span className="flex items-center gap-2">
-                            <span className={`font-bold ${context.allianceColor == AllianceColor.Red ? 'text-red-400' : 'text-blue-400'}`}>
-                                {context.teamNumber}
-                            </span>
-                            <span className="text-sm italic">({context.matchId})</span>
-                        </span>
-                        <div className="text-lg m-2 flex items-end justify-center">
-                            <BluetoothStatus />
-                        </div>
-                    </h1>
-                </div>
-                <Outlet />
-                <div className="pt-16 w-full"></div>
+                    <Outlet />
+                    <div className="pt-16 w-full"></div>
                 </>
             :
                 <NoMatchAvailable />
