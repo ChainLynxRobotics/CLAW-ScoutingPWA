@@ -6,6 +6,7 @@ import matchCompare from "../../util/matchCompare";
 import SettingsContext from "../../components/context/SettingsContext";
 import useLocalStorageState from "../../components/hooks/localStorageState";
 import PickList from "../../components/analytics/PickList";
+import PageTitle from "../../components/ui/PageTitle";
 
 const AnalyticsPage = () => {
 
@@ -56,7 +57,8 @@ const AnalyticsPage = () => {
 
     return (
     <div className="w-full h-full px-4 flex flex-col items-center relative">
-        <h1 className="text-xl text-center mb-4 pt-4 font-bold">Analytics</h1>
+        <PageTitle>Analytics</PageTitle>
+        
         <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">search</span>
             <TextField 

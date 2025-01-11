@@ -10,6 +10,7 @@ import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
 import AllianceColor from "../../enums/AllianceColor";
 import SettingsContext from "../../components/context/SettingsContext";
 import { MAX_NOTE_LENGTH } from "../../constants";
+import PageTitle from "../../components/ui/PageTitle";
 
 
 const PreMatch = () => {
@@ -38,9 +39,7 @@ const PreMatch = () => {
     return (
         <>
         <div className="w-full flex justify-center">
-            <h1 className="m-4 mt-8 text-2xl">
-                Pre Match
-            </h1>
+            <PageTitle>Pre Match</PageTitle>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
             <h1 className="text-lg font-bold my-2">

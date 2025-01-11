@@ -16,6 +16,7 @@ import { useSnackbar } from "notistack";
 import LoadingBackdrop from "../components/ui/LoadingBackdrop";
 import bluetooth from "../util/io/bluetooth";
 import bluetoothServer from "../util/io/bluetoothServer";
+import PageTitle from "../components/ui/PageTitle";
 
 const DataPage = () => {
 
@@ -191,7 +192,7 @@ const DataPage = () => {
     return (
     <div className="w-full flex flex-col items-center text-center">
 
-        <h1 className="text-xl text-center my-4 pt-4 font-bold">Manage Saved Data</h1>
+        <PageTitle>Data Page</PageTitle>
 
         <div className="mb-4">
             <div className="grid grid-cols-3 gap-x-2 md:gap-x-6 gap-y-2 px-2">

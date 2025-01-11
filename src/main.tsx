@@ -22,6 +22,7 @@ import AnalyticsMatchPage from './pages/analytics/AnalyticsMatchPage';
 import AnalyticsLayout from './pages/analytics/AnalyticsLayout';
 import Teleop from './pages/scout/Teleop';
 import Auto from './pages/scout/Auto';
+import SchedulePage from './pages/SchedulePage';
 
 const darkTheme = createTheme({
   palette: {
@@ -64,6 +65,7 @@ export default function App() {
                   <Route path="*" element={<NoPage />} />
                 </Route>
                 <Route path="data" element={<DataPage />} />
+                <Route path="Schedule" element={<SchedulePage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="analytics" element={<AnalyticsLayout />}>
                   <Route path="team/:team" element={<AnalyticsTeamPage />} />

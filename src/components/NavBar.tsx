@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router-dom";
 const pages = [
     {name: "Scout", path: "/scout", icon: "description"},
     {name: "Saved Matches", path: "/data", icon: "storage"},
-    {name: "Schedule", path: "/settings", icon: "event_note"},
+    {name: "Schedule", path: "/schedule", icon: "event_note"},
     {name: "Analytics", path: "/analytics", icon: "query_stats"},
     {name: "Settings", path: "/settings", icon: "settings"},
 ]

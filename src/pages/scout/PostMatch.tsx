@@ -8,6 +8,7 @@ import ClimbResult from "../../enums/ClimbResult";
 import { useSnackbar } from "notistack";
 import LoadingBackdrop from "../../components/ui/LoadingBackdrop";
 import { Button, FormControl, InputLabel, Select, MenuItem, Rating, TextField } from "@mui/material";
+import PageTitle from "../../components/ui/PageTitle";
 
 const PostMatch = () => {
     const context = useContext(ScoutingContext);
@@ -49,9 +50,7 @@ const PostMatch = () => {
     return (
         <>
         <div className="w-full flex justify-center">
-            <h1 className="m-4 mt-8 text-2xl">
-                Post Match
-            </h1>
+            <PageTitle>Post Match</PageTitle>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-left px-4 gap-4">
 

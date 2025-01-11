@@ -3,6 +3,7 @@ import ScoutingContext from "../../components/context/ScoutingContext";
 import NoMatchAvailable from "./NoMatchAvailable";
 import AllianceColor from "../../enums/AllianceColor";
 import SettingsContext from "../../components/context/SettingsContext";
+import PageTitle from "../../components/ui/PageTitle";
 
 
 const Teleop = () => {
@@ -22,7 +23,7 @@ const Teleop = () => {
         <>
         <div className="w-full flex justify-center">
             <h1 className="m-4 mt-8 text-2xl">
-                Tele-Operated
+                <PageTitle>Tele Operated</PageTitle>
             </h1>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
