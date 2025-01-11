@@ -8,6 +8,7 @@ import CurrentMatchContext from "../../components/context/CurrentMatchContext";
 import SettingsContext from "../../components/context/SettingsContext";
 import ConfettiDisplay from "../../components/ui/ConfettiDisplay";
 import BluetoothStatus from "../../components/BluetoothStatus";
+import WakeLock from "../../components/ui/WakeLock";
 
 const ScoutPage = () => {
     
@@ -16,26 +17,6 @@ const ScoutPage = () => {
     
     const currentMatchContext = useContext(CurrentMatchContext);
     const context = useContext(ScoutingContext);
-
-    useEffect(() => {
-        async function wakeLock() {
-            if ('wakeLock' in navigator) {
-                try {
-                    const wakeLock = await navigator.wakeLock.request('screen');
-                    wakeLock.addEventListener('release', () => {
-                        console.log('Screen Wake Lock released:', wakeLock.released);
-                    });
-                    return ()=>wakeLock.release();
-                } catch (err) {
-                    console.error("Error requesting Screen Wake Lock:", err);
-                }
-            } else {
-                console.log('Wake Lock API not supported.');
-            }
-        }
-        wakeLock();
-    }, []);
-        
 
     useEffect(() => {
         if (currentMatchContext?.hasUpdate) {
@@ -85,6 +66,7 @@ const ScoutPage = () => {
                     </Alert>
                 </div>
             }
+            <WakeLock />
         </div>
     );
 };
