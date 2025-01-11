@@ -5,7 +5,7 @@
 ### *A Progressive Web App (PWA) built with React to scout FIRST robotics competition matches.*
 
 ---
-### ⚠️ Note: This application is only to be used by FRC Team 8248 ⚠️
+### ⚠️ Note: This application is only to be used by FRC Team 8248 and FRC Team 4180 ⚠️
 This may change in the future, but for now we ask that usage of this app is closed to other teams.
 
 
@@ -15,19 +15,19 @@ This may change in the future, but for now we ask that usage of this app is clos
 ## Features
 - Once installed, it can work **fully** offline
 - Everything can be done on a phone, built for mobile compatibility
-- Scouts with time based data for more information (such as time of button presses being recorded)
-- All data can be sent via QR codes 
+- All data can be sent via QR codes and [Bluetooth radio](https://github.com/ChainLynxRobotics/CLAW-RadioFirmware)
   - Including scouting data, match schedule, and pick list
   - Data is heavily compressed to make transfer as fast as possible
 - Calculations and graphs are integrated in-app
-  - They can also be exported into excel/json files for easy data transfer and custom statistic calculations
+  - They can also be exported into csv/json files for easy data transfer and custom statistic calculations
 - Team Pick List with easy data viewing
   - Draggable teams for the current competition
   - The Pick List can be shared with others via a QR code for collaborative ranking.
 - If Internet is available, match schedule and team rankings can be pulled from [TBA API](https://www.thebluealliance.com/apidocs)
 
 ### Limitations
-- As this app is built to be used offline, all scouters must share qr codes with the scout lead every so often for them to collect the data
+- As this app is built to be used offline, all scouters must share qr codes with the scout lead every so often for them to collect the data, or use the bluetooth radio
+- Bluetooth is not available on IPhones due to iOS restrictions (WebBluetooth API not allowed)
 - UI is not super intuitive, and requires some practice before using in-competition
 - Two scouters can not scout the same team during the same match
   - Due to its time-based nature, the data cannot be combined or averaged out in any reasonable way
@@ -130,3 +130,47 @@ The Pick List tab is similar to the Teams tab but allows you to reorder and rank
 <img src="./repo/analytics_base.png?raw=true" alt="A screenshot showing the default Teams tab of the analytics page." width="200px" /> <img src="./repo/analytics_team.png?raw=true" alt="A screenshot showing the data visualization for an example team" width="200px" /> <img src="./repo/analytics_picklist.png?raw=true" alt="A screenshot showing the pick list tab of the analytics page" width="200px" />
 
 <img src="./repo/analytics_full.png?raw=true" alt="A screenshot showing the full analytics visualization in a landscape view" width="600px" />
+
+---
+
+# Developing
+
+### Required Programs:
+- [NodeJS](https://nodejs.org/en), a JavaScript Engine
+- [pnpm](https://pnpm.io/installation#using-corepack), a package manager for handling libraries
+  - Its recommended to use `corepack enable pnpm` install install it, corepack is included in the NodeJS install
+- Git, for source control
+  
+### Recommended Programs:
+- [VSCode](https://code.visualstudio.com/Download), an all around IDE
+  - Recommended Extensions:
+    - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
+
+### Project Setup:
+
+Download and navigate to the repo:
+```shell
+git clone https://github.com/ChainLynxRobotics/CLAW-ScoutingPWA
+cd CLAW-ScoutingPWA
+```
+
+Install the libraries with pnpm:
+```shell
+pnpm install
+```
+
+Start the dev server:
+```shell
+pnpm run dev
+```
+
+Run [eslint](https://eslint.org/):
+```shell
+pnpm run lint
+```
+
+When ready, build the project and preview it:
+```shell
+pnpm run build
+pnpm run preview
+```
