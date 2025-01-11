@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, Container, IconButton, Menu, MenuItem, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Container, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Toolbar, Typography } from "@mui/material";
 import BluetoothStatus from "./BluetoothStatus";
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -70,10 +70,13 @@ const NavBar = () => {
                             onClose={handleCloseNavMenu}
                             sx={{ display: { xs: 'block', md: 'none' } }}
                         >
-                            {pages.map(({name, path}, i) => (
+                            {pages.map(({name, path, icon}, i) => (
                                 <Link key={i} to={path} onClick={handleCloseNavMenu}>
                                     <MenuItem selected={location.pathname == path}>
-                                        <Typography sx={{ textAlign: 'center' }}>{name}</Typography>
+                                        <ListItemIcon>
+                                            <span className="material-symbols-outlined">{icon}</span>
+                                        </ListItemIcon>
+                                        <ListItemText>{name}</ListItemText>
                                     </MenuItem>
                                 </Link>
                             ))}
