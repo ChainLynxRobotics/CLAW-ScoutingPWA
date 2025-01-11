@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
 import matchDatabase from "../util/db/matchDatabase";
 import { MatchIdentifier } from "../types/MatchData";
@@ -43,6 +43,24 @@ const DataPage = () => {
     }, []);
 
     const bluetoothSupported = bluetoothServer.isSupported();
+
+    const [anchorElInput, setAnchorElInput] = useState<null | HTMLElement>(null);
+    const openInput = Boolean(anchorElInput);
+    const handleClickInput = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorElInput(event.currentTarget);
+    };
+    const handleCloseInput = () => {
+        setAnchorElInput(null);
+    };
+
+    const [anchorElOutput, setAnchorElOutput] = useState<null | HTMLElement>(null);
+    const openOutput = Boolean(anchorElOutput);
+    const handleClickOutput = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorElOutput(event.currentTarget);
+    };
+    const handleCloseOutput = () => {
+        setAnchorElOutput(null);
+    };
 
     async function openQrData() {
         setLoading(true);
@@ -194,69 +212,82 @@ const DataPage = () => {
 
         <PageTitle>Data Page</PageTitle>
 
-        <div className="mb-4">
-            <div className="grid grid-cols-3 gap-x-2 md:gap-x-6 gap-y-2 px-2">
-                <div className="text-center">QR Codes</div>
-                <div className="text-center">Bluetooth</div>
-                <div className="text-center">ZIP Files</div>
-                <Button 
-                    color="primary"
-                    variant="contained"
-                    size="small"
-                    onClick={openQrData} 
-                    startIcon={<span className="material-symbols-outlined">qr_code_2</span>}
-                >
-                    Share
-                </Button>
-                <Button 
-                    color="primary"
-                    variant="contained"
-                    size="small"
-                    onClick={broadcastData} 
-                    startIcon={<span className="material-symbols-outlined">cloud_upload</span>}
-                    disabled={!bluetoothSupported}
-                >
-                    Broadcast
-                </Button>
-                <Button 
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={exportData} 
-                    startIcon={<span className="material-symbols-outlined">download</span>}
-                >
-                    Export
-                </Button>
-                <Button 
-                    variant="contained"
-                    color="secondary"
-                    size="small"
-                    onClick={() => setScannerOpen(true)}
-                    startIcon={<span className="material-symbols-outlined">photo_camera</span>}
-                >
-                    Collect
-                </Button>
-                <Button 
-                    variant="contained"
-                    color="secondary"
-                    size="small"
-                    onClick={requestData}
-                    startIcon={<span className="material-symbols-outlined">cloud_download</span>}
-                    disabled={!bluetoothSupported}
-                >
-                    Request
-                </Button>
-                <Button 
-                    variant="contained"
-                    color="secondary"
-                    size="small"
-                    onClick={()=>fileUpload.current?.click()} 
-                    startIcon={<span className="material-symbols-outlined">upload_file</span>}
-                >
-                    Import
-                </Button>
+        <div className="mb-4 flex gap-8">
+            <Button 
+                id="output-menu-button"
+                variant="contained"
+                color="primary"
+                onClick={handleClickOutput} 
+                startIcon={<span className="material-symbols-outlined">share</span>}
+            >
+                Share
+            </Button>
+            <Menu
+                id="export-menu"
+                anchorEl={anchorElOutput}
+                open={openOutput}
+                onClose={handleCloseOutput}
+                MenuListProps={{
+                    'aria-labelledby': 'output-menu-button',
+                }}
+            >
+                <MenuItem onClick={openQrData}>
+                    <ListItemIcon>
+                        <span className="material-symbols-outlined">qr_code_2</span>
+                    </ListItemIcon>
+                    <ListItemText>QR Code</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={broadcastData} disabled={!bluetoothSupported}>
+                    <ListItemIcon>
+                        <span className="material-symbols-outlined">cloud_upload</span>
+                    </ListItemIcon>
+                    <ListItemText>Bluetooth</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={exportData}>
+                    <ListItemIcon>
+                        <span className="material-symbols-outlined">download</span>
+                    </ListItemIcon>
+                    <ListItemText>ZIP File</ListItemText>
+                </MenuItem>
+            </Menu>
+            <Button 
+                id="input-menu-button"
+                variant="contained"
+                color="primary"
+                onClick={handleClickInput} 
+                startIcon={<span className="material-symbols-outlined">download</span>}
+            >
+                Import
+            </Button>
+            <Menu
+                id="input-menu"
+                anchorEl={anchorElInput}
+                open={openInput}
+                onClose={handleCloseInput}
+                MenuListProps={{
+                    'aria-labelledby': 'input-menu-button',
+                }}
+            >
+                <MenuItem onClick={() => setScannerOpen(true)}>
+                    <ListItemIcon>
+                        <span className="material-symbols-outlined">photo_camera</span>
+                    </ListItemIcon>
+                    <ListItemText>QR Code</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={requestData} disabled={!bluetoothSupported}>
+                    <ListItemIcon>
+                        <span className="material-symbols-outlined">cloud_download</span>
+                    </ListItemIcon>
+                    <ListItemText>Bluetooth</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={()=>fileUpload.current?.click()}>
+                    <ListItemIcon>
+                        <span className="material-symbols-outlined">upload_file</span>
+                    </ListItemIcon>
+                    <ListItemText>ZIP File</ListItemText>
+                </MenuItem>
                 <input type="file" ref={fileUpload} id="data-import" accept=".zip" style={{display: "none"}} onChange={importData} />
-            </div>
+            </Menu>
         </div>
 
         <div className="max-w-lg w-full mb-16 px-1">
