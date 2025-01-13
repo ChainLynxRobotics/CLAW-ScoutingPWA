@@ -131,7 +131,7 @@ The Pick List tab is similar to the Teams tab but allows you to reorder and rank
 
 <img src="./repo/analytics_full.png?raw=true" alt="A screenshot showing the full analytics visualization in a landscape view" width="600px" />
 
----
+
 
 # Developing
 
@@ -139,7 +139,8 @@ The Pick List tab is similar to the Teams tab but allows you to reorder and rank
 - [NodeJS](https://nodejs.org/en), a JavaScript Engine
 - [pnpm](https://pnpm.io/installation#using-corepack), a package manager for handling libraries
   - Its recommended to use `corepack enable pnpm` install install it, corepack is included in the NodeJS install
-- Git, for source control
+- [Git](https://git-scm.com/), for source control
+  - I personally recommend installing it through the [Github CLI](https://cli.github.com/) for easy github sign-in
   
 ### Recommended Programs:
 - [VSCode](https://code.visualstudio.com/Download), an all around IDE
@@ -159,6 +160,8 @@ Install the libraries with pnpm:
 pnpm install
 ```
 
+### Commands
+
 Start the dev server:
 ```shell
 pnpm run dev
@@ -169,8 +172,43 @@ Run [eslint](https://eslint.org/):
 pnpm run lint
 ```
 
-When ready, build the project and preview it:
+Build the project and preview it:
 ```shell
 pnpm run build
 pnpm run preview
 ```
+
+## Project Structure
+
+Notable libraries used:
+- [TypeScript](https://www.typescriptlang.org/) - Lets us add types to JS for type safety and easier development
+- [Vite](https://vite.dev/guide/) - The frontend tooling library powering the dev server, building for the browser, and providing an easy developer experience for modern web projects.
+- [React](https://react.dev/learn) - The frontend framework that allows us to write everything in components
+- [React Router](https://reactrouter.com/en/6.28.1/) - Allows a react project to work across multiple pages and render different components based on the URL
+- [Tailwindcss](https://tailwindcss.com/) - Allows us to avoid css and write all of our styles with dynamic classes, and the final css bundle only includes the ones we need
+- [Protocol Buffers](https://protobuf.dev/overview/) - Used for encoding JSON data for scouting data into a more efficient binary format for smaller qr codes and packets during data transfer
+- [Vite PWA](https://vite-pwa-org.netlify.app/) - Plugin to bundle all the code as a [Progressive Web App (PWA)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) which allows it to work offline and be installed as an app.
+- [ESLint](https://eslint.org/) - Code checking for following good conventions and finding possible bugs, ran with `pnpm run lint`
+
+And many more defined in [`package.json`](/package.json)
+
+### Directories
+
+- [`public/`](/public/) - All the publicly available non-code files such as images for the client to download and use
+  - [`fonts/`](/public/fonts/) - The font files that are fetched in [index.css](/src/index.css)
+  - [`imgs/`](/public/imgs/) - Take a wild guess on what this is used for
+  - [`protobuf/`](/public/protobuf/) - [Protocol buffer definition files](https://protobuf.dev/programming-guides/proto3/) for encoding json in a more efficient binary format, and downloaded by [proto.ts](/src/util/io/proto.ts)
+- [`src/`](/src/) - Where all the code lives, must be followed or else vite and tailwind will not recognize it, all the other folders in side of this are not strictly required but are for good code style
+  - [`components/`](/src/components/) - React [components](https://react.dev/learn/tutorial-tic-tac-toe#passing-data-through-props) for the rest of the app
+    - [`analytics/`](/src/components/analytics/) - Components for stats and graphs on the [analytics pages](/src/pages/analytics/)
+    - [`context/`](/src/components/context/) - React [context](https://react.dev/learn/passing-data-deeply-with-context) and context provider components that provide the app with global states such as scouting data and settings, see [main.tsx](/src/main.tsx) for where they are used
+    - [`hooks/`](/src/components/hooks/) - React [hooks](https://react.dev/learn/reusing-logic-with-custom-hooks#) for reusable logic
+    - [`qr/`](/src/components/qr/) - Components for QR code list and scanner
+    - [`ui/`](/src/components/ui/) - Small components used repeatedly for the ui of the app
+  - [`enums/`](/src/enums/) - Typescript [enums](https://www.typescriptlang.org/docs/handbook/enums.html) for the app
+  - [`pages/`](/src/pages/) - React components for all the pages and layouts, see [main.tsx](/src/main.tsx) and the [react router docs](https://reactrouter.com/6.28.1/router-components/browser-router)
+  - [`types/`](/src/types/) - [Typescript types](https://www.typescriptlang.org/docs/handbook/intro.html), aka defining interfaces for the rest of the app to use for type safety
+  - [`util/`](/src/util/) - Utility classes and functions
+    - [`analytics`](/src/util/analytics/) - Any repeated functions the [analytics pages](/src/pages/analytics/) might need
+    - [`db/`](/src/util/db/) - The database functions for storing match data in the browser's [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB) using the [idb](https://github.com/jakearchibald/idb) library for easier async operations
+    - [`io/`](/src/util/io/) - The Input/Output (IO) operations for the app, such as importing, exporting, [compressing](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API), and [protobuf encoding](https://protobuf.dev/overview/) for qr codes, bluetooth, and zip files.
