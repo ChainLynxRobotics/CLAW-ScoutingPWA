@@ -11,6 +11,7 @@ import AllianceColor from "../../enums/AllianceColor";
 import SettingsContext from "../../components/context/SettingsContext";
 import { MAX_NOTE_LENGTH } from "../../constants";
 import PageTitle from "../../components/ui/PageTitle";
+import allianceTeamIndex from "../../util/allianceTeamIndex";
 
 
 const PreMatch = () => {
@@ -42,12 +43,30 @@ const PreMatch = () => {
             <PageTitle>Pre Match</PageTitle>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
-            <h1 className="text-lg font-bold my-2">
-                You are scouting&nbsp;
-                <span className={`font-bold ${context.allianceColor == AllianceColor.Red ? 'text-red-400' : 'text-blue-400'}`}>
-                    {context.teamNumber}
-                </span>
-                <span> in match </span>
+            <h1 className="flex items-center gap-2 text-lg font-bold my-2">
+                <span>You are scouting</span>
+                <FormControl variant="standard">
+                    <Select
+                        labelId="team-select-label"
+                        id="team-select"
+                        value={settings.clientId}
+                        onChange={(event) => {
+                            settings?.setClientId(parseInt(event.target.value+""));
+                        }}
+                        label="Select Team">
+                        {[0, 1, 2, 3, 4, 5].map((clientId) => {
+                            const { team, color } = allianceTeamIndex(settings.matches[settings.currentMatchIndex], settings.currentMatchIndex, clientId);
+                            return (
+                                <MenuItem key={clientId} value={clientId}>
+                                    <span className={`text-lg font-bold ${color == AllianceColor.Red ? 'text-red-400' : 'text-blue-400'}`}>{team}</span>
+                                    &nbsp;
+                                    <span className="text-sm text-secondary">({clientId + 1})</span>
+                                </MenuItem>
+                            );
+                        })}
+                    </Select>
+                </FormControl>
+                <span>in match</span>
                 <FormControl variant="standard">
                     <Select
                         labelId="match-select-label"
@@ -57,14 +76,14 @@ const PreMatch = () => {
                             const index = settings.matches.map((match) => match.matchId+"").indexOf(event.target.value);
                             settings?.setCurrentMatchIndex(index);
                         }}
-                        label="Select Match">
+                        label="Select Match"
+                    >
                         {settings.matches.map((match) => {
-                            return <MenuItem key={match.matchId} value={match.matchId}><b>{match.matchId}</b></MenuItem>;
+                            return <MenuItem key={match.matchId} value={match.matchId}><b className="text-lg">{match.matchId}</b></MenuItem>;
                         })}
                     </Select>
                 </FormControl>
             </h1>
-            <span className="mb-8 max-w-md text-center text-secondary">If this is the wrong match, use the select menu above or the settings to make sure it is correct!</span>
             <FormControl sx={{ m: 1, minWidth: 224 }}>
                 <InputLabel id="human-player-location-label">
                     {context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Soren's Location`}

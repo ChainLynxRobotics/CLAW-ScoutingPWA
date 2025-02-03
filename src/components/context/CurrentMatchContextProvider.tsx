@@ -4,6 +4,7 @@ import AllianceColor from "../../enums/AllianceColor";
 import CurrentMatchContext from "./CurrentMatchContext";
 import ConditionalWrapper from "../ui/ConditionalWrapper";
 import ScoutingContextProvider from "./ScoutingContextProvider";
+import allianceTeamIndex from "../../util/allianceTeamIndex";
 
 export type CurrentMatchContextType = {
     setHasUpdate: (hasUpdate: boolean)=>void,
@@ -56,11 +57,9 @@ export default function CurrentMatchContextProvider({children}: {children: React
         }
         
         const match = settings.matches[settings.currentMatchIndex];
-        const index = (settings.currentMatchIndex + settings.clientId) % 6;
 
         // ALternate between red and blue teams for each scout
-        const team: number = [match.blue1, match.red1, match.blue2, match.red2, match.blue3, match.red3][index];
-        const color: AllianceColor = (index % 2 == 0) ? AllianceColor.Blue : AllianceColor.Red;
+        const { team, color } = allianceTeamIndex(match, settings.currentMatchIndex, settings.clientId);
 
         setScoutingData({
             matchId: match.matchId,
