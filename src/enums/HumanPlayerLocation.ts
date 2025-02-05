@@ -3,8 +3,8 @@
  */
 enum HumanPlayerLocation {
     None = 0,
-    Source = 1,
-    Amp = 2,
+    CoralStation = 1,
+    Processor = 2,
 }
 
 export default HumanPlayerLocation;

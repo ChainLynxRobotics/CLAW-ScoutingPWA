@@ -4,7 +4,8 @@
 enum ClimbResult {
     None = 0,
     Parked = 1,
-    Climb = 2,
+    Shallow = 2,
+    Deep = 3,
 }
 
 export default ClimbResult;
