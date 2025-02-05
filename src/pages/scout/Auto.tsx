@@ -27,8 +27,8 @@ const Auto = () => {
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
             
             <div className="max-w-md relative my-12 whitespace-nowrap">
-                <img src={`/imgs/crescendo_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
-                    alt="Crescendo Field Render" className={`w-full ${rotateField ? '-scale-100' : ''}`} />
+                <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
+                    alt="Reefscape Field Render" className={`w-full ${rotateField ? '-scale-100' : ''}`} />
                 
                 {/* Allows the field to be rotated depending on the pov of the scouter */}
                 <button onClick={()=>settings?.setFieldRotated(!rotateField)}
