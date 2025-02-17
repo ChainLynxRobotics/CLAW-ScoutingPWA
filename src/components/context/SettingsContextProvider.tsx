@@ -80,11 +80,11 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
             if (autoFetchMatches && Date.now() - lastAutoMatchFetch > AUTO_MATCH_FETCH_INTERVAL) {
                 console.log("Auto fetching matches");
                 setLastAutoMatchFetch(Date.now());
-                const matches = await getSchedule(competitionId);
-                if (matches.length === 0) return;
-                if (matches.length == matches.length && JSON.stringify(matches) == JSON.stringify(matches)) return; // Only update if the matches are different
-                setMatches(matches);
-                setCurrentMatchIndex(Math.min(currentMatchIndex, matches.length));
+                const newMatches = await getSchedule(competitionId);
+                if (newMatches.length === 0) return;
+                if (matches.length == newMatches.length && JSON.stringify(matches) == JSON.stringify(newMatches)) return; // Only update if the matches are different
+                setMatches(newMatches);
+                setCurrentMatchIndex(Math.min(currentMatchIndex, newMatches.length));
             }
         }
         autoFetch();
