@@ -107,15 +107,21 @@ message RadioPacketData {
 
     optional MatchScoutingData matchScoutingData = 3;
     optional MatchRequestData matchRequestData = 4;
+    optional ClientIDData clientIDData = 5;
 }
 
 enum RadioPacketType {
     MatchDataBroadcast = 0;
     MatchDataRequest = 1;
-    MatchDataReply = 2;
+    ClientIDBroadcast = 2;
 }
 
 message MatchRequestData {
     string competitionId = 1;
     repeated uint32 knownMatches = 2;
+}
+
+message ClientIDData {
+    uint32 clientID = 1;
+    optional string scoutName = 2;
 }

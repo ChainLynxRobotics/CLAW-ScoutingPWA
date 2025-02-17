@@ -13,11 +13,19 @@ const MAX_PACKET_GROUP_LENGTH = 255; // Maximum size of a packet in bytes
 const PACKET_SEND_INTERVAL = 100; // Interval between sending packets in milliseconds
 const PACKET_CLEANUP_TIMEOUT = 5000; // How long to wait since last received packet to clean up incomplete groups in milliseconds
 
+const CLIENT_ID_REMEMBER_TIME = 1000 * 60 * 1; // How long to "remember" a received client ID broadcast, in milliseconds
+
 
 const queue: QueuedRadioPacketGroup[] = [];
 const received: Map<number, RadioPacketGroup> = new Map(); // Map of packet IDs to packets
 
 let interval: NodeJS.Timeout | null = null;
+
+
+/**
+ * Recently received client IDs, list of known outside known client IDs and when they were received. These last for CLIENT_ID_REMEMBER_TIME milliseconds.
+ */
+let knownClientIDData: (RadioPacketData['clientIDData'] & { receivedAt: number })[] = [];
 
 /**
  * Encodes, splits, and queues a list of packets to be sent to the server, and then broadcasts the match data to all connected clients.
@@ -52,6 +60,25 @@ async function requestMatchData(competitionId: string, knownMatches: number[], o
         matchRequestData: {
             competitionId: competitionId,
             knownMatches: knownMatches,
+        },
+    }, onComplete, onError);
+}
+
+/**
+ * Broadcasts a client ID to all connected clients.
+ * 
+ * @param clientID The current client ID to broadcast
+ * @param scoutName The scout name to broadcast, if any
+ * @param onComplete A callback to run when all packets have been sent successfully
+ * @param onError A callback to run if an error occurs while sending the packets (NOT if there is an error with encoding the data, which will reject the promise)
+ */
+async function broadcastClientID(clientID: number, scoutName?: string, onComplete?: () => void, onError?: (e: any) => void) {
+    await _queueFullPacket({
+        packetType: RadioPacketType.ClientIDBroadcast,
+        version: APP_VERSION,
+        clientIDData: {
+            clientID: clientID,
+            scoutName: scoutName,
         },
     }, onComplete, onError);
 }
@@ -223,26 +250,51 @@ async function _decodeFullPacket(group: RadioPacketGroup) {
 async function _onDecodedPacket(packet: RadioPacketData) {
     console.log('Decoded packet:', packet);
 
-    switch (packet.packetType) {
-        case RadioPacketType.MatchDataBroadcast:
-            const imported = matchDatabase.putAll(packet.matchScoutingData!.entries);
-            console.log(`Imported ${imported} matches`);
-            break;
-        case RadioPacketType.MatchDataRequest:
-            const req = packet.matchRequestData!;
-            // Find all matches that are not known by the sender
-            const knownMatches = await matchDatabase.getAllIdsByCompetition(req.competitionId);
-            const matchesToSend = await matchDatabase.getMultiple(knownMatches.filter((id) => !req.knownMatches.includes(id)));
-            await broadcastMatchData(matchesToSend);
-            break;
-        default:
-            console.error('Unknown packet type:', packet.packetType);
+    if (packet.packetType === RadioPacketType.MatchDataBroadcast) {
+        const imported = matchDatabase.putAll(packet.matchScoutingData!.entries);
+        console.log(`Imported ${imported} matches`);
+
+    } else if (packet.packetType === RadioPacketType.MatchDataRequest) {
+        const req = packet.matchRequestData!;
+        // Find all matches that are not known by the sender
+        const knownMatches = await matchDatabase.getAllIdsByCompetition(req.competitionId);
+        const matchesToSend = await matchDatabase.getMultiple(knownMatches.filter((id) => !req.knownMatches.includes(id)));
+        await broadcastMatchData(matchesToSend);
+
+    } else if (packet.packetType === RadioPacketType.ClientIDBroadcast) {
+        const req = packet.clientIDData!;
+        // Remove ones by the same scout name (if defined) or that are too old
+        knownClientIDData = knownClientIDData.filter((d) => (d.scoutName && req.scoutName) ? d.scoutName !== req.scoutName : true)
+            .filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME);
+        // Add the new one
+        knownClientIDData.push({
+            clientID: req.clientID,
+            scoutName: req.scoutName,
+            receivedAt: Date.now(),
+        });
+
+    } else {
+        console.error('Unknown packet type:', packet.packetType);
     }
+}
+
+/**
+ * Used to check if another client has already claimed a client ID.
+ * @param clientID - The client ID to check
+ * @returns The most recent client ID broadcast that matches the client ID, or undefined if it's not found
+ */
+function isClientIDClaimed(clientID: number) {
+    // Remove old client IDs
+    knownClientIDData = knownClientIDData.filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME);
+
+    return knownClientIDData.sort((a, b) => b.receivedAt - a.receivedAt).find((d) => d.clientID === clientID);
 }
 
 export default {
     broadcastMatchData,
     requestMatchData,
+    broadcastClientID,
     startQueueInterval,
     stopQueueInterval,
+    isClientIDClaimed,
 };

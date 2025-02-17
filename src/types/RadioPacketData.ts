@@ -11,6 +11,10 @@ export interface RadioPacketData {
         competitionId: string,
         knownMatches: number[],
     },
+    clientIDData?: {
+        clientID: number,
+        scoutName?: string,
+    },
 };
 
 export interface RadioPacketGroup {

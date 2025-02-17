@@ -4,6 +4,7 @@
 enum RadioPacketType {
     MatchDataBroadcast = 0,
     MatchDataRequest = 1,
+    ClientIDBroadcast = 2,
 }
 
 export default RadioPacketType;
