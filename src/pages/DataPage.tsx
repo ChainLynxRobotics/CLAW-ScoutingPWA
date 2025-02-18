@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
 import matchDatabase from "../util/db/matchDatabase";
 import { MatchIdentifier } from "../types/MatchData";
@@ -7,7 +7,7 @@ import zip from "../util/io/zip";
 import useLocalStorageState from "../components/hooks/localStorageState";
 import matchCompare from "../util/matchCompare";
 import FileSaver from "file-saver";
-import SettingsContext from "../components/context/SettingsContext";
+import { SettingsContext } from "../components/context/SettingsContextProvider";
 import { QRCodeData } from "../types/QRCodeData";
 import QrCodeList from "../components/qr/QrCodeList";
 import QrCodeScanner from "../components/qr/QrCodeScanner";

@@ -2,22 +2,26 @@ import InputLabel from "@mui/material/InputLabel/InputLabel";
 import MenuItem from "@mui/material/MenuItem/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select/Select";
 import { useContext } from "react";
-import ScoutingContext from "../../components/context/ScoutingContext";
+import { ScoutingContext } from "../../components/context/ScoutingContextProvider";
 import FormControl from "@mui/material/FormControl/FormControl";
-import { Alert, Button, Checkbox, FormControlLabel, FormGroup, TextField } from "@mui/material";
-import { Link, NavLink } from "react-router-dom";
+import { Alert, Checkbox, FormControlLabel, FormGroup, TextField } from "@mui/material";
+import { Link } from "react-router-dom";
 import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
 import AllianceColor from "../../enums/AllianceColor";
-import SettingsContext from "../../components/context/SettingsContext";
+import { SettingsContext } from "../../components/context/SettingsContextProvider";
 import { MAX_NOTE_LENGTH } from "../../constants";
 import PageTitle from "../../components/ui/PageTitle";
 import allianceTeamIndex from "../../util/allianceTeamIndex";
+import { ScheduleContext } from "../../components/context/ScheduleContextProvider";
 
 
 const PreMatch = () => {
     
     const settings = useContext(SettingsContext);
     if (!settings) throw new Error("Settings context not found?!?!?!");
+
+    const schedule = useContext(ScheduleContext);
+    if (!schedule) throw new Error("Schedule context not found.");
 
     const context = useContext(ScoutingContext);
     if (!context) throw new Error("Scouting context not found.");
@@ -55,7 +59,7 @@ const PreMatch = () => {
                         }}
                         label="Select Team">
                         {[0, 1, 2, 3, 4, 5].map((clientId) => {
-                            const { team, color } = allianceTeamIndex(settings.matches[settings.currentMatchIndex], settings.currentMatchIndex, clientId);
+                            const { team, color } = allianceTeamIndex(schedule.matches[schedule.currentMatchIndex], schedule.currentMatchIndex, clientId);
                             return (
                                 <MenuItem key={clientId} value={clientId}>
                                     <span className={`text-lg font-bold ${color == AllianceColor.Red ? 'text-red-400' : 'text-blue-400'}`}>{team}</span>
@@ -73,12 +77,12 @@ const PreMatch = () => {
                         id="match-select"
                         value={context.matchId}
                         onChange={(event) => {
-                            const index = settings.matches.map((match) => match.matchId+"").indexOf(event.target.value);
-                            settings?.setCurrentMatchIndex(index);
+                            const index = schedule.matches.map((match) => match.matchId+"").indexOf(event.target.value);
+                            schedule?.setCurrentMatchIndex(index);
                         }}
                         label="Select Match"
                     >
-                        {settings.matches.map((match) => {
+                        {schedule.matches.map((match) => {
                             return <MenuItem key={match.matchId} value={match.matchId}><b className="text-lg">{match.matchId}</b></MenuItem>;
                         })}
                     </Select>

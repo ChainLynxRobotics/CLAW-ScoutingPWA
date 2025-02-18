@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { MatchData } from "../../types/MatchData";
 import matchDatabase from "../../util/db/matchDatabase";
 import { FormControl, Select, MenuItem } from "@mui/material";
-import SettingsContext from "../../components/context/SettingsContext";
+import { SettingsContext } from "../../components/context/SettingsContextProvider";
 
 export default function AnalyticsMatchPage() {
 

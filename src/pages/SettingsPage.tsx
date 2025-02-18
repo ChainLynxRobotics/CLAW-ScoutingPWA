@@ -1,6 +1,6 @@
 import ErrorPage from "./ErrorPage";
 import { useContext } from "react";
-import SettingsContext from "../components/context/SettingsContext";
+import { SettingsContext } from "../components/context/SettingsContextProvider";
 import { Checkbox, FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import { Link } from "react-router-dom";
 import PageTitle from "../components/ui/PageTitle";

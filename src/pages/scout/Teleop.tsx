@@ -1,8 +1,8 @@
 import { useContext } from "react";
-import ScoutingContext from "../../components/context/ScoutingContext";
+import { ScoutingContext } from "../../components/context/ScoutingContextProvider";
 import NoMatchAvailable from "./NoMatchAvailable";
 import AllianceColor from "../../enums/AllianceColor";
-import SettingsContext from "../../components/context/SettingsContext";
+import { SettingsContext } from "../../components/context/SettingsContextProvider";
 import PageTitle from "../../components/ui/PageTitle";
 
 

@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import SettingsContext from "../components/context/SettingsContext";
+import { SettingsContext } from "../components/context/SettingsContextProvider";
 import ErrorPage from "./ErrorPage";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton } from "@mui/material";
 import MatchSchedule from "../components/MatchSchedule";
@@ -11,10 +11,12 @@ import QrCodeType from "../enums/QrCodeType";
 import { QRCodeData } from "../types/QRCodeData";
 import { getSchedule } from "../util/blueAllianceApi";
 import PageTitle from "../components/ui/PageTitle";
+import { ScheduleContext } from "../components/context/ScheduleContextProvider";
 
 const SchedulePage = () => {
 
     const settings = useContext(SettingsContext);
+    const schedule = useContext(ScheduleContext);
     const {enqueueSnackbar} = useSnackbar();
 
     // QR code sending and receiving
@@ -28,24 +30,24 @@ const SchedulePage = () => {
 
 
     function nextMatch() {
-        settings?.setCurrentMatchIndex(Math.min(settings.currentMatchIndex+1, settings.matches.length-1));
+        schedule?.setCurrentMatchIndex(Math.min(schedule.currentMatchIndex+1, schedule.matches.length-1));
     }
 
     function previousMatch() {
-        settings?.setCurrentMatchIndex(Math.max(settings.currentMatchIndex-1, 0));
+        schedule?.setCurrentMatchIndex(Math.max(schedule.currentMatchIndex-1, 0));
     }
 
 
     const openQrCodes = () => {
-        if (!settings) return;
+        if (!settings || !schedule) return;
         const data: QRCodeData = {
             qrType: QrCodeType.Schedule,
             version: APP_VERSION,
             scheduleData: {
-                schedule: settings.matches,
+                schedule: schedule.matches,
                 fieldRotated: settings.fieldRotated,
                 competitionId: settings.competitionId,
-                currentMatch: settings.currentMatchIndex
+                currentMatch: schedule.currentMatchIndex
             }
         };
         setQrData(data);
@@ -54,22 +56,22 @@ const SchedulePage = () => {
     function onQrData(data: QRCodeData) {
         if (data.qrType !== QrCodeType.Schedule || !data.scheduleData) 
             throw new Error("QR Codes do not contain schedule data");
-        if (!settings) return;
-        settings.setMatches(data.scheduleData.schedule);
+        if (!settings || !schedule) return;
+        schedule.setMatches(data.scheduleData.schedule);
         settings.setFieldRotated(data.scheduleData.fieldRotated);
         settings.setCompetitionId(data.scheduleData.competitionId);
-        settings.setCurrentMatchIndex(data.scheduleData.currentMatch);
+        schedule.setCurrentMatchIndex(data.scheduleData.currentMatch);
         setScannerOpen(false);
     }
 
     const downloadMatches = async () => {
-        if (!settings) return;
+        if (!settings || !schedule) return;
 
         setLoading(true);
         try {
             const matches = await getSchedule(settings.competitionId)
-            settings.setMatches(matches);
-            settings.setCurrentMatchIndex(Math.min(settings.currentMatchIndex, matches.length));
+            schedule.setMatches(matches);
+            schedule.setCurrentMatchIndex(Math.min(schedule.currentMatchIndex, matches.length));
             enqueueSnackbar("Schedule downloaded from blue alliance", {variant: "success"});
         } catch (err) {
             console.error("Failed to get schedule from blue alliance", err);
@@ -79,10 +81,10 @@ const SchedulePage = () => {
     }
 
     const deleteAllMatches = () => {
-        if (!settings) return;
+        if (!schedule) return;
 
-        settings.setMatches([]);
-        settings.setCurrentMatchIndex(0);
+        schedule.setMatches([]);
+        schedule.setCurrentMatchIndex(0);
 
         setDeleteConfirmOpen(false);
         enqueueSnackbar("All scheduled matches have been deleted", {variant: "success"});

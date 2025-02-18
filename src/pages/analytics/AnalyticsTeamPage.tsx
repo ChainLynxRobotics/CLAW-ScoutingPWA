@@ -5,7 +5,7 @@ import matchDatabase from "../../util/db/matchDatabase";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, MenuItem, Select } from "@mui/material";
 import Statistic from "../../components/analytics/Statistic";
 import matchCompare from "../../util/matchCompare";
-import SettingsContext from "../../components/context/SettingsContext";
+import { SettingsContext } from "../../components/context/SettingsContextProvider";
 
 const AnalyticsPage = () => {
 

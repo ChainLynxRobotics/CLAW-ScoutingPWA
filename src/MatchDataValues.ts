@@ -1,6 +1,5 @@
 import ClimbResult from "./enums/ClimbResult"
 import HumanPlayerLocation from "./enums/HumanPlayerLocation"
-import MatchResult from "./enums/MatchResult"
 
 /**
  * This is the data that is stored in the MatchDataContext, and only gets stored once per match (unlike events).

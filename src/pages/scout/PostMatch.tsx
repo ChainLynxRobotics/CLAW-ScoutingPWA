@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
-import { NavLink } from "react-router-dom";
-import ScoutingContext from "../../components/context/ScoutingContext";
+import { ScoutingContext } from "../../components/context/ScoutingContextProvider";
 import NoMatchAvailable from "./NoMatchAvailable";
 import { MAX_NOTE_LENGTH } from "../../constants";
 import MatchResult from "../../enums/MatchResult";

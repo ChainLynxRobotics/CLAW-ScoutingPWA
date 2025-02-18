@@ -1,25 +1,45 @@
-import { ReactElement, useContext, useState } from "react"
+import { createContext, ReactElement, useCallback, useContext, useMemo, useState } from "react"
 import AllianceColor from "../../enums/AllianceColor";
-import ScoutingContext from "./ScoutingContext";
 import matchDatabase from "../../util/db/matchDatabase";
-import CurrentMatchContext from "./CurrentMatchContext";
+import { CurrentMatchContext } from "./CurrentMatchContextProvider";
 import { useNavigate } from "react-router-dom";
-import SettingsContext from "./SettingsContext";
+import { SettingsContext } from "./SettingsContextProvider";
 import { MatchDataFieldInformation, MatchDataFields } from "../../MatchDataValues";
-import { generateRandomId, generateRandomUint32 } from "../../util/id";
+import { generateRandomUint32 } from "../../util/id";
 import bluetooth from "../../util/io/bluetooth";
 
 /**
- * Gets the ScoutingContextProvider data.
- * 
- * This is a separate method so I can get the return type to use in the ScoutingContext.
- * 
- * @param matchId - The matchId to get the context states for
- * @param teamNumber - The teamNumber to get the context states for
- * @param allianceColor - The team color to get the context states for
- * @returns An object representing what the ScoutingContextProvider will provide
+ * Provides access the current match id, team, and color, as well as manipulating scouting data during the match.
  */
-function useScoutingContextData(matchId: string, teamNumber: number, allianceColor: AllianceColor) {
+export const ScoutingContext = createContext<ScoutingContextType|undefined>(undefined);
+
+// The following types are used to define the value of the ScheduleContext.Provider
+
+export type ScoutingContextType = {
+    matchId: string;
+    teamNumber: number;
+    allianceColor: AllianceColor;
+    custom: {
+        // Custom context values for season-specific data and functions
+
+    },
+    fields: MatchDataFields & {
+        set: <T extends keyof MatchDataFields>(field: T, value: MatchDataFields[T]) => void;
+    };
+    submit: ()=>Promise<void>;
+}
+
+/**
+ * This function is used to create a new `ScoutingContextProvider` object, which gives its children access to the `ScoutingContext` 
+ * to store/update all the data that is collected during a match.
+ * 
+ * @param matchId - The match id that this data is for, will be used to identify the match in the database later
+ * @param teamNumber - The team number that this data is for
+ * @param allianceColor - The alliance color (used mostly for display, but still required) that this data is for
+ * 
+ * @returns A ContextProvider that allows its children to access the scouting context data and functions with `useContext(ScoutingContext);`
+ */
+export default function ScoutingContextProvider({children, matchId, teamNumber, allianceColor}: {children: ReactElement, matchId: string, teamNumber: number, allianceColor: AllianceColor}) {
     const navigate = useNavigate();
     const settings = useContext(SettingsContext);
     if (!settings) throw new Error("SettingsContext not found");
@@ -40,7 +60,7 @@ function useScoutingContextData(matchId: string, teamNumber: number, allianceCol
     });
 
     // Submit the match data to the database
-    const submit = async () => {
+    const submit = useCallback(async () => {
         const matchData = {
             // Header data
             id: generateRandomUint32(),
@@ -58,7 +78,7 @@ function useScoutingContextData(matchId: string, teamNumber: number, allianceCol
         currentMatchContext?.incrementAndUpdate();
         currentMatchContext?.setShowConfetti(true);
         navigate("/scout");
-    }
+    }, [allianceColor, currentMatchContext, matchFields, matchId, navigate, settings, teamNumber]);
 
 
     // ****************************************************
@@ -66,8 +86,8 @@ function useScoutingContextData(matchId: string, teamNumber: number, allianceCol
     // ****************************************************
 
     // Custom context values for season-specific logic
-    // Remember to return these under the custom key in the return statement
-
+    // Remember to return these under the custom key in the return statement, AND add them to the dependency array for useMemo, AND add them to the ScoutingContextType
+    
     
 
 
@@ -76,11 +96,12 @@ function useScoutingContextData(matchId: string, teamNumber: number, allianceCol
     // ****************************************************
 
     // This function is used to create a field setter function for each fields in the MatchDataFields object
-    function fieldSetter<T extends keyof MatchDataFields>(field: T, value: MatchDataFields[T]) {
+    const fieldSetter = useCallback(<T extends keyof MatchDataFields>(field: T, value: MatchDataFields[T]) => {
         setMatchFields({...matchFields, [field]: value});
-    }
+    }, [matchFields]);
 
-    return {
+    // All the data and functions that can be accessed from the context, remember to add both to the object and the dependency array for useMemo
+    const value = useMemo(() => ({
         matchId,
         teamNumber,
         allianceColor,
@@ -93,29 +114,19 @@ function useScoutingContextData(matchId: string, teamNumber: number, allianceCol
             set: fieldSetter
         },
         submit
-    }
-}
+    }), [
+        // Header data
+        matchId, teamNumber, allianceColor, 
+        // Custom context dependencies
+        
 
-/**
- * This function is used to create a new `ScoutingContextProvider` object, which gives its children access to the `ScoutingContext` 
- * to store/update all the data that is collected during a match.
- * 
- * @param matchId - The match id that this data is for, will be used to identify the match in the database later
- * @param teamNumber - The team number that this data is for
- * @param allianceColor - The alliance color (used mostly for display, but still required) that this data is for
- * 
- * @returns A ContextProvider that allows its children to access the scouting context data and functions with `useContext(ScoutingContext);`
- */
-export default function ScoutingContextProvider({children, matchId, teamNumber, allianceColor}: {children: ReactElement, matchId: string, teamNumber: number, allianceColor: AllianceColor}) {
-    const contextData = useScoutingContextData(matchId, teamNumber, allianceColor);
+        // Custom fields & footer
+        matchFields, fieldSetter, submit
+    ]) satisfies ScoutingContextType;
+
     return (
-        <ScoutingContext.Provider value={contextData}>
+        <ScoutingContext.Provider value={value}>
             {children}
         </ScoutingContext.Provider>
     );
 }
-
-/**
- * This is the context type for ScoutingContext, which is all the data that can be accessed from the context
- */
-export type ScoutingContextType = ReturnType<typeof useScoutingContextData>;

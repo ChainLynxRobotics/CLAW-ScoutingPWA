@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, FormControl, TextField, FormHelperText, InputAdornment } from "@mui/material";
-import SettingsContext from "./context/SettingsContext";
-import ErrorPage from "../pages/ErrorPage";
 import { useSnackbar } from "notistack";
+import { ScheduleContext } from "./context/ScheduleContextProvider";
+import { SettingsContext } from "./context/SettingsContextProvider";
 
 /**
  * A component for the match schedule, the schedule of matches is grabbed from the settings context.
@@ -14,6 +14,9 @@ import { useSnackbar } from "notistack";
 const MatchSchedule = () => {
 
     const settings = useContext(SettingsContext);
+    if (!settings) throw new Error("Settings not loaded");
+    const schedule = useContext(ScheduleContext);
+    if (!schedule) throw new Error("Schedule not loaded");
 
     const [matchToEdit, setMatchToEdit] = useState<string|undefined>(undefined); // id of match to edit for the modal, -1 if none
     const [matchToDelete, setMatchToDelete] = useState<string|undefined>(undefined); // id of match to delete for the modal, -1 if none
@@ -43,7 +46,7 @@ const MatchSchedule = () => {
 
     useEffect(() => {
         if (matchToEdit) {
-            const match = settings?.matches.find(m => m.matchId === matchToEdit);
+            const match = schedule?.matches.find(m => m.matchId === matchToEdit);
             if (match) {
                 setModelId(match.matchId);
                 setModelBlue1(match.blue1);
@@ -54,15 +57,15 @@ const MatchSchedule = () => {
                 setModelRed3(match.red3);
             }
         }
-    }, [matchToEdit, settings?.matches]);
+    }, [matchToEdit, schedule?.matches]);
 
     const createMatch = () => {
-        if (!settings) return;
+        if (!schedule) return;
         if (!modelId) return enqueueSnackbar("Match ID cannot be empty", {variant: "error"});
-        if (settings.matches.find((m)=>m.matchId === modelId)) return enqueueSnackbar("Match ID already exists", {variant: "error"});
+        if (schedule.matches.find((m)=>m.matchId === modelId)) return enqueueSnackbar("Match ID already exists", {variant: "error"});
         if (!modelBlue1 || !modelBlue2 || !modelBlue3 || !modelRed1 || !modelRed2 || !modelRed3) return enqueueSnackbar("Alliance numbers cannot be empty", {variant: "error"});
         
-        settings.addMatch({
+        schedule.addMatch({
             matchId: modelId,
             blue1: modelBlue1,
             blue2: modelBlue2,
@@ -75,13 +78,13 @@ const MatchSchedule = () => {
     }
 
     const editMatch = () => {
-        if (!settings) return;
+        if (!schedule) return;
         if (!matchToEdit) return;
         if (!modelId) return enqueueSnackbar("Match ID cannot be empty", {variant: "error"});
-        if (matchToEdit != modelId && settings.matches.find((m)=>m.matchId === modelId)) return enqueueSnackbar("Match ID already exists", {variant: "error"});
+        if (matchToEdit != modelId && schedule.matches.find((m)=>m.matchId === modelId)) return enqueueSnackbar("Match ID already exists", {variant: "error"});
         if (!modelBlue1 || !modelBlue2 || !modelBlue3 || !modelRed1 || !modelRed2 || !modelRed3) return enqueueSnackbar("Alliance numbers cannot be empty", {variant: "error"});
         
-        settings.editMatch(matchToEdit, {
+        schedule.editMatch(matchToEdit, {
             matchId: modelId,
             blue1: modelBlue1,
             blue2: modelBlue2,
@@ -94,26 +97,24 @@ const MatchSchedule = () => {
     }
 
     const deleteMatch = () => {
-        if (!settings) return;
+        if (!schedule) return;
         if (!matchToDelete) return;
 
-        settings.removeMatch(matchToDelete);
+        schedule.removeMatch(matchToDelete);
         setMatchToDelete(undefined);
     }
 
     const moveUp = () => {
-        if (!settings) return;
+        if (!schedule) return;
         if (!matchToEdit) return;
-        settings.moveMatchUp(matchToEdit);
+        schedule.moveMatchUp(matchToEdit);
     }
 
     const moveDown = () => {
-        if (!settings) return;
+        if (!schedule) return;
         if (!matchToEdit) return;
-        settings.moveMatchDown(matchToEdit);
+        schedule.moveMatchDown(matchToEdit);
     }
-
-    if (!settings) return (<ErrorPage msg="Settings context not found?!?!?!" />);
     
     return (
         <div className="w-full flex flex-col items-center">
@@ -126,9 +127,9 @@ const MatchSchedule = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {settings.matches.map((match, i)=>(
-                        <tr key={match.matchId} className={`mb-1 ${i % 2 == 1 ? 'bg-white bg-opacity-5' : ''} ${settings.currentMatchIndex == i ? 'border-2 border-yellow-300' : ''}`}>
-                            <td scope="row" className="px-2 cursor-pointer" onClick={() => {settings.setCurrentMatchIndex(i);}}>{match.matchId}</td>
+                    {schedule.matches.map((match, i)=>(
+                        <tr key={match.matchId} className={`mb-1 ${i % 2 == 1 ? 'bg-white bg-opacity-5' : ''} ${schedule.currentMatchIndex == i ? 'border-2 border-yellow-300' : ''}`}>
+                            <td scope="row" className="px-2 cursor-pointer" onClick={() => {schedule.setCurrentMatchIndex(i);}}>{match.matchId}</td>
                             <td className="w-full">
                                 <div className="grid grid-cols-3">
                                     <span className="bg-blue-500 bg-opacity-25">{match.blue1}</span>
@@ -151,7 +152,7 @@ const MatchSchedule = () => {
                     ))}
                 </tbody>
             </table>
-            {settings.matches.length == 0 &&
+            {schedule.matches.length == 0 &&
                 <div className="w-full mt-1 text-secondary text-center">No matches scheduled</div>
             }
 
@@ -177,7 +178,7 @@ const MatchSchedule = () => {
                                 value={modelId} 
                                 onChange={(e)=>setModelId(e.target.value)} 
                                 InputProps={{
-                                    startAdornment: <InputAdornment position="start"><span className="text-secondary">{settings.competitionId}_</span></InputAdornment>,
+                                    startAdornment: <InputAdornment position="start"><span className="text-secondary">{settings?.competitionId}_</span></InputAdornment>,
                                 }}
                             />
                             <FormHelperText>Unique identifier for the match, e.x. &quot;qm1&quot; for qualification match 1</FormHelperText>
@@ -216,7 +217,7 @@ const MatchSchedule = () => {
                                 value={modelId} 
                                 onChange={(e)=>setModelId(e.target.value)} 
                                 InputProps={{
-                                    startAdornment: <InputAdornment position="start"><span className="text-secondary">{settings.competitionId}_</span></InputAdornment>,
+                                    startAdornment: <InputAdornment position="start"><span className="text-secondary">{settings?.competitionId}_</span></InputAdornment>,
                                 }}
                             />
                             <FormHelperText>Unique identifier for the match, e.x. &quot;qm1&quot; for qualification match 1</FormHelperText>

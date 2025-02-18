@@ -1,10 +1,15 @@
-import { ReactElement, useCallback, useContext, useEffect, useState } from "react";
-import SettingsContext from "./SettingsContext";
+import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { SettingsContext } from "./SettingsContextProvider";
 import AllianceColor from "../../enums/AllianceColor";
-import CurrentMatchContext from "./CurrentMatchContext";
 import ConditionalWrapper from "../ui/ConditionalWrapper";
 import ScoutingContextProvider from "./ScoutingContextProvider";
 import allianceTeamIndex from "../../util/allianceTeamIndex";
+import { ScheduleContext } from "./ScheduleContextProvider";
+
+/**
+ * Allowing components to update and request updates to the current match context for when the current match changes (and more, see `CurrentMatchContextProvider`).
+ */
+export const CurrentMatchContext = createContext<CurrentMatchContextType|undefined>(undefined);
 
 export type CurrentMatchContextType = {
     setHasUpdate: (hasUpdate: boolean)=>void,
@@ -38,6 +43,9 @@ export default function CurrentMatchContextProvider({children}: {children: React
 
     const settings = useContext(SettingsContext);
     if (settings === undefined) throw new Error("SettingsContext not found");
+
+    const schedule = useContext(ScheduleContext);
+    if (schedule === undefined) throw new Error("ScheduleContext not found");
     
     // Btw the next 30 or so lines were written entirely while I was wearing a fursuit head. 
     // Just thought I should mention that.
@@ -50,16 +58,16 @@ export default function CurrentMatchContextProvider({children}: {children: React
     const [showConfetti, setShowConfetti] = useState(false); // Show confetti on data submit
 
     const update = useCallback(() => {
-        if (settings.matches.length == 0 || settings.currentMatchIndex >= settings.matches.length) {
+        if (schedule.matches.length == 0 || schedule.currentMatchIndex >= schedule.matches.length) {
             console.error("No matches to scout");
             setScoutingData(undefined);
             return;
         }
         
-        const match = settings.matches[settings.currentMatchIndex];
+        const match = schedule.matches[schedule.currentMatchIndex];
 
         // ALternate between red and blue teams for each scout
-        const { team, color } = allianceTeamIndex(match, settings.currentMatchIndex, settings.clientId);
+        const { team, color } = allianceTeamIndex(match, schedule.currentMatchIndex, settings.clientId);
 
         setScoutingData({
             matchId: match.matchId,
@@ -67,17 +75,17 @@ export default function CurrentMatchContextProvider({children}: {children: React
             allianceColor: color
         });
         setHasUpdate(false);
-    }, [settings]);
+    }, [schedule.currentMatchIndex, schedule.matches, settings.clientId]);
 
-    const incrementAndUpdate = () => {
-        settings.setCurrentMatchIndex(settings.currentMatchIndex + 1);
+    const incrementAndUpdate = useCallback(() => {
+        schedule.setCurrentMatchIndex((current) => current + 1);
         setUpdateNextRender(true);
-    }
+    }, [schedule]);
 
     // Prompt to update when settings change
     useEffect(() => {
         setHasUpdate(true);
-    }, [settings.currentMatchIndex, settings.clientId, settings.matches]);
+    }, [schedule.currentMatchIndex, settings.clientId, schedule.matches]);
 
     useEffect(() => {
         if (!updateNextRender) return;
@@ -85,8 +93,17 @@ export default function CurrentMatchContextProvider({children}: {children: React
         setUpdateNextRender(false);
     }, [updateNextRender, update]);
 
+    const value = useMemo(() => ({
+        setHasUpdate,
+        hasUpdate,
+        update,
+        incrementAndUpdate,
+        showConfetti,
+        setShowConfetti
+    }), [hasUpdate, showConfetti, update, incrementAndUpdate]);
+
     return (
-        <CurrentMatchContext.Provider value={{setHasUpdate, hasUpdate, update, incrementAndUpdate, showConfetti, setShowConfetti}}>
+        <CurrentMatchContext.Provider value={value}>
             <ConditionalWrapper 
                 condition={scoutingData !== undefined} 
                 wrapper={(children) => 

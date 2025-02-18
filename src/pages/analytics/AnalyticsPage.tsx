@@ -3,14 +3,16 @@ import { ReactElement, useContext, useEffect, useMemo, useState } from "react";
 import matchDatabase from "../../util/db/matchDatabase";
 import { useNavigate } from "react-router-dom";
 import matchCompare from "../../util/matchCompare";
-import SettingsContext from "../../components/context/SettingsContext";
+import { SettingsContext } from "../../components/context/SettingsContextProvider";
 import useLocalStorageState from "../../components/hooks/localStorageState";
 import PickList from "../../components/analytics/PickList";
 import PageTitle from "../../components/ui/PageTitle";
+import { ScheduleContext } from "../../components/context/ScheduleContextProvider";
 
 const AnalyticsPage = () => {
 
     const settings = useContext(SettingsContext);
+    const schedule = useContext(ScheduleContext);
 
     const [search, setSearch] = useLocalStorageState('', 'analyticsSearch');
     const [tab, setTab] = useLocalStorageState(0, 'analyticsTab');
@@ -20,7 +22,7 @@ const AnalyticsPage = () => {
     const [matchList, setMatchList] = useState<string[]>([]);
     const [countByScout, setCountByScout] = useState<{[key: string]: number}>({});
 
-    const [analyticsMatchIndex, setAnalyticsMatchIndex] = useLocalStorageState(settings?.currentMatchIndex||0, "analyticsMatchIndex");
+    const [analyticsMatchIndex, setAnalyticsMatchIndex] = useLocalStorageState(schedule?.currentMatchIndex||0, "analyticsMatchIndex");
     const [currentMatchOnly, setCurrentMatchOnly] = useLocalStorageState(false, "analyticsCurrentMatchOnly");
 
     useEffect(() => {
@@ -33,17 +35,17 @@ const AnalyticsPage = () => {
     }, [settings?.analyticsCurrentCompetitionOnly, settings?.competitionId]);
 
     function setCurrentMatch(matchId: string) {
-        if (!settings) return;
-        const index = settings.matches.findIndex(match=>match.matchId===matchId);
+        if (!schedule) return;
+        const index = schedule.matches.findIndex(match=>match.matchId===matchId);
         if (index!==-1) setAnalyticsMatchIndex(index);
     }
 
     const teamsInCurrentMatch = useMemo(() => {
-        if (!settings) return [];
-        const match = settings.matches[analyticsMatchIndex] || [];
+        if (!schedule) return [];
+        const match = schedule.matches[analyticsMatchIndex] || [];
         const teams = [match.blue1, match.blue2, match.blue3, match.red1, match.red2, match.red3]
         return teams.filter(team=>teamList.includes(team));
-    }, [analyticsMatchIndex, settings, teamList]);
+    }, [analyticsMatchIndex, teamList, schedule]);
 
     const sortedTeamList = useMemo(() => {
         let list = teamList.filter(team=>team.toString().includes(search));
@@ -95,13 +97,13 @@ const AnalyticsPage = () => {
                                 variant="standard"
                                 labelId="match-select-label"
                                 id="match-select"
-                                value={settings?.matches[analyticsMatchIndex]?.matchId || ''}
+                                value={schedule?.matches[analyticsMatchIndex]?.matchId || ''}
                                 onChange={(event) => setCurrentMatch(event.target.value)}
                                 label="Select Match">
-                                {settings?.matches.map((match) => (
+                                {schedule?.matches.map((match) => (
                                     <MenuItem key={match.matchId} value={match.matchId}><b>{match.matchId}</b></MenuItem>
                                 ))}
-                                {settings?.matches.length===0 && <MenuItem key="" value="" disabled>No schedule data</MenuItem>}
+                                {schedule?.matches.length===0 && <MenuItem key="" value="" disabled>No schedule data</MenuItem>}
                             </Select>
                         </span>
                     }

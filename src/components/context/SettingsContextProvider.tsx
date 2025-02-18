@@ -1,41 +1,34 @@
-import { ReactElement, useEffect } from "react";
+import { createContext, ReactElement, useEffect, useMemo } from "react";
 import useLocalStorageState from "../hooks/localStorageState";
-import SettingsContext from "./SettingsContext";
-import { AUTO_MATCH_FETCH_INTERVAL, COMPETITION_ID_EXPIRE_TIME } from "../../constants";
-import { getSchedule } from "../../util/blueAllianceApi";
+import { COMPETITION_ID_EXPIRE_TIME } from "../../constants";
+import useLocalStorageRef from "../hooks/localStorageRef";
+
+/**
+ * Provides access to the settings state and functions to manipulate the settings. These are usually stored in local storage.
+ */
+export const SettingsContext = createContext<SettingsStateData|undefined>(undefined);
 
 // The following types are used to define the value of the SettingsContext.Provider
 
 export type SettingsStateData = {
     competitionId: string;
-    setCompetitionId: (competitionId: string) => void;
-    competitionIdLastUpdated: number;
-    setCompetitionIdLastUpdated: (competitionIdLastUpdated: number) => void;
+    setCompetitionId: React.Dispatch<React.SetStateAction<string>>;
+    setCompetitionIdLastUpdated: React.Dispatch<React.SetStateAction<number>>;
 
     clientId: number;
-    setClientId: (clientId: number) => void;
+    setClientId: React.Dispatch<React.SetStateAction<number>>;
     scoutName: string;
-    setScoutName: (scoutName: string) => void;
+    setScoutName: React.Dispatch<React.SetStateAction<string>>;
     fieldRotated: boolean;
-    setFieldRotated: (fieldRotated: boolean) => void;
+    setFieldRotated: React.Dispatch<React.SetStateAction<boolean>>;
 
     autoFetchMatches: boolean;
-    setAutoFetchMatches: (autoFetchMatches: boolean) => void;
-
-    matches: ScheduledMatch[];
-    setMatches: (matches: ScheduledMatch[]) => void;
-    currentMatchIndex: number;
-    setCurrentMatchIndex: (nextMatch: number) => void;
-    addMatch: (match: ScheduledMatch) => void;
-    editMatch: (oldId: string, match: ScheduledMatch) => void;
-    removeMatch: (matchId: string) => void;
-    moveMatchUp: (matchId: string) => void;
-    moveMatchDown: (matchId: string) => void;
+    setAutoFetchMatches: React.Dispatch<React.SetStateAction<boolean>>;
 
     starredTeams: number[];
-    setStarredTeams: (starredTeams: number[]) => void;
+    setStarredTeams: React.Dispatch<React.SetStateAction<number[]>>;
     analyticsCurrentCompetitionOnly: boolean;
-    setAnalyticsCurrentCompetitionOnly: (analyticsCurrentCompetitionOnly: boolean) => void;
+    setAnalyticsCurrentCompetitionOnly: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
@@ -48,7 +41,7 @@ export type SettingsStateData = {
 export default function SettingsContextProvider({defaultCompetitionId, children}: {defaultCompetitionId: string, children: ReactElement}) {
 
     const [competitionId, setCompetitionId] = useLocalStorageState<string>(defaultCompetitionId, "competitionId");
-    const [competitionIdLastUpdated, setCompetitionIdLastUpdated] = useLocalStorageState<number>(0, "competitionIdLastUpdated"); // Used to determine if the competitionId should auto be set to the default, aka if the custom competitionId is old
+    const [competitionIdLastUpdated, setCompetitionIdLastUpdated] = useLocalStorageRef<number>(0, "competitionIdLastUpdated"); // Used to determine if the competitionId should auto be set to the default, aka if the custom competitionId is old
 
     const [clientId, setClientId] = useLocalStorageState<number>(0, "clientId"); // From 0-5
     const [scoutName, setScoutName] = useLocalStorageState<string>("", "scoutName"); // The name of the scout, to be submitted with the data
@@ -56,82 +49,23 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
     const [fieldRotated, setFieldRotated] = useLocalStorageState<boolean>(false, "fieldRotated"); // Depends on the perspective of the field, used for the during match view
 
     const [autoFetchMatches, setAutoFetchMatches] = useLocalStorageState<boolean>(true, "autoFetchMatches"); // Whether or not to automatically fetch the match schedule from the blue alliance
-    const [lastAutoMatchFetch, setLastAutoMatchFetch] = useLocalStorageState<number>(0, "lastAutoMatchFetch"); // The last time the matches were fetched automatically
-
-    const [matches, setMatches] = useLocalStorageState<ScheduledMatch[]>([], "matches");
-    const [currentMatchIndex, setCurrentMatchIndex] = useLocalStorageState<number>(0, "nextMatch"); // The current match being, used to determine what match to show on the main page
 
     const [starredTeams, setStarredTeams] = useLocalStorageState<number[]>([], "starredTeams"); // Special teams we want to know about, used on the analytics page
     const [analyticsCurrentCompetitionOnly, setAnalyticsCurrentCompetitionOnly] = useLocalStorageState<boolean>(true, "analyticsCurrentCompetitionOnly"); // Whether or not to only show data from the current competition
 
     useEffect(() => {
         // If the competitionId is over COMPETITION_ID_EXPIRE_TIME old, set it to the default
-        if (competitionIdLastUpdated < Date.now() - COMPETITION_ID_EXPIRE_TIME) {
+        if (competitionIdLastUpdated.current < Date.now() - COMPETITION_ID_EXPIRE_TIME) {
             setCompetitionId(defaultCompetitionId);
             setCompetitionIdLastUpdated(Date.now());
             console.log("CompetitionId was old, setting to the default: "+defaultCompetitionId);
         }
     }, [competitionIdLastUpdated, setCompetitionId, defaultCompetitionId, setCompetitionIdLastUpdated]);
 
-
-    // Auto fetch matches
-    useEffect(() => {
-        async function autoFetch() {
-            if (autoFetchMatches && Date.now() - lastAutoMatchFetch > AUTO_MATCH_FETCH_INTERVAL) {
-                console.log("Auto fetching matches");
-                setLastAutoMatchFetch(Date.now());
-                const newMatches = await getSchedule(competitionId);
-                if (newMatches.length === 0) return;
-                if (matches.length == newMatches.length && JSON.stringify(matches) == JSON.stringify(newMatches)) return; // Only update if the matches are different
-                setMatches(newMatches);
-                setCurrentMatchIndex(Math.min(currentMatchIndex, newMatches.length));
-            }
-        }
-        autoFetch();
-        const interval = setInterval(autoFetch, 10000); // Check every 10 seconds
-        return () => clearInterval(interval);
-    });
-    
-
-    // helper functions to manipulate the match schedule
-
-    const addMatch = (match: ScheduledMatch) => {
-        setMatches([...matches, match]);
-    }
-
-    const editMatch = (oldId: string, match: ScheduledMatch) => {
-        setMatches(matches.map(m => m.matchId === oldId ? match : m));
-    }
-
-    const removeMatch = (matchId: string) => {
-        setMatches(matches.filter(m => m.matchId !== matchId));
-    }
-
-    const moveMatchUp = (matchId: string) => {
-        const index = matches.findIndex(m => m.matchId === matchId);
-        if (index > 0) {
-            const temp = matches[index - 1];
-            matches[index - 1] = matches[index];
-            matches[index] = temp;
-            setMatches([...matches]);
-        }
-    }
-
-    const moveMatchDown = (matchId: string) => {
-        const index = matches.findIndex(m => m.matchId === matchId);
-        if (index < matches.length - 1) {
-            const temp = matches[index + 1];
-            matches[index + 1] = matches[index];
-            matches[index] = temp;
-            setMatches([...matches]);
-        }
-    }
-
     // Assemble the value object to pass to the context provider
-    const value = {
+    const value = useMemo(() => ({
         competitionId,
         setCompetitionId,
-        competitionIdLastUpdated,
         setCompetitionIdLastUpdated,
 
         clientId,
@@ -143,22 +77,17 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
 
         autoFetchMatches,
         setAutoFetchMatches,
-        
-        matches,
-        setMatches,
-        currentMatchIndex,
-        setCurrentMatchIndex,
-        addMatch,
-        editMatch,
-        removeMatch,
-        moveMatchUp,
-        moveMatchDown,
 
         starredTeams,
         setStarredTeams,
         analyticsCurrentCompetitionOnly,
         setAnalyticsCurrentCompetitionOnly,
-    }
+    }), [
+        competitionId, setCompetitionId, setCompetitionIdLastUpdated,
+        clientId, setClientId, scoutName, setScoutName, fieldRotated, setFieldRotated,
+        autoFetchMatches, setAutoFetchMatches,
+        starredTeams, setStarredTeams, analyticsCurrentCompetitionOnly, setAnalyticsCurrentCompetitionOnly
+    ]); // Only update the value when the values in the array change
 
     return (
         <SettingsContext.Provider value={value}>
