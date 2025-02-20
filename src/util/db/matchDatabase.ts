@@ -79,6 +79,8 @@ async function putAll(entries: MatchData[]) {
     const tx = db.transaction('entries', 'readwrite');
     const store = tx.objectStore('entries');
 
+    console.log('Importing', entries.length, 'entries', entries);
+
     let count = 0;
     for (const entry of entries) {
         if (!(await store.getKey(entry.id))) {

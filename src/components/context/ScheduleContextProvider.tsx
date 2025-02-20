@@ -1,4 +1,4 @@
-import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo } from "react";
+import { createContext, ReactElement, useCallback, useContext, useEffect } from "react";
 import useLocalStorageState from "../hooks/localStorageState";
 import { AUTO_MATCH_FETCH_INTERVAL } from "../../constants";
 import { getSchedule } from "../../util/blueAllianceApi";
@@ -83,25 +83,27 @@ export default function ScheduleContextProvider({children}: {children: ReactElem
     const moveMatchUp = useCallback((matchId: string) => {
         const index = matches.findIndex(m => m.matchId === matchId);
         if (index > 0) {
-            const temp = matches[index - 1];
-            matches[index - 1] = matches[index];
-            matches[index] = temp;
-            setMatches([...matches]);
+            const tempArr = [...matches];
+            const temp = tempArr[index - 1];
+            tempArr[index - 1] = tempArr[index];
+            tempArr[index] = temp;
+            setMatches(tempArr);
         }
     }, [matches, setMatches]);
 
     const moveMatchDown = useCallback((matchId: string) => {
         const index = matches.findIndex(m => m.matchId === matchId);
         if (index < matches.length - 1) {
-            const temp = matches[index + 1];
-            matches[index + 1] = matches[index];
-            matches[index] = temp;
-            setMatches([...matches]);
+            const tempArr = [...matches];
+            const temp = tempArr[index + 1];
+            tempArr[index + 1] = tempArr[index];
+            tempArr[index] = temp;
+            setMatches(tempArr);
         }
     }, [matches, setMatches]);
 
     // Assemble the value object to pass to the context provider
-    const value = useMemo<ScheduleStateData>(() => ({
+    const value: ScheduleStateData = {
         matches,
         setMatches,
         currentMatchIndex,
@@ -111,7 +113,7 @@ export default function ScheduleContextProvider({children}: {children: ReactElem
         removeMatch,
         moveMatchUp,
         moveMatchDown,
-    }), [matches, setMatches, currentMatchIndex, setCurrentMatchIndex, addMatch, editMatch, removeMatch, moveMatchUp, moveMatchDown]);
+    };
 
     return (
         <ScheduleContext.Provider value={value}>

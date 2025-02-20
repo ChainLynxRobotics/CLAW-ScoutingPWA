@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SettingsContext } from "../context/SettingsContextProvider";
-import { DragDropContext, Draggable, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, DropResult } from "@hello-pangea/dnd";
 import { StrictModeDroppable } from "../ui/StrictModeDroppable";
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import matchDatabase from "../../util/db/matchDatabase";

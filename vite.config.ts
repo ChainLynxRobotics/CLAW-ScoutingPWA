@@ -42,15 +42,24 @@ const includeAssets = ['**/*']
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), VitePWA({
-    registerType: 'prompt',
-    manifest, 
-    minify: false, 
-    includeAssets, 
-    workbox: {
-      globPatterns: includeAssets,
-    }
-  })],
+  plugins: [
+    react({
+      babel: {
+        plugins: [
+          ["babel-plugin-react-compiler"],
+        ],
+      },
+    }), 
+    VitePWA({
+      registerType: 'prompt',
+      manifest, 
+      minify: false, 
+      includeAssets, 
+      workbox: {
+        globPatterns: includeAssets,
+      }
+    })
+  ],
   define: {
     APP_VERSION: JSON.stringify(process.env.npm_package_version),
     BUILD_DATE: Date.now()

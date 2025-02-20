@@ -1,4 +1,4 @@
-import { createContext, ReactElement, useEffect, useMemo } from "react";
+import { createContext, ReactElement, useEffect } from "react";
 import useLocalStorageState from "../hooks/localStorageState";
 import { COMPETITION_ID_EXPIRE_TIME } from "../../constants";
 import useLocalStorageRef from "../hooks/localStorageRef";
@@ -63,7 +63,7 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
     }, [competitionIdLastUpdated, setCompetitionId, defaultCompetitionId, setCompetitionIdLastUpdated]);
 
     // Assemble the value object to pass to the context provider
-    const value = useMemo(() => ({
+    const value = {
         competitionId,
         setCompetitionId,
         setCompetitionIdLastUpdated,
@@ -82,12 +82,7 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
         setStarredTeams,
         analyticsCurrentCompetitionOnly,
         setAnalyticsCurrentCompetitionOnly,
-    }), [
-        competitionId, setCompetitionId, setCompetitionIdLastUpdated,
-        clientId, setClientId, scoutName, setScoutName, fieldRotated, setFieldRotated,
-        autoFetchMatches, setAutoFetchMatches,
-        starredTeams, setStarredTeams, analyticsCurrentCompetitionOnly, setAnalyticsCurrentCompetitionOnly
-    ]); // Only update the value when the values in the array change
+    };
 
     return (
         <SettingsContext.Provider value={value}>

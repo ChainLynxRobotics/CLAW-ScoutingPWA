@@ -1,4 +1,4 @@
-import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactElement, useCallback, useContext, useEffect, useState } from "react";
 import { SettingsContext } from "./SettingsContextProvider";
 import AllianceColor from "../../enums/AllianceColor";
 import ConditionalWrapper from "../ui/ConditionalWrapper";
@@ -93,14 +93,14 @@ export default function CurrentMatchContextProvider({children}: {children: React
         setUpdateNextRender(false);
     }, [updateNextRender, update]);
 
-    const value = useMemo(() => ({
+    const value = {
         setHasUpdate,
         hasUpdate,
         update,
         incrementAndUpdate,
         showConfetti,
         setShowConfetti
-    }), [hasUpdate, showConfetti, update, incrementAndUpdate]);
+    };
 
     return (
         <CurrentMatchContext.Provider value={value}>

@@ -1,4 +1,4 @@
-import { createContext, ReactElement, useCallback, useContext, useMemo, useState } from "react"
+import { createContext, ReactElement, useCallback, useContext, useState } from "react"
 import AllianceColor from "../../enums/AllianceColor";
 import matchDatabase from "../../util/db/matchDatabase";
 import { CurrentMatchContext } from "./CurrentMatchContextProvider";
@@ -86,7 +86,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
     // ****************************************************
 
     // Custom context values for season-specific logic
-    // Remember to return these under the custom key in the return statement, AND add them to the dependency array for useMemo, AND add them to the ScoutingContextType
+    // Remember to return these under the custom key in the return statement, AND add them to the ScoutingContextType
     
     
 
@@ -100,8 +100,8 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
         setMatchFields({...matchFields, [field]: value});
     }, [matchFields]);
 
-    // All the data and functions that can be accessed from the context, remember to add both to the object and the dependency array for useMemo
-    const value = useMemo(() => ({
+    // All the data and functions that can be accessed from the context
+    const value: ScoutingContextType = {
         matchId,
         teamNumber,
         allianceColor,
@@ -114,15 +114,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
             set: fieldSetter
         },
         submit
-    }), [
-        // Header data
-        matchId, teamNumber, allianceColor, 
-        // Custom context dependencies
-        
-
-        // Custom fields & footer
-        matchFields, fieldSetter, submit
-    ]) satisfies ScoutingContextType;
+    };
 
     return (
         <ScoutingContext.Provider value={value}>
