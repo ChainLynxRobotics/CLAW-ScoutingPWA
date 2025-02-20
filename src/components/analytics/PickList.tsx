@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SettingsContext } from "../context/SettingsContextProvider";
-import { DragDropContext, Draggable, DropResult } from "@hello-pangea/dnd";
-import { StrictModeDroppable } from "../ui/StrictModeDroppable";
+import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd";
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import matchDatabase from "../../util/db/matchDatabase";
 import useLocalStorageState from "../hooks/localStorageState";
@@ -156,7 +155,7 @@ export default function PickList() {
             </div>
 
             <DragDropContext onDragEnd={onDragEnd}>
-                <StrictModeDroppable droppableId="droppable">
+                <Droppable droppableId="droppable">
                     {(provided) => (
                         <List ref={provided.innerRef} {...provided.droppableProps}>
                             {pickListData.pickList.map((team, index) => (
@@ -168,7 +167,7 @@ export default function PickList() {
                             {provided.placeholder}
                         </List>
                     )}
-                </StrictModeDroppable>
+                </Droppable>
             </DragDropContext>
 
 
