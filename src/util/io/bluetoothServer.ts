@@ -41,7 +41,7 @@ const connect = cachedAsyncFunction(async () => {
 
     await connectToDevice();
 
-    device.addEventListener('gattserverdisconnected', (e) => {
+    device.addEventListener('gattserverdisconnected', () => {
         console.log('Radio disconnected');
         // Don't set device to null here, as we want to keep the device object around for reconnecting
         server = null;
@@ -106,7 +106,7 @@ async function getCharacteristics() {
     if (!rxCharacteristic) throw new Error('Failed to get rx characteristic');
 
     await txCharacteristic.startNotifications();
-    txCharacteristic.addEventListener('characteristicvaluechanged', (event) => {
+    txCharacteristic.addEventListener('characteristicvaluechanged', () => {
         if (txCharacteristic && txCharacteristic.value) {
             events.emit('packet', txCharacteristic.value);
         }

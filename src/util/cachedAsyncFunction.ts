@@ -8,7 +8,7 @@
  */
 export default function cachedAsyncFunction<T>(fn: ()=>Promise<T>, persist: boolean = false): ()=>Promise<T> {
 
-    let pending: Promise<any> | null = null;
+    let pending: Promise<T> | null = null;
 
     return async (): Promise<T> => {
         if (pending) {

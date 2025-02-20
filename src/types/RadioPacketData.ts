@@ -29,5 +29,5 @@ export interface QueuedRadioPacketGroup {
     data: (Uint8Array|undefined)[],
     total: number,
     onComplete?: () => void,
-    onError?: (e: any) => void,
+    onError?: (e: unknown) => void,
 }

@@ -19,7 +19,7 @@ const CLIENT_ID_REMEMBER_TIME = 1000 * 60 * 1; // How long to "remember" a recei
 const queue: QueuedRadioPacketGroup[] = [];
 const received: Map<number, RadioPacketGroup> = new Map(); // Map of packet IDs to packets
 
-let interval: NodeJS.Timeout | null = null;
+const interval: NodeJS.Timeout | null = null;
 
 
 /**
@@ -34,7 +34,7 @@ let knownClientIDData: (RadioPacketData['clientIDData'] & { receivedAt: number }
  * @param onComplete A callback to run when all packets have been sent successfully
  * @param onError A callback to run if an error occurs while sending the packets (NOT if there is an error with encoding the data, which will reject the promise)
  */
-async function broadcastMatchData(entries: MatchData[], onComplete?: () => void, onError?: (e: any) => void) {
+async function broadcastMatchData(entries: MatchData[], onComplete?: () => void, onError?: (e: unknown) => void) {
     await _queueFullPacket({
         packetType: RadioPacketType.MatchDataBroadcast,
         version: APP_VERSION,
@@ -53,7 +53,7 @@ async function broadcastMatchData(entries: MatchData[], onComplete?: () => void,
  * @param onComplete A callback to run when all packets have been sent successfully
  * @param onError A callback to run if an error occurs while sending the packets (NOT if there is an error with encoding the data, which will reject the promise)
  */
-async function requestMatchData(competitionId: string, knownMatches: number[], onComplete?: () => void, onError?: (e: any) => void) {
+async function requestMatchData(competitionId: string, knownMatches: number[], onComplete?: () => void, onError?: (e: unknown) => void) {
     await _queueFullPacket({
         packetType: RadioPacketType.MatchDataRequest,
         version: APP_VERSION,
@@ -72,7 +72,7 @@ async function requestMatchData(competitionId: string, knownMatches: number[], o
  * @param onComplete A callback to run when all packets have been sent successfully
  * @param onError A callback to run if an error occurs while sending the packets (NOT if there is an error with encoding the data, which will reject the promise)
  */
-async function broadcastClientID(clientID: number, scoutName?: string, onComplete?: () => void, onError?: (e: any) => void) {
+async function broadcastClientID(clientID: number, scoutName?: string, onComplete?: () => void, onError?: (e: unknown) => void) {
     await _queueFullPacket({
         packetType: RadioPacketType.ClientIDBroadcast,
         version: APP_VERSION,
@@ -102,7 +102,7 @@ async function stopQueueInterval() {
     if (interval !== null) clearInterval(interval);
 }
 
-async function _queueFullPacket(data: RadioPacketData, onComplete?: () => void, onError?: (e: any) => void) {
+async function _queueFullPacket(data: RadioPacketData, onComplete?: () => void, onError?: (e: unknown) => void) {
     const radioPacketDataProto = await proto.getType("RadioPacketData");
     const encoded = radioPacketDataProto.encode(radioPacketDataProto.create(data)).finish();
     const compressed = await compressBytes(encoded);
@@ -112,7 +112,7 @@ async function _queueFullPacket(data: RadioPacketData, onComplete?: () => void, 
 
     if (totalPackets > MAX_PACKET_GROUP_LENGTH) throw new Error('Packet too large');
 
-    let packets = new Array<Uint8Array|undefined>(totalPackets);
+    const packets = new Array<Uint8Array|undefined>(totalPackets);
     for (let i = 0, offset = 0; i < totalPackets; i++) {
         const packetData = compressed.slice(offset, offset + MAX_PACKET_DATA_SIZE);
         packets[i] = packetData;
@@ -181,16 +181,16 @@ function _onPacket(data: DataView) {
     console.log('Received packet:', data);
     if (data.byteLength < 6) throw new Error('Invalid packet length');
 
-    let packetId = data.getUint32(0, true); // Packet ID
-    let packetIndex = data.getUint8(4) // Packet index
-    let totalPackets = data.getUint8(5); // Total packets
-    let packetData = new Uint8Array(data.buffer, 6); // Packet data
+    const packetId = data.getUint32(0, true); // Packet ID
+    const packetIndex = data.getUint8(4) // Packet index
+    const totalPackets = data.getUint8(5); // Total packets
+    const packetData = new Uint8Array(data.buffer, 6); // Packet data
 
     console.log('Received packet:', packetId, packetIndex, totalPackets, packetData);
 
     // Check to see if we already received a packet with this ID
     if (received.has(packetId)) {
-        let group = received.get(packetId) as RadioPacketGroup;
+        const group = received.get(packetId) as RadioPacketGroup;
 
         if (group.total !== totalPackets) throw new Error('Total packets mismatch for id ' + packetId); // Prevent array out of bounds
         if (packetIndex >= totalPackets) throw new Error('Packet index out of bounds for id ' + packetId); // Prevent array out of bounds
@@ -199,7 +199,7 @@ function _onPacket(data: DataView) {
 
         if (group.data.every((p) => p !== undefined)) _decodeFullPacket(group);
     } else {
-        let packets = new Array<Uint8Array|undefined>(totalPackets);
+        const packets = new Array<Uint8Array|undefined>(totalPackets);
         packets.fill(undefined);
         packets[packetIndex] = packetData;
 
@@ -218,7 +218,7 @@ function _onPacket(data: DataView) {
 async function _decodeFullPacket(group: RadioPacketGroup) {
     console.log('Decoding full packet:', group);
     try {
-        let fullPacket = new Uint8Array(group.data.reduce((acc, packet) => { // Get the total length of all the packet data
+        const fullPacket = new Uint8Array(group.data.reduce((acc, packet) => { // Get the total length of all the packet data
             if (packet === undefined) throw new Error('Missing packet');
             return acc + packet.byteLength;
         }, 0));
@@ -226,7 +226,7 @@ async function _decodeFullPacket(group: RadioPacketGroup) {
         // Combine all the packet data into one
         for (let i = 0, offset = 0; i < group.data.length; i++) {
             if (group.data[i] === undefined) throw new Error('Missing packet');
-            let packetData = group.data[i]!;
+            const packetData = group.data[i]!;
             fullPacket.set(packetData, offset);
             offset += packetData.byteLength;
         }
