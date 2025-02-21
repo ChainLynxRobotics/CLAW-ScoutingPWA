@@ -1,4 +1,3 @@
-import ClimbResult from "./enums/ClimbResult"
 import HumanPlayerLocation from "./enums/HumanPlayerLocation"
 
 /**
@@ -32,6 +31,7 @@ export type MatchDataFields = {
     autoCoralStationIntake: boolean,
     autoAlgaeGroundIntake: boolean,
     autoAlgaeReefIntake: boolean,
+    autoRemoveAlgae: boolean,
     // Teleop
     teleopCoralL1Score: number,
     teleopCoralL1Miss: number,
@@ -49,10 +49,10 @@ export type MatchDataFields = {
     teleopCoralStationIntake: boolean,
     teleopAlgaeGroundIntake: boolean,
     teleopAlgaeReefIntake: boolean,
+    teleopRemoveAlgae: boolean,
     teleopHumanPlayerAlgaeScore: number,
     teleopHumanPlayerAlgaeMiss: number,
     // Endgame
-    climb: ClimbResult,
     timeDefending: number,
     notes: string,
 }
@@ -80,22 +80,23 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
         name: "Auto Leave",
         defaultValue: false,
     },
-    autoCoralL1Score: { name: "Coral L1 Score", defaultValue: 0 },
-    autoCoralL1Miss: { name: "Coral L1 Miss", defaultValue: 0 },
-    autoCoralL2Score: { name: "Coral L2 Score", defaultValue: 0 },
-    autoCoralL2Miss: { name: "Coral L2 Miss", defaultValue: 0 },
-    autoCoralL3Score: { name: "Coral L3 Score", defaultValue: 0 },
-    autoCoralL3Miss: { name: "Coral L3 Miss", defaultValue: 0 },
-    autoCoralL4Score: { name: "Coral L4 Score", defaultValue: 0 },
-    autoCoralL4Miss: { name: "Coral L4 Miss", defaultValue: 0 },
-    autoAlgaeScore: { name: "Algae Score", defaultValue: 0 },
-    autoAlgaeMiss: { name: "Algae Miss", defaultValue: 0 },
-    autoAlgaeNetScore: { name: "Algae Net Score", defaultValue: 0 },
-    autoAlgaeNetMiss: { name: "Algae Net Miss", defaultValue: 0 },
-    autoCoralGroundIntake: { name: "Coral Ground Intake", defaultValue: false },
-    autoCoralStationIntake: { name: "Coral Station Intake", defaultValue: false },
-    autoAlgaeGroundIntake: { name: "Algae Ground Intake", defaultValue: false },
-    autoAlgaeReefIntake: { name: "Algae Reef Intake", defaultValue: false },
+    autoCoralL1Score: { name: "Auto Coral L1 Score", defaultValue: 0 },
+    autoCoralL1Miss: { name: "Auto Coral L1 Miss", defaultValue: 0 },
+    autoCoralL2Score: { name: "Auto Coral L2 Score", defaultValue: 0 },
+    autoCoralL2Miss: { name: "Auto Coral L2 Miss", defaultValue: 0 },
+    autoCoralL3Score: { name: "Auto Coral L3 Score", defaultValue: 0 },
+    autoCoralL3Miss: { name: "Auto Coral L3 Miss", defaultValue: 0 },
+    autoCoralL4Score: { name: "Auto Coral L4 Score", defaultValue: 0 },
+    autoCoralL4Miss: { name: "Auto Coral L4 Miss", defaultValue: 0 },
+    autoAlgaeScore: { name: "Auto Algae Score", defaultValue: 0 },
+    autoAlgaeMiss: { name: "Auto Algae Miss", defaultValue: 0 },
+    autoAlgaeNetScore: { name: "Auto Algae Net Score", defaultValue: 0 },
+    autoAlgaeNetMiss: { name: "Auto Algae Net Miss", defaultValue: 0 },
+    autoCoralGroundIntake: { name: "Auto Coral Ground Intake", defaultValue: false },
+    autoCoralStationIntake: { name: "Auto Coral Station Intake", defaultValue: false },
+    autoAlgaeGroundIntake: { name: "Auto Algae Ground Intake", defaultValue: false },
+    autoAlgaeReefIntake: { name: "Auto Algae Reef Intake", defaultValue: false },
+    autoRemoveAlgae: { name: "Auto Remove Algae", defaultValue: false },
     // Teleop
     teleopCoralL1Score: { name: "Coral L1 Score", defaultValue: 0 },
     teleopCoralL1Miss: { name: "Coral L1 Miss", defaultValue: 0 },
@@ -113,6 +114,7 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     teleopCoralStationIntake: { name: "Coral Station Intake", defaultValue: false },
     teleopAlgaeGroundIntake: { name: "Algae Ground Intake", defaultValue: false },
     teleopAlgaeReefIntake: { name: "Algae Reef Intake", defaultValue: false },
+    teleopRemoveAlgae: { name: "Remove Algae", defaultValue: false },
     teleopHumanPlayerAlgaeScore: {
         name: "Human Player Algae Score",
         defaultValue: 0
@@ -122,11 +124,6 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
         defaultValue: 0
     },
     // Endgame
-    climb: {
-        name: "Climb",
-        defaultValue: ClimbResult.None,
-        serialize: (value) => ClimbResult[value],
-    },
     timeDefending: {
         name: "Time Defending",
         defaultValue: 0,
