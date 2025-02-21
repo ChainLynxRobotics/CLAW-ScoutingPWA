@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { SettingsContext } from "./SettingsContextProvider";
 import { MatchDataFieldInformation, MatchDataFields } from "../../MatchDataValues";
 import { generateRandomUint32 } from "../../util/id";
-import bluetooth from "../../util/io/bluetooth";
+import { BluetoothContext } from "./BluetoothContextProvider";
 
 /**
  * Provides access the current match id, team, and color, as well as manipulating scouting data during the match.
@@ -44,6 +44,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
     const settings = useContext(SettingsContext);
     if (!settings) throw new Error("SettingsContext not found");
     const currentMatchContext = useContext(CurrentMatchContext);
+    const bluetooth = useContext(BluetoothContext);
 
     // ****************************************************
     //           Perennial data and functions
@@ -74,7 +75,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
             submitTime: Date.now()
         };
         await matchDatabase.put(matchData);
-        bluetooth.broadcastMatchData([matchData]);
+        bluetooth?.broadcastMatchData([matchData]);
         currentMatchContext?.incrementAndUpdate();
         currentMatchContext?.setShowConfetti(true);
         navigate("/scout");

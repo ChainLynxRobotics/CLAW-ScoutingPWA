@@ -1,6 +1,12 @@
 import RadioPacketType from "../enums/RadioPacketType";
 import { MatchData } from "./MatchData";
 
+export enum BluetoothStatusEnum {
+    DISCONNECTED = 0,
+    CONNECTING = 1,
+    CONNECTED = 2,
+}
+
 export interface RadioPacketData {
     packetType: RadioPacketType,
     version: string,
@@ -31,3 +37,5 @@ export interface QueuedRadioPacketGroup {
     onComplete?: () => void,
     onError?: (e: unknown) => void,
 }
+
+export type RememberedClientID = RadioPacketData['clientIDData'] & { receivedAt: number };

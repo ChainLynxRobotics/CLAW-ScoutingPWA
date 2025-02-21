@@ -14,13 +14,15 @@ import QrCodeScanner from "../components/qr/QrCodeScanner";
 import DataList from "../components/DataList";
 import { useSnackbar } from "notistack";
 import LoadingBackdrop from "../components/ui/LoadingBackdrop";
-import bluetooth from "../util/io/bluetooth";
-import bluetoothServer from "../util/io/bluetoothServer";
 import PageTitle from "../components/ui/PageTitle";
+import { BluetoothContext } from "../components/context/BluetoothContextProvider";
+import { BluetoothStatusEnum } from "../types/RadioPacketData";
+import bluetoothServer from "../util/io/bluetoothServer";
 
 const DataPage = () => {
 
     const settings = useContext(SettingsContext);
+    const bluetooth = useContext(BluetoothContext);
 
     const [entries, setEntries] = useState<MatchIdentifier[]|undefined>(undefined);
     const [readentries, setReadEntries] = useLocalStorageState<number[]>([], "dataReadMatches"); 
@@ -106,7 +108,7 @@ const DataPage = () => {
     async function broadcastData() {
         setLoading(true);
         try {
-            if (!bluetoothServer.isConnected()) throw new Error("Connect to a radio using the bluetooth button first");
+            if (!(bluetooth?.status === BluetoothStatusEnum.CONNECTED)) throw new Error("Connect to a radio using the bluetooth button first");
 
             const allEntries = await matchDatabase.getAll();
             if (allEntries.length === 0) throw new Error("No data to share");
@@ -126,7 +128,7 @@ const DataPage = () => {
     async function requestData() {
         setLoading(true);
         try {
-            if (!bluetoothServer.isConnected()) throw new Error("Connect to a radio using the bluetooth button first");
+            if (!(bluetooth?.status === BluetoothStatusEnum.CONNECTED)) throw new Error("Connect to a radio using the bluetooth button first");
 
             const knownMatches = await matchDatabase.getAllIds();
             
