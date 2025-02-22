@@ -24,11 +24,6 @@ export type SettingsStateData = {
 
     autoFetchMatches: boolean;
     setAutoFetchMatches: React.Dispatch<React.SetStateAction<boolean>>;
-
-    starredTeams: number[];
-    setStarredTeams: React.Dispatch<React.SetStateAction<number[]>>;
-    analyticsCurrentCompetitionOnly: boolean;
-    setAnalyticsCurrentCompetitionOnly: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**

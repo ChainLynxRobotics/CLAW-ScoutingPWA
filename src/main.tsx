@@ -18,12 +18,13 @@ import CurrentMatchContextProvider from './components/context/CurrentMatchContex
 import ReloadPrompt from './components/ReloadPrompt';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import AnalyticsTeamPage from './pages/analytics/AnalyticsTeamPage';
-import AnalyticsMatchPage from './pages/analytics/AnalyticsMatchPage';
 import AnalyticsLayout from './pages/analytics/AnalyticsLayout';
 import Teleop from './pages/scout/Teleop';
 import Auto from './pages/scout/Auto';
 import SchedulePage from './pages/SchedulePage';
 import ScheduleContextProvider from './components/context/ScheduleContextProvider';
+import AnalyticsSettingsContextProvider, { AnalyticsSettingsContext } from './components/context/AnalyticsSettingsContextProvider';
+import BluetoothContextProvider from './components/context/BluetoothContextProvider';
 
 const darkTheme = createTheme({
   palette: {
@@ -55,7 +56,7 @@ export default function App() {
           <Routes>
             <Route index element={<IndexPage />} />
 
-            <Route path="/" element={<Layout />}>
+            <Route path="/" element={<BluetoothContextProvider><Layout /></BluetoothContextProvider>}>
               <Route path="scout" element={<ScheduleContextProvider><CurrentMatchContextProvider><ScoutPage /></CurrentMatchContextProvider></ScheduleContextProvider>}>
                 <Route index element={<PreMatch />} />
                 <Route path="auto" element={<Auto />} />
@@ -65,10 +66,9 @@ export default function App() {
               </Route>
               <Route path="data" element={<DataPage />} />
               <Route path="Schedule" element={<ScheduleContextProvider><SchedulePage /></ScheduleContextProvider>} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="analytics" element={<AnalyticsLayout />}>
+              <Route path="analytics" element={<ScheduleContextProvider><AnalyticsSettingsContextProvider><AnalyticsLayout /></AnalyticsSettingsContextProvider></ScheduleContextProvider>}>
+                <Route index element={<AnalyticsPage />} />
                 <Route path="team/:team" element={<AnalyticsTeamPage />} />
-                <Route path="match/:matchId" element={<AnalyticsMatchPage />} />
               </Route>
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<NoPage />} />

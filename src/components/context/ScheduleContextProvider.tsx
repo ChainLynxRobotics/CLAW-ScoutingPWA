@@ -1,4 +1,4 @@
-import { createContext, ReactElement, useCallback, useContext, useEffect } from "react";
+import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo } from "react";
 import useLocalStorageState from "../hooks/localStorageState";
 import { AUTO_MATCH_FETCH_INTERVAL } from "../../constants";
 import { getSchedule } from "../../util/blueAllianceApi";
@@ -16,6 +16,7 @@ export const ScheduleContext = createContext<ScheduleStateData|undefined>(undefi
 export type ScheduleStateData = {
     matches: ScheduledMatch[];
     setMatches: React.Dispatch<React.SetStateAction<ScheduledMatch[]>>;
+    teams: number[];
     currentMatchIndex: number;
     setCurrentMatchIndex: React.Dispatch<React.SetStateAction<number>>;
     addMatch: (match: ScheduledMatch) => void;
@@ -64,6 +65,19 @@ export default function ScheduleContextProvider({children}: {children: ReactElem
         const interval = setInterval(autoFetch, 10000); // Check every 10 seconds
         return () => clearInterval(interval);
     }, [settings?.autoFetchMatches, lastAutoMatchFetch, settings, matches, currentMatchIndex, setLastAutoMatchFetch, setMatches, setCurrentMatchIndex]);
+
+    const teams = useMemo(() => {
+        const teamSet = new Set<number>();
+        matches.forEach(m => {
+            teamSet.add(m.blue1);
+            teamSet.add(m.blue2);
+            teamSet.add(m.blue3);
+            teamSet.add(m.red1);
+            teamSet.add(m.red2);
+            teamSet.add(m.red3);
+        });
+        return Array.from(teamSet).sort((a, b) => a - b);
+    }, [matches]);
     
 
     // helper functions to manipulate the match schedule
@@ -106,6 +120,7 @@ export default function ScheduleContextProvider({children}: {children: ReactElem
     const value: ScheduleStateData = {
         matches,
         setMatches,
+        teams,
         currentMatchIndex,
         setCurrentMatchIndex,
         addMatch,
