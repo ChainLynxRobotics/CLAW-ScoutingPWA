@@ -4,17 +4,12 @@ export interface CustomTeamGroup {
     teams: number[];
 }
 
-export interface DescribedObjectStatistic<T> {
-    name: string;
-    path: Leaves<T>;
-    
-}
-
 // Defines a string union type for the different paths in an object
 // Stolen from https://stackoverflow.com/a/58436959/2887218
 export type Leaves<T> = T extends object ? { [K in keyof T]:
         `${Exclude<K, symbol>}${Leaves<T[K]> extends never ? "" : `.${Leaves<T[K]>}`}`
     }[keyof T] : never
+
 
 export interface QuantitativeStats {
     sample: Iterable<number>;
