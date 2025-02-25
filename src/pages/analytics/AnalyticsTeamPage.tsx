@@ -1,124 +1,112 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import { MatchData } from "../../types/MatchData";
+import { Leaves } from "../../types/analyticsTypes";
 import matchDatabase from "../../util/db/matchDatabase";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, MenuItem, Select } from "@mui/material";
-import Statistic from "../../components/analytics/Statistic";
-import matchCompare from "../../util/matchCompare";
+import { AnalyticsSettingsContext } from "../../components/context/AnalyticsSettingsContextProvider";
 import { SettingsContext } from "../../components/context/SettingsContextProvider";
+import { BlueAllianceMatch } from "../../types/blueAllianceTypes";
+import blueAllianceApi from "../../util/blueAllianceApi";
 
 const AnalyticsPage = () => {
 
-    const { team } = useParams();
-    const navigate = useNavigate();
-    const [teamList, setTeamList] = useState<number[]|undefined>(undefined);
+    const { teams: strTeams, minusTeams: strMinusTeams } = useParams();
+
+    // Team list from URL, numbers separated by '+', all of them are are added up for the statistic
+    const teams = useMemo(() => {
+        if (!strTeams) throw new Error("No teams provided");
+        if (strTeams.match(/[^0-9+]/)) throw new Error("Invalid team list");
+        return strTeams.split("+").filter(v=>!!v).map(team => parseInt(team));
+    }, [strTeams]);
+
+    // Team list from URL, numbers separated by '+', all of them are subtracted from the statistic
+    const minusTeams = useMemo(() => {
+        if (!strMinusTeams) return undefined;
+        if (strMinusTeams.match(/[^0-9+]/)) throw new Error("Invalid comparison team list");
+        return strMinusTeams.split("+").filter(v=>!!v).map(team => parseInt(team));
+    }, [strMinusTeams]);
+
+    const allTeams = useMemo(() => [...teams, ...(minusTeams ?? [])], [teams, minusTeams]);
 
     const settings = useContext(SettingsContext);
+    if (!settings) throw new Error("SettingsContext not found");
+    const analyticsSettings = useContext(AnalyticsSettingsContext);
+    if (!analyticsSettings) throw new Error("AnalyticsSettingsContext not found");
 
-    const analyticsCompetition = settings?.analyticsCurrentCompetitionOnly ? settings?.competitionId : undefined;
+    const analyticsCompetition = useMemo(() => analyticsSettings.currentCompetitionOnly ? settings.competitionId : undefined, [analyticsSettings.currentCompetitionOnly, settings.competitionId]);
+
+
+    // Data from our scouting app
+    // Maps Team Number -> Match ID -> Match Data (there can be multiple entries for the same match due to duel scouting)
+    const [matchData, setMatchData] = useState(new Map<number, Map<string, Set<MatchData>>>());
     useEffect(() => {
-        async function loadTeams() {
-            setTeamList(await matchDatabase.getUniqueTeams(analyticsCompetition));
+        if (!analyticsSettings.includeScoutingData) return setMatchData(new Map(allTeams.map(team => [team, new Map()])));
+
+        async function loadData() {
+            const entries = await Promise.all(allTeams.map(async team => {
+                const data = await matchDatabase.getAllByTeam(team, analyticsCompetition);
+                
+                const matchMap = new Map<string, Set<MatchData>>();
+
+                data.forEach(match => {
+                    if (!matchMap.has(match.matchId)) matchMap.set(match.matchId, new Set());
+                    matchMap.get(match.matchId)?.add(match);
+                });
+
+                return [team, matchMap] as [number, Map<string, Set<MatchData>>];
+            }));
+            setMatchData(new Map(entries));
         }
-        loadTeams();
-    }, [analyticsCompetition]);
+        loadData();
+    }, [allTeams, analyticsSettings.includeScoutingData, analyticsCompetition]);
 
-    const [hasLoaded, setHasLoaded] = useState<string|undefined>(undefined);
-    const [entries, setEntries] = useState<MatchData[]>([]);
-
-    const [notesOpen, setNotesOpen] = useState(false);
-
+    // Data from The Blue Alliance
+    // Maps Team Number -> Set of TBA Matches
+    const [tbaMatchData, setTbaMatchData] = useState(new Map<number, Set<BlueAllianceMatch>>());
     useEffect(() => {
-        if (hasLoaded===team) return;
-        // Load entries for team
-        async function loadEntries() {
-            if (!team) return;
-            const entries = await matchDatabase.getAllByTeam(parseInt(team), analyticsCompetition);
-            entries.sort((a, b) => matchCompare(a.matchId, b.matchId));
-            setEntries(entries);
-            setHasLoaded(team);
+        if (!analyticsSettings.includeBlueAllianceData) return setTbaMatchData(new Map(allTeams.map(team => [team, new Set()])));
+
+        async function loadData() {
+            const entries = await Promise.all(allTeams.map(async team => {
+                const data = await blueAllianceApi.getMatchesByTeam(team, settings!.competitionId, analyticsSettings!.currentCompetitionOnly);
+                return [team, new Set(data)] as [number, Set<BlueAllianceMatch>];
+            }));
+            setTbaMatchData(new Map(entries));
         }
-        loadEntries();
-    }, [team, analyticsCompetition, hasLoaded]);
+        loadData();
+    }, [allTeams, analyticsSettings.includeBlueAllianceData, analyticsCompetition]);
+
 
     return (
         <>
-            <h1 className="text-xl mb-2 flex items-center gap-2">
-                <span>Analytics for </span>
-                <b>Team </b>
-                <FormControl variant="standard" sx={{ minWidth: 120 }}>
-                    <Select
-                        id="team-select-label"
-                        value={team}
-                        onChange={(e)=>navigate(`/analytics/team/${e.target.value}`)}
-                        label="Age"
-                    >
-                        {teamList ? 
-                            teamList.map(t=> 
-                                <MenuItem key={t} value={t}>
-                                    <div className="flex items-center gap-1">
-                                        <b className="text-xl">{t}</b>
-                                        {settings?.starredTeams.includes(t) && 
-                                            <span className="material-symbols-outlined text-yellow-300" style={{fontSize: "20px"}}>star</span>
-                                        }
-                                    </div>
-                                </MenuItem>
-                            )
-                        :
-                            <MenuItem value={team}><b className="text-xl">{team}</b></MenuItem>
-                        }
-                    </Select>
-                </FormControl>
+            <h1 className="text-xl my-4 flex items-center gap-2">
+                <span>Analytics for: </span>
+                <b>
+                    <span>
+                        {teams.map((team, i) => (
+                            <>
+                                <a key={team} href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
+                                {i < teams.length - 1 && ', '}
+                            </>
+                        ))}
+                    </span> 
+                </b>
+                    {minusTeams && <span> vs. </span>}
+                <b>
+                    {minusTeams && 
+                        <span>
+                            {minusTeams.map((team, i) => (
+                                <>
+                                    <a key={team} href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
+                                    {i < minusTeams.length - 1 && ', '}
+                                </>
+                            ))}
+                        </span> 
+                    }
+                </b>
             </h1>
 
-            <a href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-sm mb-4 text-blue-400 underline hover:text-blue-500 transition">View on The Blue Alliance</a>
-
-            {hasLoaded===undefined || hasLoaded!==team ?
-                <div className="w-full h-full flex items-center justify-center">Loading...</div>
-            :
-            <>
-            <Statistic name="Matches Scouted">
-                {entries.length}
-            </Statistic>
-            <div className="mt-2 flex flex-col items-center text-secondary text-sm">
-                <div>&quot;P.M.&quot; = &quot;Per Match&quot;</div>
-                <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined">query_stats</span> = Tap to show on graph
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined">info</span> = Tap for more info
-                </div>
-            </div>
-
-            <div className="w-full mt-4 px-2 pb-12 flex flex-wrap gap-8 justify-center">
-                
-                
-
-            </div>
-
-            <Dialog 
-                open={notesOpen} 
-                onClose={()=>setNotesOpen(false)}
-                aria-labelledby="info-dialog-title"
-                fullScreen
-            >
-                <DialogTitle id="info-dialog-title">Notes given to team {team}</DialogTitle>
-                <DialogContent>
-                    <div className="w-full max-w-lg flex flex-col gap-8">
-                        {entries.filter(m=>m.notes.trim()).map(match=>
-                            <div key={match.matchId}>
-                                <div>Notes during <b>{match.matchId}</b>:</div>
-                                <textarea className="ml-2 p-1 w-full italic h-32 text-white bg-black bg-opacity-20 resize-none" disabled value={match.notes} />
-                            </div>
-                        )}
-                    </div>
-                </DialogContent>
-                <DialogActions>
-                    <Button size="large" onClick={()=>setNotesOpen(false)}>Close</Button>
-                </DialogActions>
-            </Dialog>
-            </>
-            }
+            
         </>
     )
 }

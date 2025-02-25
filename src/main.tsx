@@ -68,7 +68,8 @@ export default function App() {
               <Route path="Schedule" element={<ScheduleContextProvider><SchedulePage /></ScheduleContextProvider>} />
               <Route path="analytics" element={<ScheduleContextProvider><AnalyticsSettingsContextProvider><AnalyticsLayout /></AnalyticsSettingsContextProvider></ScheduleContextProvider>}>
                 <Route index element={<AnalyticsPage />} />
-                <Route path="team/:team" element={<AnalyticsTeamPage />} />
+                <Route path="team/:teams" element={<AnalyticsTeamPage />} />
+                <Route path="team/:teams/vs/:minusTeams" element={<AnalyticsTeamPage />} />
               </Route>
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<NoPage />} />

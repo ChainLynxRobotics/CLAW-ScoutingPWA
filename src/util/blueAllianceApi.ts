@@ -73,13 +73,23 @@ export async function getEventRankings(competitionId: string): Promise<number[]>
     return teams;
 }
 
-export async function getMatchesByTeamAndYear(team: number, year: number): Promise<BlueAllianceMatch[]> {
+// competitionId can only be the year if currentCompetitionOnly is false
+export async function getMatchesByTeam(team: number, competitionId: string, currentCompetitionOnly?: boolean): Promise<BlueAllianceMatch[]> {
+
+    const url = currentCompetitionOnly ? `team/frc${team}/event/${competitionId}/matches` : `team/frc${team}/matches/${competitionId.substring(0, 4)}`;
     
-    const json = await fetchFromBlueAlliance(`team/frc${team}/matches/${year}`) as BlueAllianceMatch[];
+    const json = await fetchFromBlueAlliance(url) as BlueAllianceMatch[];
 
     if (!Array.isArray(json)) {
         throw new Error("TBA returned an unexpected response: "+JSON.stringify(json));
     }
 
     return json;
+}
+
+export default {
+    fetchFromBlueAlliance,
+    getSchedule,
+    getEventRankings,
+    getMatchesByTeam,
 }

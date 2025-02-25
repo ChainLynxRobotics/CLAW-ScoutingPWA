@@ -1,5 +1,6 @@
 import { createContext, ReactElement } from "react";
 import useLocalStorageState from "../hooks/localStorageState";
+import { CustomTeamGroup } from "../../types/analyticsTypes";
 
 /**
  * Provides access to the settings state and functions to manipulate the settings. These are usually stored in local storage.

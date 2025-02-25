@@ -35,7 +35,7 @@ export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setO
     return (
         <>
             <ListItemButton onClick={() => setActuallyOpen(!actuallyOpen)} {...props}>
-                <ListItemText slots={{primary: "button"}} primary={name} onClick={(e)=>{e.stopPropagation();teams.length !== 0 && navigate(`/analytics/team/group/${teams.join('+')}`)}} tabIndex={0} />
+                <ListItemText slots={{primary: "button"}} primary={name} onClick={(e)=>{e.stopPropagation();teams.length !== 0 && navigate(`/analytics/team/${teams.join('+')}`)}} tabIndex={0} />
                 {editable &&
                     <button onClick={()=>setModalOpen(true)} tabIndex={0}>
                         <span className="material-symbols-outlined">edit</span>
