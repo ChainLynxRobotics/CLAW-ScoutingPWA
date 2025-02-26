@@ -1,4 +1,5 @@
 import HumanPlayerLocation from "./enums/HumanPlayerLocation"
+import Observation from "./enums/Observation"
 
 /**
  * This is the data that is stored in the MatchDataContext, and only gets stored once per match (unlike events).
@@ -54,6 +55,7 @@ export type MatchDataFields = {
     teleopHumanPlayerAlgaeMiss: number,
     // Endgame
     timeDefending: number,
+    observations: Observation[],
     notes: string,
 }
 // Other more global match data is stored in the type `MatchData` in `src/types/MatchData.ts`
@@ -128,6 +130,12 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
         name: "Time Defending",
         defaultValue: 0,
     },
+
+    observations: {
+        name: "Observations",
+        defaultValue: [],
+    },
+
     notes: {
         name: "Notes",
         defaultValue: "",

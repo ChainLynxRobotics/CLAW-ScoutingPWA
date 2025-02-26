@@ -30,10 +30,6 @@ const PreMatch = () => {
         context.fields.set("humanPlayerLocation", parseInt(event.target.value) as HumanPlayerLocation);
     };
 
-    const handlePreloadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        context.fields.set("preload", event.target.checked);
-    }
-
     const handleNotesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!context) return;
         if (event.target.value.length <= MAX_NOTE_LENGTH) {
@@ -90,7 +86,7 @@ const PreMatch = () => {
             </h1>
             <FormControl sx={{ m: 1, minWidth: 224 }}>
                 <InputLabel id="human-player-location-label">
-                    {context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Soren's Location`}
+                    {context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Ella's Location`}
                 </InputLabel>
                 <Select
                     labelId="human-player-location-label"
@@ -100,19 +96,10 @@ const PreMatch = () => {
                     label="Human Player Location"
                 >
                     <MenuItem value={HumanPlayerLocation.None}>Not on field</MenuItem>
-                    <MenuItem value={HumanPlayerLocation.Source}>Source</MenuItem>
-                    <MenuItem value={HumanPlayerLocation.Amp}>Amp</MenuItem>
+                    <MenuItem value={HumanPlayerLocation.CoralStation}>Coral Station</MenuItem>
+                    <MenuItem value={HumanPlayerLocation.Processor}>Processor</MenuItem>
                 </Select>
             </FormControl>
-            <div className="h-4"></div> {/* Spacer */}
-            <FormGroup>
-                <FormControlLabel 
-                    control={<Checkbox id="preload" 
-                    value={context.fields.preload} 
-                    onChange={handlePreloadChange} />} 
-                    label="Note Preloaded" 
-                />
-            </FormGroup>
             <div className="h-4"></div> {/* Spacer */}
             <TextField
                 id="notes"

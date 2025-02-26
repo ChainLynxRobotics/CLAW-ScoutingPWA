@@ -1,13 +1,35 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ScoutingContext } from "../../components/context/ScoutingContextProvider";
 import NoMatchAvailable from "./NoMatchAvailable";
 import { MAX_NOTE_LENGTH } from "../../constants";
-import MatchResult from "../../enums/MatchResult";
-import ClimbResult from "../../enums/ClimbResult";
 import { useSnackbar } from "notistack";
 import LoadingBackdrop from "../../components/ui/LoadingBackdrop";
-import { Button, FormControl, InputLabel, Select, MenuItem, Rating, TextField } from "@mui/material";
+import { Button, TextField, Slider, Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
 import PageTitle from "../../components/ui/PageTitle";
+import Observation from "../../enums/Observation";
+
+// For multiselect
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+};
+
+const observationValues = [
+    {name: "Tippy (Seems prone ot falling over)", value: Observation.Tippy},
+    {name: "Dropping Coral", value: Observation.DroppingCoral},
+    {name: "Dropping Algae", value: Observation.DroppingAlgae},
+    {name: "Difficulty Aligning to Score", value: Observation.DifficultyAligningScore},
+    {name: "Difficulty Aligning to Intake", value: Observation.DifficultyAligningIntake},
+    {name: "Immobilized (Not moving, still on)", value: Observation.Immobilized},
+    {name: "Disabled Partially (off for part of match)", value: Observation.DisabledPartially},
+    {name: "Disabled Fully (off for the entire match)", value: Observation.DisabledFully}
+]
 
 const PostMatch = () => {
     const context = useContext(ScoutingContext);
@@ -15,22 +37,23 @@ const PostMatch = () => {
     const {enqueueSnackbar} = useSnackbar();
     const [loading, setLoading] = useState<boolean>(false);
     
-    const [defenseHover, setDefenseHover] = useState<number>(-1);
-
-    const ratings: { [index: number]: string } = {
-        1: 'Useless :(',
-        2: 'Poor',
-        3: 'Ok',
-        4: 'Good',
-        5: 'Excellent',
-    }
-
+ 
     function handleNotesChange(event: React.ChangeEvent<HTMLInputElement>) {
         if (!context) return;
         if (event.target.value.length <= MAX_NOTE_LENGTH) {
             context.fields.set("notes", event.target.value);
         }
     }
+
+    function handleObservationsChange(event: SelectChangeEvent<Observation[]>) {
+        if (!context) return;
+        const val = event.target.value;
+        context.fields.set("observations", typeof val === 'string' ? val.split(',').map((str)=>parseInt(str) as Observation) : val);
+    }
+
+    useEffect(()=>{
+        console.log(context?.fields.observations);
+    }, [context?.fields.observations])
 
     function submit() {
         if (context) {
@@ -53,64 +76,37 @@ const PostMatch = () => {
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-left px-4 gap-4">
 
-            <FormControl sx={{maxWidth: "256px"}}>
-                <InputLabel>Climb Result</InputLabel>
-                <Select 
-                    id="climb-result" 
-                    label="Climb Result" 
-                    variant="outlined"
-                    value={context.fields.climb}
-                    onChange={(e) => context.fields.set("climb", e.target.value as ClimbResult)}
-                >
-                    <MenuItem value={ClimbResult.None}>None</MenuItem>
-                    <MenuItem value={ClimbResult.Parked}>Parked (in triangle zone)</MenuItem>
-                    <MenuItem value={MatchResult.Win}>Climb (on chain)</MenuItem>
-                </Select>
-            </FormControl>
-            <div className="flex flex-row items-center gap-1 my-2">
-                <span className="text-lg">Defense:</span>
-                <Rating
-                    name="defense-quality"
-                    value={context.fields.defense}
-                    onChange={(_e, newValue) => {
-                        if(newValue !== null) context.fields.set("defense", newValue);
-                    }}
-                    onChangeActive={(_e, newHover) => {
-                        setDefenseHover(newHover);
-                    }}
-                    precision={1}
-                ></Rating>
-                <span>{ratings[defenseHover !== -1 ? defenseHover : context.fields.defense]}</span>
+            <div className="flex flex-row items-center gap-6 my-2">
+                <span className="text-lg text-nowrap">Time Defending: </span>
+                <Slider value={context.fields.timeDefending} onChange={(_e, newValue) => {
+                    context.fields.set("timeDefending", newValue as number);
+                }} aria-label="Disabled slider" className="max-w-xs" />
             </div>
-            <FormControl sx={{maxWidth: "256px"}}>
-                <InputLabel>Human player notes scored</InputLabel>
-                <Select 
-                    id="human-player-notes" 
-                    label="Human player notes scored" 
-                    variant="outlined"
-                    value={context.fields.humanPlayerPerformance}
-                    onChange={(e) => context.fields.set("humanPlayerPerformance", e.target.value as number)}
+
+            <FormControl sx={{ maxWidth: 544 }}>
+                <InputLabel id="observations-label">Observations</InputLabel>
+                <Select
+                    labelId="observations-label"
+                    id="observations"
+                    multiple
+                    value={context.fields.observations}
+                    onChange={handleObservationsChange}
+                    input={<OutlinedInput label="Observations" />}
+                    renderValue={(selected) => selected.map((value) => {
+                        const obs = observationValues.find((obs) => obs.value === value);
+                        return obs ? obs.name : "";
+                    }).join(', ')}
+                    MenuProps={MenuProps}
                 >
-                    <MenuItem value={0}>0</MenuItem>
-                    <MenuItem value={1}>1</MenuItem>
-                    <MenuItem value={2}>2</MenuItem>
-                    <MenuItem value={3}>3</MenuItem>
+                    {observationValues.map(({name, value}) => (
+                        <MenuItem key={value} value={value}>
+                            <Checkbox checked={context.fields.observations.includes(value)} />
+                            <ListItemText primary={name} />
+                        </MenuItem>
+                    ))}
                 </Select>
             </FormControl>
-            <FormControl sx={{maxWidth: "256px"}}>
-                <InputLabel>Match Result</InputLabel>
-                <Select 
-                    id="match-result" 
-                    label="Match Result" 
-                    variant="outlined"
-                    value={context.fields.matchResult}
-                    onChange={(e) => context.fields.set("matchResult", e.target.value as MatchResult)}
-                >
-                    <MenuItem value={MatchResult.Loss}>Loss</MenuItem>
-                    <MenuItem value={MatchResult.Tie}>Tie</MenuItem>
-                    <MenuItem value={MatchResult.Win}>Win</MenuItem>
-                </Select>
-            </FormControl>
+
             <TextField
                 id="notes"
                 label="Extra Notes"
