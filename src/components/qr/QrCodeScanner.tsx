@@ -129,7 +129,7 @@ export default function QrCodeScanner({onReceiveData, allowTextPaste}: {onReceiv
 
 function InternalQrCodeScanner({onDecode}: {onDecode: (data: QrScanner.ScanResult) => void}) {
     
-    const scanner = useRef<QrScanner>();
+    const scanner = useRef<QrScanner>(null);
     const videoEl = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {

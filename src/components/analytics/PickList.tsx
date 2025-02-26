@@ -12,6 +12,7 @@ import QrCodeScanner from "../qr/QrCodeScanner";
 import { useSnackbar } from "notistack";
 import { getEventRankings } from "../../util/blueAllianceApi";
 import LoadingBackdrop from "../ui/LoadingBackdrop";
+import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
 
 type PickListData = {
     pickList: number[],
@@ -248,7 +249,7 @@ export default function PickList() {
 const DraggableTeamListItem = (props: {team: number, index: number, crossedOut: boolean, setCrossedOut: (value: boolean)=>void}) => {
     
     const navigate = useNavigate();
-    const settings = useContext(SettingsContext);
+    const analyticsSettings = useContext(AnalyticsSettingsContext);
 
     const labelId = `pick-list-label-${props.team}`;
     
@@ -288,7 +289,7 @@ const DraggableTeamListItem = (props: {team: number, index: number, crossedOut: 
                             <span className={"flex gap-2"+(props.crossedOut ? " strikeout opacity-50" : "")}>
                                 <span className="text-secondary">#{props.index + 1}:</span>
                                 <b>{props.team}</b>
-                                {settings?.starredTeams.includes(props.team) && 
+                                {analyticsSettings?.starredTeams.includes(props.team) && 
                                     <span className="material-symbols-outlined inline-icon text-yellow-300 scale-75">star</span>
                                 }
                             </span>
