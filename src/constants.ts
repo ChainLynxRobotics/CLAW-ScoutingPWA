@@ -38,7 +38,7 @@ export const MAX_NOTE_LENGTH = 500;
 /**
  * The base URL for the blue alliance API
  */
-export const TBA_API_BASE = "https://www.thebluealliance.com/api/v3";
+export const TBA_API_BASE = "https://www.thebluealliance.com/api/v3/";
 
 /**
  * The API key for the blue alliance, YES I KNOW THIS IS PUBLIC, i have to finish this project by tomorrow and i need sleep

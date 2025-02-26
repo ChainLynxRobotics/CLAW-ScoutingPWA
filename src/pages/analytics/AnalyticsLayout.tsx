@@ -39,8 +39,6 @@ export default function AnalyticsLayout() {
         return [match.red1, match.red2, match.red3];
     }, [analyticsSettings.currentMatch, schedule.matches]); 
 
-    console.log("AnalyticsLayout rendered", analyticsSettings.customTeamGroups);
-
 
     return (
         <div className="w-full h-full flex flex-col items-center relative" style={{ paddingLeft: 240 }}>

@@ -123,7 +123,7 @@ export function subtractQuantitativeData(a: QuantitativeStats, b?: QuantitativeS
         min: Math.min(a.min, b.min),
         max: Math.max(a.max, b.max),
         sum: a.sum - b.sum,
-        n: a.n - b.n,
+        n: (a.n + b.n) / 2,
         avg: a.avg - b.avg,
         sd: Math.sqrt(a.sd * a.sd + b.sd * b.sd)
     };
@@ -314,7 +314,7 @@ export function subtractCategoricalData<T>(a: CategoricalStats<T>, b?: Categoric
         p: combined_p,
         pMin: combined_pMin,
         pMax: combined_pMax,
-        n: a.n + b.n
+        n: (a.n + b.n) / 2
     };
 }
 
@@ -372,7 +372,7 @@ export function subtractProportionalData(a: ProportionalStats, b?: ProportionalS
         sample: [...a.sample, ...b.sample],
         x: a.x - b.x,
         p: a.p - b.p,
-        n: a.n - b.n
+        n: (a.n - b.n) /2
     };
 }
 

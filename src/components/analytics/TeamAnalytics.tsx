@@ -1,4 +1,5 @@
-import { Paper } from "@mui/material";
+import { Card, CardContent, CardHeader, Divider, Paper } from "@mui/material";
+import { Masonry } from "@mui/lab";
 import { useContext, useMemo, useState, useEffect } from "react";
 import { BlueAllianceMatch } from "../../types/blueAllianceTypes";
 import { MatchData } from "../../types/MatchData";
@@ -7,6 +8,11 @@ import matchDatabase from "../../util/db/matchDatabase";
 import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
 import { SettingsContext } from "../context/SettingsContextProvider";
 import matchDataAverage from "../../util/analytics/matchDataAverage";
+import { PieChart, PieValueType } from "@mui/x-charts";
+import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
+import ProportionalStatistic from "./ProporationalStatistic";
+import { describeProportionalObjects, describeQuantitativeProportionalObjects } from "../../util/analytics/objectStatistics";
+import QuantitativeProportionalStatistic from "./QuantitativeProportionalStatistic";
 
 export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], minusTeams?: number[] }) {
     
@@ -49,8 +55,10 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         loadData();
     }, [allTeams, analyticsSettings.includeScoutingData, analyticsCompetition]);
 
-    const matchDataPositive = useMemo(() => teams.map(team => matchData.get(team)).filter(v => !!v).flat(), [teams, matchData]);
-    const matchDataNegative = useMemo(() => minusTeams?.map(team => matchData.get(team)).filter(v => !!v).flat(), [minusTeams, matchData]);
+    const matchDataPositive = useMemo(() => teams.map(team => matchData.get(team)).filter(v => !!v), [teams, matchData]);
+    const matchDataPositiveFlat = useMemo(() => matchDataPositive.flat(), [matchDataPositive]);
+    const matchDataNegative = useMemo(() => minusTeams?.map(team => matchData.get(team)).filter(v => !!v), [minusTeams, matchData]);
+    const matchDataNegativeFlat = useMemo(() => matchDataNegative?.flat(), [matchDataNegative]);
 
     // Data from The Blue Alliance
     // Maps Team Number -> Set of TBA Matches
@@ -68,37 +76,131 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         loadData();
     }, [allTeams, analyticsSettings.includeBlueAllianceData, analyticsCompetition]);
 
-    const tbaMatchDataPositive = useMemo(() => teams.map(team => tbaMatchData.get(team)).filter(v => !!v).flat(), [teams, tbaMatchData]);
-    const tbaMatchDataNegative = useMemo(() => minusTeams?.map(team => tbaMatchData.get(team)).filter(v => !!v).flat(), [minusTeams, tbaMatchData]);
+    const tbaMatchDataPositive = useMemo(() => teams.map(team => tbaMatchData.get(team)).filter(v => !!v), [teams, tbaMatchData]);
+    const tbaMatchDataPositiveFlat = useMemo(() => tbaMatchDataPositive.flat(), [tbaMatchDataPositive]);
+    const tbaMatchDataNegative = useMemo(() => minusTeams?.map(team => tbaMatchData.get(team)).filter(v => !!v), [minusTeams, tbaMatchData]);
+    const tbaMatchDataNegativeFlat = useMemo(() => tbaMatchDataNegative?.flat(), [tbaMatchDataNegative]);
+
+
+
+    // Data for the human player location pie chart
+    const humanPlayerLocationData = useMemo<PieValueType[]>(() => [
+        {
+            id: HumanPlayerLocation.None,
+            label: 'None',
+            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation !== HumanPlayerLocation.None).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation !== HumanPlayerLocation.None).length || 0),
+            color: 'snow'
+        },
+        {
+            id: HumanPlayerLocation.CoralStation,
+            label: 'Coral Station',
+            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.CoralStation).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.CoralStation).length || 0),
+            color: 'lightcoral',
+        },
+        {
+            id: HumanPlayerLocation.Processor,
+            label: 'Processor',
+            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor).length || 0),
+            color: 'lightskyblue',
+        },
+    ], [matchDataPositive, matchDataNegative]);
 
     return (
-        <Paper elevation={0}>
+        <Paper elevation={0} className="w-full h-full overflow-y-scroll">
+        <div className="flex flex-col items-center p-2">
             <h1 className="text-xl my-4 flex items-center gap-2">
                 <span>Analytics for: </span>
                 <b>
-                    <span>
-                        {teams.map((team, i) => (
-                            <>
-                                <a key={team} href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
-                                {i < teams.length - 1 && ', '}
-                            </>
+                    {teams.map((team, i) => (
+                        <span key={team}>
+                            <a href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
+                            {i < teams.length - 1 && ', '}
+                        </span>
+                    ))}
+                </b>
+                {minusTeams && <span> vs. </span>}
+                {minusTeams && 
+                    <b>
+                        {minusTeams.map((team, i) => (
+                            <span key={team}>
+                                <a href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
+                                {i < minusTeams.length - 1 && ', '}
+                            </span>
                         ))}
-                    </span> 
-                </b>
-                    {minusTeams && <span> vs. </span>}
-                <b>
-                    {minusTeams && 
-                        <span>
-                            {minusTeams.map((team, i) => (
-                                <>
-                                    <a key={team} href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
-                                    {i < minusTeams.length - 1 && ', '}
-                                </>
-                            ))}
-                        </span> 
-                    }
-                </b>
+                    </b> 
+                }
             </h1>
+            <Masonry className="w-full h-full" columns={3} spacing={2}>
+                <Card className="w-full max-w-md">
+                    <CardHeader title="Pre Match" />
+                    <CardContent>
+                        <div>Human Player Location</div>
+                        <PieChart width={400} height={300} series={[{ data: humanPlayerLocationData }]} />
+                    </CardContent>
+                </Card>
+
+                <Card className="w-full max-w-md !overflow-visible">
+                    <CardHeader title="Auto - Coral" />
+                    <CardContent>
+                        <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL4Score", "autoCoralL4Miss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Coral L3" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL3Score", "autoCoralL3Miss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Coral L2" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL2Score", "autoCoralL2Miss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Coral L1" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL1Score", "autoCoralL1Miss", matchDataPositive, matchDataNegative)} />
+                    </CardContent>
+                </Card>
+
+                <Card className="w-full max-w-md">
+                    <CardHeader title="Auto - Other" />
+                    <CardContent>
+                        {/* <ProportionalStatistic stats={describeProportionalObjects<BlueAllianceMatch>("score_breakdown.blue.mobilityRobot1", tbaMatchDataPositive, tbaMatchDataNegative)} /> */}
+                        <Divider sx={{ my: 2 }} />
+                        <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeScore", "autoAlgaeMiss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeNetScore", "autoAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
+                        <Divider sx={{ my: 2 }} />
+                        <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("autoCoralGroundIntake", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("autoCoralStationIntake", matchDataPositive, matchDataNegative)} />
+                        <Divider sx={{ my: 2 }} />
+                        <ProportionalStatistic name="Remove Algae from Reef" stats={describeProportionalObjects<MatchData>("autoRemoveAlgae", matchDataPositive, matchDataNegative)} />
+                        <Divider sx={{ my: 2 }} />
+                        <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
+                    </CardContent>
+                </Card>
+
+                <Card className="w-full max-w-md !overflow-visible">
+                    <CardHeader title="Teleop - Coral" />
+                    <CardContent>
+                        <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL4Score", "teleopCoralL4Miss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Coral L3" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL3Score", "teleopCoralL3Miss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Coral L2" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL2Score", "teleopCoralL2Miss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Coral L1" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL1Score", "teleopCoralL1Miss", matchDataPositive, matchDataNegative)} />
+                    </CardContent>
+                </Card>
+
+                <Card className="w-full max-w-md">
+                    <CardHeader title="Teleop - Other" />
+                    <CardContent>
+                        {/* <ProportionalStatistic stats={describeProportionalObjects<BlueAllianceMatch>("score_breakdown.blue.mobilityRobot1", tbaMatchDataPositive, tbaMatchDataNegative)} /> */}
+                        <Divider sx={{ my: 2 }} />
+                        <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeScore", "teleopAlgaeMiss", matchDataPositive, matchDataNegative)} />
+                        <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeNetScore", "teleopAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
+                        <Divider sx={{ my: 2 }} />
+                        <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("teleopCoralGroundIntake", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("teleopCoralStationIntake", matchDataPositive, matchDataNegative)} />
+                        <Divider sx={{ my: 2 }} />
+                        <ProportionalStatistic name="Remove Algae from Reef" stats={describeProportionalObjects<MatchData>("teleopRemoveAlgae", matchDataPositive, matchDataNegative)} />
+                        <Divider sx={{ my: 2 }} />
+                        <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
+                        <Divider sx={{ my: 2 }} />
+                        <QuantitativeProportionalStatistic name="Human Player Shots" stats={describeQuantitativeProportionalObjects<MatchData>("teleopHumanPlayerAlgaeScore", "teleopHumanPlayerAlgaeMiss", 
+                            matchDataPositive.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor)), // Only include matches where the human player is at the processor
+                            matchDataNegative?.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor))
+                        )} />
+                    </CardContent>
+                </Card>
+            </Masonry>
+        </div>
         </Paper>
     )
 }

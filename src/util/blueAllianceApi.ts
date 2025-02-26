@@ -7,7 +7,7 @@ export async function fetchFromBlueAlliance(relativeUrl: string): Promise<any> {
     const url = new URL(relativeUrl, TBA_API_BASE).toString();
 
     const res = await fetch(url, {
-        cache: 'default', // Use the browser cache, by default it respects cache-control and etag headers
+        //cache: 'default', // Use the browser cache, by default it respects cache-control and etag headers
         headers: {
             'X-TBA-Auth-Key': TBA_API_KEY,
             'accept': 'application/json',

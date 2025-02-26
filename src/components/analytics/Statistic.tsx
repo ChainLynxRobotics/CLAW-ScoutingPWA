@@ -8,17 +8,6 @@ export type StatisticProps = {
     desc?: string,
     /** Padding left for the element, used for indicating one statistic is a child of another in the UI */
     pl?: string,
-    /** A plot definition for this statistic. If defined, a button will appear to toggle the plot on and off. */
-    plot?: {
-        /** The data value name for the prop, used for the button tooltip */
-        name: string,
-        /** The color to display when the plot is active, should be the same that is displayed on the plot itself */
-        color: string,
-        /** Whether the plot is enabled and the button should be the props.plot.color, a controller for the toggle  */
-        enabled: boolean,
-        /** A function to toggle the plot on and off, a controller for the toggle */
-        setEnabled: (enabled: boolean) => void,
-    }
 }
 
 /**
@@ -33,19 +22,9 @@ export default function Statistic(props: StatisticProps & {children: React.React
     const [infoOpen, setInfoOpen] = useState(false);
     
     return (
-        <div className="flex items-center gap-2" style={props.pl ? {paddingLeft: props.pl} : undefined}>
+        <div className="flex items-center gap-2 whitespace-nowrap" style={props.pl ? {paddingLeft: props.pl} : undefined}>
             <span className="-indent-2 pl-2">{props.name}: </span>
             {props.children}
-
-            {props.plot &&
-                <Tooltip title={props.plot.name}>
-                    {props.plot.enabled ?
-                        <button onClick={()=>props.plot?.setEnabled(false)} className="material-symbols-outlined" style={{color: props.plot.color}}>query_stats</button>
-                        :
-                        <button onClick={()=>props.plot?.setEnabled(true)} className="material-symbols-outlined text-secondary">query_stats</button>
-                    }
-                </Tooltip>
-            }
             
             {props.desc && 
                 <>
