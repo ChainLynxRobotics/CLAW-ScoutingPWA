@@ -1,5 +1,6 @@
 import HumanPlayerLocation from "./enums/HumanPlayerLocation"
 import Observation from "./enums/Observation"
+import { enumAverageCalculator, EnumMap } from "./util/analytics/matchDataAverage";
 
 /**
  * This is the data that is stored in the MatchDataContext, and only gets stored once per match (unlike events).
@@ -76,6 +77,7 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
         name: "Human Player Location",
         defaultValue: HumanPlayerLocation.None,
         serialize: (value) => HumanPlayerLocation[value],
+        average: enumAverageCalculator,
     },
     // Auto
     autoLeave: {
@@ -134,6 +136,12 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     observations: {
         name: "Observations",
         defaultValue: [],
+        average: (values) => {
+            // Combine all the observations into one list
+            const observations = values.reduce((a, b) => a.concat(b), []);
+            // Remove duplicates
+            return [...new Set(observations)];
+        }
     },
 
     notes: {
@@ -162,5 +170,15 @@ type MatchDataFieldInformationRecord = {
          * @returns A nice string representation of the value
          */
         serialize?: (value: MatchDataFields[K]) => string
+        /**
+         * A function that takes in a list of values across multiple entries for the same match, and returns the average value
+         * 
+         * This is automatically done for all fields that are numbers, booleans, and strings (which are joined with a newline)
+         * If you want a custom one, or have a different type, you can define it here
+         * 
+         * @param values - The list of values to average
+         * @returns The average value of the list
+         */
+        average?: (values: MatchDataFields[K][]) => MatchDataFields[K]
     }
 }
