@@ -17,28 +17,6 @@ export default function AnalyticsLayout() {
     const schedule = useContext(ScheduleContext);
     if (!schedule) throw new Error("ScheduleContext not found");
 
-    const [teamList, setTeamList] = useState<number[]>([]);
-
-    const analyticsCompetition = analyticsSettings.currentCompetitionOnly ? settings?.competitionId : undefined
-
-    useEffect(() => {
-        matchDatabase.getUniqueTeams(analyticsCompetition).then(teams => {
-            setTeamList(teams.concat(schedule.teams).sort((a, b) => a - b));
-        });
-    }, [analyticsCompetition]);
-
-    const blueAllianceTeams = useMemo(() => {
-        const match = schedule.matches.find(match => match.matchId === analyticsSettings.currentMatch);
-        if (!match) return [];
-        return [match.blue1, match.blue2, match.blue3];
-    }, [analyticsSettings.currentMatch, schedule.matches]);
-
-    const redAllianceTeams = useMemo(() => {
-        const match = schedule.matches.find(match => match.matchId === analyticsSettings.currentMatch);
-        if (!match) return [];
-        return [match.red1, match.red2, match.red3];
-    }, [analyticsSettings.currentMatch, schedule.matches]); 
-
 
     return (
         <div className="w-full h-full flex flex-col items-center relative" style={{ paddingLeft: 240 }}>
@@ -110,14 +88,14 @@ export default function AnalyticsLayout() {
                 >
                     <ListItemTeamGroup 
                         name="Blue Alliance" 
-                        teams={blueAllianceTeams} 
+                        teams={analyticsSettings.blueAllianceTeams} 
                         open={analyticsSettings.currentMatchBlueOpen} 
                         setOpen={analyticsSettings.setCurrentMatchBlueOpen} 
                         className="!bg-blue-500 !bg-opacity-20"
                     />
                     <ListItemTeamGroup 
                         name="Red Alliance" 
-                        teams={redAllianceTeams} 
+                        teams={analyticsSettings.redAllianceTeams} 
                         open={analyticsSettings.currentMatchRedOpen} 
                         setOpen={analyticsSettings.setCurrentMatchRedOpen} 
                         className="!bg-red-500 !bg-opacity-20"
@@ -132,7 +110,7 @@ export default function AnalyticsLayout() {
                         </ListSubheader>
                     }
                 >
-                    {teamList.map(team => (
+                    {analyticsSettings.teamList.map(team => (
                         <ListItemTeam key={team} team={team} />
                     ))}
                 </List>

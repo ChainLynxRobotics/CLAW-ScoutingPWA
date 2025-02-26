@@ -1,6 +1,9 @@
-import { createContext, ReactElement } from "react";
+import { createContext, ReactElement, useContext, useEffect, useMemo, useState } from "react";
 import useLocalStorageState from "../hooks/localStorageState";
 import { CustomTeamGroup } from "../../types/analyticsTypes";
+import { SettingsContext } from "./SettingsContextProvider";
+import { ScheduleContext } from "./ScheduleContextProvider";
+import matchDatabase from "../../util/db/matchDatabase";
 
 /**
  * Provides access to the settings state and functions to manipulate the settings. These are usually stored in local storage.
@@ -38,6 +41,11 @@ export type AnalyticsSettingsStateData = {
     setCustomTeamGroupById: (id: number, group: CustomTeamGroup) => void;
     addCustomTeamGroup: (group: CustomTeamGroup) => void;
     removeCustomTeamGroup: (group: CustomTeamGroup) => void;
+
+    // Custom calculated values
+    teamList: number[];
+    blueAllianceTeams: number[]; // Based on "currentMatch" value
+    redAllianceTeams: number[]; // Based on "currentMatch" value
 }
 
 /**
@@ -46,7 +54,12 @@ export type AnalyticsSettingsStateData = {
  * @param children The children to wrap and give access to the context
  * @returns The children wrapped in the AnalyticsSettingsContext.Provider
  */
-export default function SettingsContextProvider({children}: {children: ReactElement}) {
+export default function AnalyticsSettingsContextProvider({children}: {children: ReactElement}) {
+
+    const settings = useContext(SettingsContext);
+    if (!settings) throw new Error("SettingsContext not found");
+    const schedule = useContext(ScheduleContext);
+    if (!schedule) throw new Error("ScheduleContext not found");
 
     const [starredTeams, setStarredTeams] = useLocalStorageState<number[]>([8248, 4180], "starredTeams");
     const [currentCompetitionOnly, setCurrentCompetitionOnly] = useLocalStorageState<boolean>(true, "analyticsCurrentCompetitionOnly");
@@ -57,6 +70,8 @@ export default function SettingsContextProvider({children}: {children: ReactElem
     const [includeBlueAllianceData, setIncludeBlueAllianceData] = useLocalStorageState<boolean>(true, "analyticsIncludeBlueAllianceData");
     const [customTeamGroups, setCustomTeamGroups] = useLocalStorageState<CustomTeamGroup[]>([], "analyticsCustomTeamGroups");
     
+    const [teamList, setTeamList] = useState<number[]>([]);
+
     function addCustomTeamGroup(group: CustomTeamGroup) {
         setCustomTeamGroups([...customTeamGroups, group]);
     }
@@ -87,6 +102,24 @@ export default function SettingsContextProvider({children}: {children: ReactElem
         }
     }
 
+    const blueAllianceTeams = useMemo(() => {
+        const match = schedule.matches.find(match => match.matchId === currentMatch);
+        if (!match) return [];
+        return [match.blue1, match.blue2, match.blue3];
+    }, [currentMatch, schedule.matches]);
+
+    const redAllianceTeams = useMemo(() => {
+        const match = schedule.matches.find(match => match.matchId === currentMatch);
+        if (!match) return [];
+        return [match.red1, match.red2, match.red3];
+    }, [currentMatch, schedule.matches]); 
+
+    useEffect(() => {
+        matchDatabase.getUniqueTeams(currentCompetitionOnly ? settings?.competitionId : undefined).then(teams => {
+            setTeamList([... new Set(teams.concat(schedule.teams))].sort((a, b) => a - b));
+        });
+    }, [currentCompetitionOnly, settings?.competitionId, schedule.teams]);
+
     const value = {
         starredTeams,
         setStarredTeams,
@@ -110,6 +143,10 @@ export default function SettingsContextProvider({children}: {children: ReactElem
         setCustomTeamGroupById,
         addCustomTeamGroup,
         removeCustomTeamGroup,
+
+        blueAllianceTeams,
+        redAllianceTeams,
+        teamList,
     }
 
     return (
