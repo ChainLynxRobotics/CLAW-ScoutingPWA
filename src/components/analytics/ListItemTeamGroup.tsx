@@ -56,8 +56,7 @@ export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setO
                 <Dialog
                     open={modalOpen}
                     onClose={()=>setModalOpen(false)}
-                    aria-labelledby="modal-title"
-                    aria-describedby="modal-description"
+                    aria-labelledby="create-group-modal-title"
                     slotProps={{
                         paper: {
                             component: 'form',
@@ -76,7 +75,7 @@ export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setO
                         },
                     }}
                 >
-                    <DialogTitle>Edit Group</DialogTitle>
+                    <DialogTitle id="create-group-modal-title">Edit Group</DialogTitle>
                     <DialogContent>
                         <TextField
                             autoFocus

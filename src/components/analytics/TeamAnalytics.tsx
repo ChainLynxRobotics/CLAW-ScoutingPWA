@@ -13,8 +13,12 @@ import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
 import ProportionalStatistic from "./ProporationalStatistic";
 import { describeProportionalObjects, describeQuantitativeProportionalObjects } from "../../util/analytics/objectStatistics";
 import QuantitativeProportionalStatistic from "./QuantitativeProportionalStatistic";
+import TeamAnalyticsSelection from "./TeamAnalyticsSelection";
+import { useNavigate } from "react-router-dom";
 
 export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], minusTeams?: number[] }) {
+
+    const navigate = useNavigate();
     
     const settings = useContext(SettingsContext);
     if (!settings) throw new Error("SettingsContext not found");
@@ -108,28 +112,9 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
     return (
         <Paper elevation={0} className="w-full h-full overflow-y-scroll">
         <div className="flex flex-col items-center p-2">
-            <h1 className="text-xl my-4 flex items-center gap-2">
-                <span>Analytics for: </span>
-                <b>
-                    {teams.map((team, i) => (
-                        <span key={team}>
-                            <a href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
-                            {i < teams.length - 1 && ', '}
-                        </span>
-                    ))}
-                </b>
-                {minusTeams && <span> vs. </span>}
-                {minusTeams && 
-                    <b>
-                        {minusTeams.map((team, i) => (
-                            <span key={team}>
-                                <a href={`https://www.thebluealliance.com/team/${team}`} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-500">{team}</a>
-                                {i < minusTeams.length - 1 && ', '}
-                            </span>
-                        ))}
-                    </b> 
-                }
-            </h1>
+            <TeamAnalyticsSelection teams={teams} minusTeams={minusTeams} onUpdate={(newTeams, newMinusTeams)=>{
+                navigate(`/analytics/team/${newTeams.join('+')}${newMinusTeams ? `/vs/${newMinusTeams.join('+')}` : ''}`);
+            }} />
             <Masonry className="w-full h-full" columns={3} spacing={2}>
                 <Card className="w-full max-w-md">
                     <CardHeader title="Pre Match" />
