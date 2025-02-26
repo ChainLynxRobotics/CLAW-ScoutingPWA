@@ -38,7 +38,7 @@ const AnalyticsPage = () => {
 
     // Data from our scouting app
     // Maps Team Number -> Match ID -> Match Data (there can be multiple entries for the same match due to duel scouting)
-    const [matchData, setMatchData] = useState(new Map<number, Map<string, Set<MatchData>>>());
+    const [matchData, setMatchData] = useState(new Map<number, Map<string, MatchData[]>>());
     useEffect(() => {
         if (!analyticsSettings.includeScoutingData) return setMatchData(new Map(allTeams.map(team => [team, new Map()])));
 
@@ -46,14 +46,14 @@ const AnalyticsPage = () => {
             const entries = await Promise.all(allTeams.map(async team => {
                 const data = await matchDatabase.getAllByTeam(team, analyticsCompetition);
                 
-                const matchMap = new Map<string, Set<MatchData>>();
+                const matchMap = new Map<string, MatchData[]>();
 
                 data.forEach(match => {
-                    if (!matchMap.has(match.matchId)) matchMap.set(match.matchId, new Set());
-                    matchMap.get(match.matchId)?.add(match);
+                    if (!matchMap.has(match.matchId)) matchMap.set(match.matchId, [match]);
+                    else matchMap.get(match.matchId)?.push(match);
                 });
 
-                return [team, matchMap] as [number, Map<string, Set<MatchData>>];
+                return [team, matchMap] as [number, Map<string, MatchData[]>];
             }));
             setMatchData(new Map(entries));
         }
@@ -62,14 +62,14 @@ const AnalyticsPage = () => {
 
     // Data from The Blue Alliance
     // Maps Team Number -> Set of TBA Matches
-    const [tbaMatchData, setTbaMatchData] = useState(new Map<number, Set<BlueAllianceMatch>>());
+    const [tbaMatchData, setTbaMatchData] = useState(new Map<number, BlueAllianceMatch[]>());
     useEffect(() => {
-        if (!analyticsSettings.includeBlueAllianceData) return setTbaMatchData(new Map(allTeams.map(team => [team, new Set()])));
+        if (!analyticsSettings.includeBlueAllianceData) return setTbaMatchData(new Map(allTeams.map(team => [team, []])));
 
         async function loadData() {
             const entries = await Promise.all(allTeams.map(async team => {
                 const data = await blueAllianceApi.getMatchesByTeam(team, settings!.competitionId, analyticsSettings!.currentCompetitionOnly);
-                return [team, new Set(data)] as [number, Set<BlueAllianceMatch>];
+                return [team, data] as [number, BlueAllianceMatch[]];
             }));
             setTbaMatchData(new Map(entries));
         }
