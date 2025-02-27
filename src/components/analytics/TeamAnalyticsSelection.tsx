@@ -159,13 +159,13 @@ function TeamAnalyticsSelectMenu({ allowNone, current, ...props }: SelectProps &
                 {analyticsSettings.blueAllianceTeams.length > 0 &&
                     <MenuItem value={analyticsSettings.blueAllianceTeams.join('+')}>
                         Blue Alliance in {analyticsSettings.currentMatch}
-                        <span className="text-xs text-gray-400"> ({analyticsSettings.redAllianceTeams.join(', ')})</span>
+                        <span className="text-xs text-gray-400"> ({analyticsSettings.blueAllianceTeams.join(', ')})</span>
                     </MenuItem>
                 }
                 {analyticsSettings.redAllianceTeams.length > 0 &&
                     <MenuItem value={analyticsSettings.redAllianceTeams.join('+')}>
                         Red Alliance in {analyticsSettings.currentMatch}
-                        <span className="text-xs text-gray-400"> ({analyticsSettings.blueAllianceTeams.join(', ')})</span>
+                        <span className="text-xs text-gray-400"> ({analyticsSettings.redAllianceTeams.join(', ')})</span>
                     </MenuItem>
                 }
                 {(analyticsSettings.blueAllianceTeams.length > 0  || analyticsSettings.redAllianceTeams.length > 0) &&
