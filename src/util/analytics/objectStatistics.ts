@@ -98,10 +98,10 @@ export function addQuantitativeData(...data: QuantitativeStats[]): QuantitativeS
 
     return {
         sample: combined_sample,
-        min: Math.min(...data.map(stat => stat.min)),
-        max: Math.max(...data.map(stat => stat.max)),
+        min: data.map(stat => stat.min).reduce((a, b) => a + b, 0),
+        max: data.map(stat => stat.max).reduce((a, b) => a + b, 0),
         sum: data.reduce((acc, val) => acc + val.sum, 0),
-        n: data.reduce((acc, val) => acc + val.n, 0),
+        n: data.reduce((acc, val) => acc + val.n, 0) / data.length,
         avg: data.reduce((acc, val) => acc + val.avg, 0),
         sd: Math.sqrt(data.reduce((acc, val) => acc + val.sd * val.sd, 0))
     };
@@ -120,8 +120,8 @@ export function subtractQuantitativeData(a: QuantitativeStats, b?: QuantitativeS
     if (b === undefined || b.n === 0) return a;
     return {
         sample: [...a.sample, ...b.sample],
-        min: Math.min(a.min, b.min),
-        max: Math.max(a.max, b.max),
+        min: a.min - b.min,
+        max: a.max - b.max,
         sum: a.sum - b.sum,
         n: (a.n + b.n) / 2,
         avg: a.avg - b.avg,
@@ -148,11 +148,14 @@ export function describeQuantitativeProportionalData(samples: Iterable<[number, 
         n_list.push(s + f);
     }
 
+    const x = describeQuantitativeData(x_list);
+    const n = describeQuantitativeData(n_list);
+
     return {
         samples: samples,
-        x: describeQuantitativeData(x_list),
-        n: describeQuantitativeData(n_list),
-        p: describeQuantitativeData(p_list)
+        x,
+        n,
+        p: describeProportionalData({successes: x.sum, failures: n.sum - x.sum})
     };
 }
 
@@ -165,7 +168,7 @@ export function describeQuantitativeProportionalData(samples: Iterable<[number, 
  * @returns Resulting QuantitativeProportionalStats of the combined data
  */
 export function addQuantitativeProportionalData(...data: QuantitativeProportionalStats[]): QuantitativeProportionalStats {
-    if (data.length === 0) return { samples: [], x: addQuantitativeData(), n: addQuantitativeData(), p: addQuantitativeData() };
+    if (data.length === 0) return { samples: [], x: addQuantitativeData(), n: addQuantitativeData(), p: addProportionalData() };
     if (data.length === 1) return data[0];
 
     let combined_samples: [number, number][] = [];
@@ -177,7 +180,7 @@ export function addQuantitativeProportionalData(...data: QuantitativeProportiona
         samples: combined_samples,
         x: addQuantitativeData(...data.map(stat => stat.x)),
         n: addQuantitativeData(...data.map(stat => stat.n)),
-        p: addQuantitativeData(...data.map(stat => stat.p))
+        p: addProportionalData(...data.map(stat => stat.p))
     };
 }
 
@@ -196,7 +199,7 @@ export function subtractQuantitativeProportionalData(a: QuantitativeProportional
         samples: [...a.samples, ...b.samples],
         x: subtractQuantitativeData(a.x, b.x),
         n: subtractQuantitativeData(a.n, b.n),
-        p: subtractQuantitativeData(a.p, b.p)
+        p: subtractProportionalData(a.p, b.p)
     };
 }
 
@@ -324,7 +327,15 @@ export function subtractCategoricalData<T>(a: CategoricalStats<T>, b?: Categoric
  * @param sample - List of booleans to analyze
  * @returns The sum, sumInverse, p, and n of the sample
  */
-export function describeProportionalData(sample: Iterable<boolean>): ProportionalStats {
+export function describeProportionalData(sample: Iterable<boolean> | {successes: number, failures: number}): ProportionalStats {
+    if ("successes" in sample) {
+        if (sample.successes + sample.failures === 0) return { x: 0, p: 0, n: 0 };
+        return {
+            x: sample.successes,
+            p: sample.successes / (sample.successes + sample.failures),
+            n: sample.successes + sample.failures
+        }
+    }
     let x = 0;
     let n = 0;
 
@@ -334,7 +345,7 @@ export function describeProportionalData(sample: Iterable<boolean>): Proportiona
         n++;
     }
 
-    return { sample, x, p: x / n, n };
+    return { x, p: n != 0 ? (x / n) : 0, n };
 }
 
 /**
@@ -347,16 +358,17 @@ export function addProportionalData(...data: ProportionalStats[]): ProportionalS
     if (data.length === 0) return describeProportionalData([]);
     if (data.length === 1) return data[0];
 
-    let combined_sample: boolean[] = [];
     let combined_x = 0;
     let combined_n = 0;
     for (const stat of data) {
-        combined_sample.push(...stat.sample);
         combined_x += stat.x;
         combined_n += stat.n;
     }
 
-    return { sample: combined_sample, x: combined_x, p: combined_x / combined_n, n: combined_n };
+    return {
+        x: combined_x,
+        p: combined_n != 0 ? (combined_x / combined_n) : 0,
+        n: combined_n };
 }
 
 /**
@@ -369,7 +381,6 @@ export function addProportionalData(...data: ProportionalStats[]): ProportionalS
 export function subtractProportionalData(a: ProportionalStats, b?: ProportionalStats): ProportionalStats {
     if (b === undefined || b.n === 0) return a;
     return {
-        sample: [...a.sample, ...b.sample],
         x: a.x - b.x,
         p: a.p - b.p,
         n: (a.n - b.n) /2

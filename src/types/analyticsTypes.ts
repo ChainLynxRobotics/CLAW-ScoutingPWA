@@ -33,8 +33,8 @@ export interface QuantitativeProportionalStats {
     x: QuantitativeStats;
     /** The sample sizes, quantitatively described */
     n: QuantitativeStats;
-    /** The proportions from 0-1, quantitatively described */
-    p: QuantitativeStats;
+    /** The proportions from 0-1, proportionally described */
+    p: ProportionalStats;
 }
 
 export interface CategoricalStats<T> {
@@ -52,7 +52,6 @@ export interface CategoricalStats<T> {
 }
 
 export interface ProportionalStats {
-    sample: Iterable<boolean>;
     /** The number of successes */
     x: number;
     /** The proportion of successes, from 0-1 */

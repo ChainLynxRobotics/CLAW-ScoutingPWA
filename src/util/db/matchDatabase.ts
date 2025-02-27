@@ -29,10 +29,11 @@ async function openDatabase() {
     if (dbCache) {
         return dbCache;
     }
-    const db = await openDB<MatchDatabaseSchema>('match-database-2024', 1, {
+    const db = await openDB<MatchDatabaseSchema>('match-database-2025', 1, {
         upgrade(db) {
             const matchStore = db.createObjectStore('entries', {
                 autoIncrement: true,
+                keyPath: 'id',
             });
             matchStore.createIndex('by-team', 'teamNumber');
             matchStore.createIndex('by-matchId', 'matchId');
@@ -78,12 +79,13 @@ async function putAll(entries: MatchData[]) {
 
     const tx = db.transaction('entries', 'readwrite');
     const store = tx.objectStore('entries');
+    const idIndex = store.index('by-id');
 
     console.log('Importing', entries.length, 'entries', entries);
 
     let count = 0;
     for (const entry of entries) {
-        if (!(await store.getKey(entry.id))) {
+        if (!(await idIndex.getKey(entry.id))) {
             store.put(entry);
             count++;
         }
