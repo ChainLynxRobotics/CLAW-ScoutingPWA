@@ -98,6 +98,12 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
     // Data for the human player location pie chart
     const humanPlayerLocationData = useMemo<PieValueType[]>(() => [
         {
+            id: HumanPlayerLocation.Unknown,
+            label: 'Unknown',
+            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Unknown).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Unknown).length || 0),
+            color: 'lightgrey'
+        },
+        {
             id: HumanPlayerLocation.None,
             label: 'None',
             value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.None).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.None).length || 0),

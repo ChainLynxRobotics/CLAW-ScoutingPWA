@@ -124,6 +124,7 @@ const PreMatch = () => {
                     onChange={handleHumanPlayerLocationChange}
                     label="Human Player Location"
                 >
+                    <MenuItem value={HumanPlayerLocation.Unknown}>Don't Know</MenuItem>
                     <MenuItem value={HumanPlayerLocation.None}>Not on field</MenuItem>
                     <MenuItem value={HumanPlayerLocation.CoralStation}>Coral Station</MenuItem>
                     <MenuItem value={HumanPlayerLocation.Processor}>Processor</MenuItem>

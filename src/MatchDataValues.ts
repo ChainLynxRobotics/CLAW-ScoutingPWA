@@ -82,7 +82,7 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     },
     humanPlayerLocation: {
         name: "Human Player Location",
-        defaultValue: HumanPlayerLocation.None,
+        defaultValue: HumanPlayerLocation.Unknown,
         serialize: (value) => HumanPlayerLocation[value],
         average: enumAverageCalculator,
     },
