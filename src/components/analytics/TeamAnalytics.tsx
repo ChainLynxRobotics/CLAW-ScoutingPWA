@@ -8,14 +8,16 @@ import matchDatabase from "../../util/db/matchDatabase";
 import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
 import { SettingsContext } from "../context/SettingsContextProvider";
 import matchDataAverage from "../../util/analytics/matchDataAverage";
-import { PieChart, PieValueType } from "@mui/x-charts";
+import { BarChart, PieChart, PieValueType } from "@mui/x-charts";
 import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
 import ProportionalStatistic from "./ProporationalStatistic";
-import { describeProportionalObjects, describeQuantitativeProportionalObjects } from "../../util/analytics/objectStatistics";
+import { describeProportionalObjects, describeQuantitativeObjects, describeQuantitativeProportionalObjects } from "../../util/analytics/objectStatistics";
 import QuantitativeProportionalStatistic from "./QuantitativeProportionalStatistic";
 import TeamAnalyticsSelection from "./TeamAnalyticsSelection";
 import { useNavigate } from "react-router-dom";
 import Heatmap from "./Heatmap";
+import QuantitativeStatistic from "./QuantitativeStatistic";
+import Observation from "../../enums/Observation";
 
 const heatmapOriginalWidth = 200;
 const heatmapOriginalHeight = 500;
@@ -123,6 +125,21 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
             value: 5
         })
     ), [matchDataPositiveFlat]);
+
+    const observationsBarChartRobots = useMemo(() => [...teams, ...(minusTeams ?? [])], [teams, minusTeams]);
+    const observationsBarChartData = useMemo(() => 
+        observationsBarChartRobots.map(team => ({
+            team,
+            [Observation.Tippy]: matchData.get(team)?.filter(match => match.observations.includes(Observation.Tippy)).length || 0,
+            [Observation.DroppingCoral]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DroppingCoral)).length || 0,
+            [Observation.DroppingAlgae]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DroppingAlgae)).length || 0,
+            [Observation.DifficultyAligningScore]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DifficultyAligningScore)).length || 0,
+            [Observation.DifficultyAligningIntake]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DifficultyAligningIntake)).length || 0,
+            [Observation.Immobilized]: matchData.get(team)?.filter(match => match.observations.includes(Observation.Immobilized)).length || 0,
+            [Observation.DisabledPartially]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DisabledPartially)).length || 0,
+            [Observation.DisabledFully]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DisabledFully)).length || 0,
+        }))
+    , [matchData, observationsBarChartRobots]);
 
     return (
         <Paper elevation={0} className="w-full h-full overflow-y-scroll">
@@ -240,6 +257,46 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             matchDataPositive.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor)), // Only include matches where the human player is at the processor
                             matchDataNegative?.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor))
                         )} />
+                    </CardContent>
+                </Card>
+
+                <Card className="w-full max-w-md border-4 border-blue-300">
+                    <CardHeader title="Post Match" />
+                    <CardContent>
+                        <QuantitativeStatistic name="Time Defending" stats={describeQuantitativeObjects<MatchData>("timeDefending", matchDataPositive, matchDataNegative)} asPercent asPercentMultiplier={1} />
+                        <Divider sx={{ my: 2 }} />
+                        <div>Observations:</div>
+                        <BarChart 
+                            width={300} 
+                            height={350}
+                            dataset={observationsBarChartData}
+                            xAxis={[{ scaleType: 'band', dataKey: 'team' }]}
+                            series={[
+                                { dataKey: Observation.Tippy+"", label: 'Tippy', color: 'hotpink' },
+                                { dataKey: Observation.DroppingCoral+"", label: 'Dropping Coral', color: 'lightcoral' },
+                                { dataKey: Observation.DroppingAlgae+"", label: 'Dropping Algae', color: 'lightgreen' },
+                                { dataKey: Observation.DifficultyAligningScore+"", label: 'Difficulty Aligning Score', color: 'lightblue' },
+                                { dataKey: Observation.DifficultyAligningIntake+"", label: 'Difficulty Aligning Intake', color: 'lightyellow' },
+                                { dataKey: Observation.Immobilized+"", label: 'Immobilized', color: 'lightgrey' },
+                                { dataKey: Observation.DisabledPartially+"", label: 'Disabled Partially', color: 'orange' },
+                                { dataKey: Observation.DisabledFully+"", label: 'Disabled Fully', color: 'red' },
+                            ]}
+                            barLabel="value"
+                            margin={{ top: 250 }}
+                        />
+                    </CardContent>
+                </Card>
+                <Card className="w-full max-w-md border-4 border-blue-300">
+                    <CardHeader title="Notes" />
+                    <CardContent className="flex flex-col gap-2">
+                        {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>match.notes.trim()).map(match => (
+                            <Card variant="outlined" key={match.matchId}>
+                                <CardHeader subheader={match.teamNumber+" - "+match.matchId} sx={{ p: 2 }} />
+                                <CardContent sx={{ py: 0 }}>
+                                    {match.notes}
+                                </CardContent>
+                            </Card>
+                        ))}
                     </CardContent>
                 </Card>
             </Masonry>
