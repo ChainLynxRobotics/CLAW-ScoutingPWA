@@ -76,7 +76,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
         };
         await matchDatabase.put(matchData);
         bluetooth?.broadcastMatchData([matchData]);
-        currentMatchContext?.incrementAndUpdate();
+        currentMatchContext?.increment();
         currentMatchContext?.setShowConfetti(true);
         navigate("/scout");
     }, [allianceColor, currentMatchContext, matchFields, matchId, navigate, settings, teamNumber]);

@@ -12,18 +12,11 @@ import { ScheduleContext } from "./ScheduleContextProvider";
 export const CurrentMatchContext = createContext<CurrentMatchContextType|undefined>(undefined);
 
 export type CurrentMatchContextType = {
-    setHasUpdate: (hasUpdate: boolean)=>void,
-    hasUpdate: boolean,
-    /**
-     * Updates the current match being scouting, may clear any in-progress data. 
-     * This function should be called after prompting to user to update after changing schedules settings.
-     */
-    update: ()=>void,
     /**
      * Increments the current match index and updates the current match being scouted.
      * This function should be called after the user has finished scouting a match.
      */
-    incrementAndUpdate: ()=>void,
+    increment: ()=>void,
     /**
      * Whether to show confetti on data submit. **This acts as a state variable and is not managed by the context provider**.
      */
@@ -52,9 +45,6 @@ export default function CurrentMatchContextProvider({children}: {children: React
     
     const [scoutingData, setScoutingData] = useState<{matchId: string, teamNumber: number, allianceColor: AllianceColor} | undefined>(undefined);
 
-    const [hasUpdate, setHasUpdate] = useState(false);
-    const [updateNextRender, setUpdateNextRender] = useState(true); // Update on page load
-
     const [showConfetti, setShowConfetti] = useState(false); // Show confetti on data submit
 
     const update = useCallback(() => {
@@ -74,30 +64,20 @@ export default function CurrentMatchContextProvider({children}: {children: React
             teamNumber: team,
             allianceColor: color
         });
-        setHasUpdate(false);
     }, [schedule.currentMatchIndex, schedule.matches, settings.clientId]);
 
-    const incrementAndUpdate = useCallback(() => {
+    const increment = useCallback(() => {
         schedule.setCurrentMatchIndex((current) => current + 1);
-        setUpdateNextRender(true);
     }, [schedule]);
 
     // Prompt to update when settings change
     useEffect(() => {
-        setHasUpdate(true);
+        update();
     }, [schedule.currentMatchIndex, settings.clientId, schedule.matches]);
 
-    useEffect(() => {
-        if (!updateNextRender) return;
-        update();
-        setUpdateNextRender(false);
-    }, [updateNextRender, update]);
-
     const value = {
-        setHasUpdate,
-        hasUpdate,
         update,
-        incrementAndUpdate,
+        increment,
         showConfetti,
         setShowConfetti
     };
