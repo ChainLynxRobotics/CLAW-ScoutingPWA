@@ -63,7 +63,7 @@ export function describeQuantitativeData(sample: Iterable<number>): Quantitative
         sum += obj;
         n++;
     }
-    if (n === 0) return { sample, min: NaN, max: NaN, sum: NaN, n: 0, avg: NaN, sd: NaN };
+    if (n === 0) return { sample, min: 0, max: 0, sum: 0, n: 0, avg: 0, sd: 0 };
 
     const avg = sum / n;
 

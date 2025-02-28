@@ -31,7 +31,8 @@
     "react-confetti": "^6.2.2",
     "react-dom": "^19.0.0",
     "react-error-boundary": "^4.1.2",
-    "react-qr-code": "^2.0.15"
+    "react-qr-code": "^2.0.15",
+    "visual-heatmap": "^2.1.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.6",

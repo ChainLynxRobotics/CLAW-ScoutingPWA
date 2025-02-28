@@ -15,6 +15,12 @@ import { describeProportionalObjects, describeQuantitativeProportionalObjects } 
 import QuantitativeProportionalStatistic from "./QuantitativeProportionalStatistic";
 import TeamAnalyticsSelection from "./TeamAnalyticsSelection";
 import { useNavigate } from "react-router-dom";
+import Heatmap from "./HeatMap";
+
+const heatmapOriginalWidth = 200;
+const heatmapOriginalHeight = 500;
+const heatmapWidth = 150;
+const heatmapHeight = 375;
 
 export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], minusTeams?: number[] }) {
 
@@ -92,7 +98,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         {
             id: HumanPlayerLocation.None,
             label: 'None',
-            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation !== HumanPlayerLocation.None).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation !== HumanPlayerLocation.None).length || 0),
+            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.None).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.None).length || 0),
             color: 'snow'
         },
         {
@@ -107,7 +113,16 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
             value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor).length || 0),
             color: 'lightskyblue',
         },
-    ], [matchDataPositive, matchDataNegative]);
+    ], [matchDataPositiveFlat, matchDataNegativeFlat]);
+
+    const heatmapData = useMemo(() => matchDataPositiveFlat
+        .filter(match => match.autoStartPositionX !== undefined && match.autoStartPositionY !== undefined)
+        .map(match => ({
+            x: match.autoStartPositionX! * heatmapWidth / heatmapOriginalWidth,
+            y: match.autoStartPositionY! * heatmapHeight / heatmapOriginalHeight,
+            value: 5
+        })
+    ), [matchDataPositiveFlat]);
 
     return (
         <Paper elevation={0} className="w-full h-full overflow-y-scroll">
@@ -116,15 +131,58 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 navigate(`/analytics/team/${newTeams.join('+')}${newMinusTeams ? `/vs/${newMinusTeams.join('+')}` : ''}`);
             }} />
             <Masonry className="w-full h-full" columns={3} spacing={2}>
-                <Card className="w-full max-w-md">
+                <Card className="w-full max-w-md border-4 border-green-300">
                     <CardHeader title="Pre Match" />
                     <CardContent>
                         <div>Human Player Location</div>
-                        <PieChart width={400} height={300} series={[{ data: humanPlayerLocationData }]} />
+                        <PieChart width={275} height={150} series={[{ 
+                            data: humanPlayerLocationData,
+                            cx: 50,
+                            cy: "50%",
+                            outerRadius: 50,
+                            innerRadius: 15,
+                            cornerRadius: 5,
+                            paddingAngle: 2,
+                        }]} />
+                    </CardContent>
+                </Card>
+                <Card className="w-full max-w-md border-4 border-green-300 !overflow-visible">
+                    <CardHeader title="Pre Match Start Position" />
+                    <CardContent>
+                        <div className="flex flex-col items-center">
+                            <div className="relative">
+                                <img src={`/imgs/reefscape_field_render_blue.png`} 
+                                    alt="Reefscape Field Render" 
+                                    className={`object-cover object-right`}
+                                    style={{ width: heatmapWidth, height: heatmapHeight }}
+                                />
+                                <Heatmap data={heatmapData} config={{
+                                    size: 100,
+                                    intensity: 0.75, 
+                                    min: 0,
+                                    gradient: [{
+                                        color: [0, 0, 0, 0.0],
+                                        offset: 0
+                                    }, {
+                                        color: [0, 0, 255, 0.2],
+                                        offset: 0.2
+                                    }, {
+                                        color: [0, 255, 0, 0.5],
+                                        offset: 0.45
+                                    }, {
+                                        color: [255, 255, 0, 1.0],
+                                        offset: 0.85
+                                    }, {
+                                        color: [255, 0, 0, 1.0],
+                                        offset: 1.0
+                                    }]
+                                }} />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <Card className="w-full max-w-md !overflow-visible">
+                <Card className="w-full max-w-md border-4 border-yellow-300">
                     <CardHeader title="Auto - Coral" />
                     <CardContent>
                         <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL4Score", "autoCoralL4Miss", matchDataPositive, matchDataNegative)} />
@@ -134,7 +192,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     </CardContent>
                 </Card>
 
-                <Card className="w-full max-w-md">
+                <Card className="w-full max-w-md border-4 border-yellow-300">
                     <CardHeader title="Auto - Other" />
                     <CardContent>
                         {/* <ProportionalStatistic stats={describeProportionalObjects<BlueAllianceMatch>("score_breakdown.blue.mobilityRobot1", tbaMatchDataPositive, tbaMatchDataNegative)} /> */}
@@ -145,14 +203,15 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("autoCoralGroundIntake", matchDataPositive, matchDataNegative)} />
                         <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("autoCoralStationIntake", matchDataPositive, matchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Remove Algae from Reef" stats={describeProportionalObjects<MatchData>("autoRemoveAlgae", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Remove Algae from Reef L2" stats={describeProportionalObjects<MatchData>("autoRemoveL2Algae", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Remove Algae from Reef L3" stats={describeProportionalObjects<MatchData>("autoRemoveL3Algae", matchDataPositive, matchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
                         <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
                     </CardContent>
                 </Card>
 
-                <Card className="w-full max-w-md !overflow-visible">
+                <Card className="w-full max-w-md border-4 border-pink-400">
                     <CardHeader title="Teleop - Coral" />
                     <CardContent>
                         <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL4Score", "teleopCoralL4Miss", matchDataPositive, matchDataNegative)} />
@@ -162,18 +221,17 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     </CardContent>
                 </Card>
 
-                <Card className="w-full max-w-md">
+                <Card className="w-full max-w-md border-4 border-pink-400">
                     <CardHeader title="Teleop - Other" />
                     <CardContent>
-                        {/* <ProportionalStatistic stats={describeProportionalObjects<BlueAllianceMatch>("score_breakdown.blue.mobilityRobot1", tbaMatchDataPositive, tbaMatchDataNegative)} /> */}
-                        <Divider sx={{ my: 2 }} />
                         <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeScore", "teleopAlgaeMiss", matchDataPositive, matchDataNegative)} />
                         <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeNetScore", "teleopAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("teleopCoralGroundIntake", matchDataPositive, matchDataNegative)} />
                         <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("teleopCoralStationIntake", matchDataPositive, matchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Remove Algae from Reef" stats={describeProportionalObjects<MatchData>("teleopRemoveAlgae", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Remove Algae from Reef L2" stats={describeProportionalObjects<MatchData>("teleopRemoveL2Algae", matchDataPositive, matchDataNegative)} />
+                        <ProportionalStatistic name="Remove Algae from Reef L3" stats={describeProportionalObjects<MatchData>("teleopRemoveL3Algae", matchDataPositive, matchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
                         <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
