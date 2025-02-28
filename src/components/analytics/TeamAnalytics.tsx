@@ -15,7 +15,7 @@ import { describeProportionalObjects, describeQuantitativeProportionalObjects } 
 import QuantitativeProportionalStatistic from "./QuantitativeProportionalStatistic";
 import TeamAnalyticsSelection from "./TeamAnalyticsSelection";
 import { useNavigate } from "react-router-dom";
-import Heatmap from "./HeatMap";
+import Heatmap from "./Heatmap";
 
 const heatmapOriginalWidth = 200;
 const heatmapOriginalHeight = 500;
