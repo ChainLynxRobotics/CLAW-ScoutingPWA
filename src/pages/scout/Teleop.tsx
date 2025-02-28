@@ -8,6 +8,7 @@ import { OnFieldButton } from "../../components/scout/OnFieldButton";
 import OnFieldButtonGroup from "../../components/scout/OnFieldButtonGroup";
 import { OnFieldMenuButton } from "../../components/scout/OnFieldMenuButton";
 import { FormControlLabel, Checkbox } from "@mui/material";
+import Divider from "../../components/ui/Divider";
 
 
 const Teleop = () => {
@@ -81,6 +82,10 @@ const Teleop = () => {
 
             </div>
 
+            <div className="mt-4 mb-6 italic text-secondary">
+                Check ✅ if the robot was able to perform the following tasks during the autonomous period:
+            </div>
+
             <FormControlLabel
                 control={
                     <Checkbox 
@@ -103,7 +108,7 @@ const Teleop = () => {
                 label={<span>Removed Algae ❌🟢 From Reef L3</span>}
             />
             
-            <div className="my-4 w-full max-w-md h-1 bg-background-secondary undefined"></div>
+            <Divider className="!my-4" />
 
             <FormControlLabel
                 control={
@@ -127,7 +132,7 @@ const Teleop = () => {
                 label={<span>Collected Coral 🪸 From Station 🏢</span>}
             />
 
-            <div className="my-4 w-full max-w-md h-1 bg-background-secondary undefined"></div>
+            <Divider className="!my-4" />
 
             <FormControlLabel
                 control={

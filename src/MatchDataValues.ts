@@ -13,7 +13,8 @@ import { enumAverageCalculator, EnumMap } from "./util/analytics/matchDataAverag
  */
 export type MatchDataFields = {
     // Prematch
-    autoStartPosition: number,
+    autoStartPositionX: number|undefined, // Relative to the left 200 pixels of the field on blue side without field rotation (0-200)
+    autoStartPositionY: number|undefined, // Relative to the entire height of the field on blue side without field rotation (0-500)
     humanPlayerLocation: HumanPlayerLocation,
     // Auto
     autoLeave: boolean,
@@ -71,9 +72,13 @@ export type MatchDataFields = {
  */
 export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord> = {
     // Prematch
-    autoStartPosition: {
+    autoStartPositionX: {
         name: "Auto Start Position",
-        defaultValue: 0,
+        defaultValue: undefined,
+    },
+    autoStartPositionY: {
+        name: "Auto Start Position",
+        defaultValue: undefined,
     },
     humanPlayerLocation: {
         name: "Human Player Location",

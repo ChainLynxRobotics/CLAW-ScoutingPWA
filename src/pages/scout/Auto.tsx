@@ -41,17 +41,17 @@ const Auto = () => {
                     <span className="material-symbols-outlined m-2">360</span>
                 </button>
                 
-                <OnFieldButtonGroup label="Processor" top={!reverseY ? 0.85 : 0.15} left={!reverseX ? 0.715 : 0.275} vertical>
+                <OnFieldButtonGroup label="Auto Processor" top={!reverseY ? 0.85 : 0.15} left={!reverseX ? 0.715 : 0.275} vertical>
                     <OnFieldButton label="Score" color="success" value={context.fields.autoAlgaeScore} setValue={(v)=>context.fields.set("autoAlgaeScore", v)} />
                     <OnFieldButton label="Miss" color="error" value={context.fields.autoAlgaeMiss} setValue={(v)=>context.fields.set("autoAlgaeMiss", v)} />
                 </OnFieldButtonGroup>
 
-                <OnFieldButtonGroup label="Net" top={!reverseY ? 0.3 : 0.7} left={!reverseX ? 0.9 : 0.1} vertical>
+                <OnFieldButtonGroup label="Auto Net" top={!reverseY ? 0.3 : 0.7} left={!reverseX ? 0.9 : 0.1} vertical>
                     <OnFieldButton label="Score" color="success" value={context.fields.autoAlgaeNetScore} setValue={(v)=>context.fields.set("autoAlgaeNetScore", v)} />
                     <OnFieldButton label="Miss" color="error" value={context.fields.autoAlgaeNetMiss} setValue={(v)=>context.fields.set("autoAlgaeNetMiss", v)} />
                 </OnFieldButtonGroup>
 
-                <OnFieldButtonGroup label="Coral" top={!reverseY ? 0.5 : 0.5} left={!reverseX ? 0.5 : 0.5}>
+                <OnFieldButtonGroup label="Auto Coral" top={!reverseY ? 0.5 : 0.5} left={!reverseX ? 0.5 : 0.5}>
                     <OnFieldMenuButton
                         id="coral-score-menu-button"
                         label="Score"
@@ -78,6 +78,10 @@ const Auto = () => {
 
             </div>
 
+            <div className="mt-4 mb-6 italic text-secondary">
+                Check ✅ if the robot was able to perform the following tasks during the autonomous period:
+            </div>
+
             <FormControlLabel
                 control={
                     <Checkbox 
@@ -100,7 +104,7 @@ const Auto = () => {
                 label={<span>Removed Algae ❌🟢 From Reef L3</span>}
             />
             
-            <div className="my-4 w-full max-w-md h-1 bg-background-secondary undefined"></div>
+            <Divider className="!my-4" />
 
             <FormControlLabel
                 control={
@@ -124,7 +128,7 @@ const Auto = () => {
                 label={<span>Collected Coral 🪸 From Station 🏢</span>}
             />
 
-            <div className="my-4 w-full max-w-md h-1 bg-background-secondary undefined"></div>
+            <Divider className="!my-4" />
 
             <FormControlLabel
                 control={

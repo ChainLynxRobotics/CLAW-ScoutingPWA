@@ -51,10 +51,6 @@ const PostMatch = () => {
         context.fields.set("observations", typeof val === 'string' ? val.split(',').map((str)=>parseInt(str) as Observation) : val);
     }
 
-    useEffect(()=>{
-        console.log(context?.fields.observations);
-    }, [context?.fields.observations])
-
     function submit() {
         if (context) {
             setLoading(true);
