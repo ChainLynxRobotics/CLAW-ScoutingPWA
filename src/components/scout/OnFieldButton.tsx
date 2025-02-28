@@ -46,6 +46,7 @@ export function OnFieldButton({ label, value, setValue, ...props}: OnFieldButton
         <Button
             variant="contained"
             color="primary"
+            size="small"
             onPointerDown={() => {
                 const start = Date.now();
                 document.addEventListener('pointerup', () => {

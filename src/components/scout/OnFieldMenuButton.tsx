@@ -58,6 +58,7 @@ export function OnFieldMenuButton({ label, id, menuItems, ...props}: OnFieldMenu
                 id={id}
                 variant="contained"
                 color="primary"
+                size="small"
                 onClick={handleMenuButtonClick}
                 {...props}
             >

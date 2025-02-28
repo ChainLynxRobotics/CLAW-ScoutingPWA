@@ -33,7 +33,8 @@ export type MatchDataFields = {
     autoCoralStationIntake: boolean,
     autoAlgaeGroundIntake: boolean,
     autoAlgaeReefIntake: boolean,
-    autoRemoveAlgae: boolean,
+    autoRemoveL2Algae: boolean,
+    autoRemoveL3Algae: boolean,
     // Teleop
     teleopCoralL1Score: number,
     teleopCoralL1Miss: number,
@@ -51,7 +52,8 @@ export type MatchDataFields = {
     teleopCoralStationIntake: boolean,
     teleopAlgaeGroundIntake: boolean,
     teleopAlgaeReefIntake: boolean,
-    teleopRemoveAlgae: boolean,
+    teleopRemoveL2Algae: boolean,
+    teleopRemoveL3Algae: boolean,
     teleopHumanPlayerAlgaeScore: number,
     teleopHumanPlayerAlgaeMiss: number,
     // Endgame
@@ -100,7 +102,8 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     autoCoralStationIntake: { name: "Auto Coral Station Intake", defaultValue: false },
     autoAlgaeGroundIntake: { name: "Auto Algae Ground Intake", defaultValue: false },
     autoAlgaeReefIntake: { name: "Auto Algae Reef Intake", defaultValue: false },
-    autoRemoveAlgae: { name: "Auto Remove Algae", defaultValue: false },
+    autoRemoveL2Algae: { name: "Auto Remove Level 2 Algae", defaultValue: false },
+    autoRemoveL3Algae: { name: "Auto Remove Level 3 Algae", defaultValue: false },
     // Teleop
     teleopCoralL1Score: { name: "Coral L1 Score", defaultValue: 0 },
     teleopCoralL1Miss: { name: "Coral L1 Miss", defaultValue: 0 },
@@ -118,7 +121,8 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     teleopCoralStationIntake: { name: "Coral Station Intake", defaultValue: false },
     teleopAlgaeGroundIntake: { name: "Algae Ground Intake", defaultValue: false },
     teleopAlgaeReefIntake: { name: "Algae Reef Intake", defaultValue: false },
-    teleopRemoveAlgae: { name: "Remove Algae", defaultValue: false },
+    teleopRemoveL2Algae: { name: "Auto Remove Level 2 Algae", defaultValue: false },
+    teleopRemoveL3Algae: { name: "Auto Remove Level 3 Algae", defaultValue: false },
     teleopHumanPlayerAlgaeScore: {
         name: "Human Player Algae Score",
         defaultValue: 0

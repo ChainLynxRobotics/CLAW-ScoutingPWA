@@ -7,6 +7,8 @@ import PageTitle from "../../components/ui/PageTitle";
 import OnFieldButtonGroup from "../../components/scout/OnFieldButtonGroup";
 import { OnFieldButton } from "../../components/scout/OnFieldButton";
 import { OnFieldMenuButton } from "../../components/scout/OnFieldMenuButton";
+import { Checkbox, FormControlLabel } from "@mui/material";
+import Divider from "../../components/ui/Divider";
 
 
 const Auto = () => {
@@ -27,9 +29,9 @@ const Auto = () => {
         <div className="w-full flex justify-center">
             <PageTitle>Autonomous</PageTitle>
         </div>
-        <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
+        <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4 pb-12">
             
-            <div className="max-w-md relative my-12 whitespace-nowrap">
+            <div className="max-w-md relative my-6 whitespace-nowrap border-4 border-yellow-300">
                 <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
                     alt="Reefscape Field Render" className={`w-full ${rotateField ? '-scale-100' : ''}`} />
                 
@@ -39,12 +41,17 @@ const Auto = () => {
                     <span className="material-symbols-outlined m-2">360</span>
                 </button>
                 
-                <OnFieldButtonGroup label="Processor" top={!reverseX ? 0.2 : 0.8} left={!reverseY ? 0.9 : 0.1} vertical>
+                <OnFieldButtonGroup label="Processor" top={!reverseY ? 0.85 : 0.15} left={!reverseX ? 0.715 : 0.275} vertical>
                     <OnFieldButton label="Score" color="success" value={context.fields.autoAlgaeScore} setValue={(v)=>context.fields.set("autoAlgaeScore", v)} />
                     <OnFieldButton label="Miss" color="error" value={context.fields.autoAlgaeMiss} setValue={(v)=>context.fields.set("autoAlgaeMiss", v)} />
                 </OnFieldButtonGroup>
 
-                <OnFieldButtonGroup label="Coral" top={!reverseX ? 0.5 : 0.5} left={!reverseY ? 0.5 : 0.5}>
+                <OnFieldButtonGroup label="Net" top={!reverseY ? 0.3 : 0.7} left={!reverseX ? 0.9 : 0.1} vertical>
+                    <OnFieldButton label="Score" color="success" value={context.fields.autoAlgaeNetScore} setValue={(v)=>context.fields.set("autoAlgaeNetScore", v)} />
+                    <OnFieldButton label="Miss" color="error" value={context.fields.autoAlgaeNetMiss} setValue={(v)=>context.fields.set("autoAlgaeNetMiss", v)} />
+                </OnFieldButtonGroup>
+
+                <OnFieldButtonGroup label="Coral" top={!reverseY ? 0.5 : 0.5} left={!reverseX ? 0.5 : 0.5}>
                     <OnFieldMenuButton
                         id="coral-score-menu-button"
                         label="Score"
@@ -70,6 +77,78 @@ const Auto = () => {
                 </OnFieldButtonGroup>
 
             </div>
+
+            <FormControlLabel
+                control={
+                    <Checkbox 
+                        checked={context.fields.autoRemoveL2Algae} 
+                        onClick={(e) => context.fields.set("autoRemoveL2Algae", !context.fields.autoRemoveL2Algae)}
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                    />
+                } 
+                label={<span>Removed Algae ❌🟢 From Reef L2</span>} 
+            />
+
+            <FormControlLabel
+                control={
+                    <Checkbox 
+                        checked={context.fields.autoRemoveL3Algae} 
+                        onClick={(e) => context.fields.set("autoRemoveL3Algae", !context.fields.autoRemoveL3Algae)}
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                    />
+                } 
+                label={<span>Removed Algae ❌🟢 From Reef L3</span>}
+            />
+            
+            <div className="my-4 w-full max-w-md h-1 bg-background-secondary undefined"></div>
+
+            <FormControlLabel
+                control={
+                    <Checkbox 
+                        checked={context.fields.autoCoralGroundIntake} 
+                        onClick={(e) => context.fields.set("autoCoralGroundIntake", !context.fields.autoCoralGroundIntake)}
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                    />
+                } 
+                label={<span>Collected Coral 🪸 From Ground</span>}
+            />
+
+            <FormControlLabel
+                control={
+                    <Checkbox 
+                        checked={context.fields.autoCoralStationIntake} 
+                        onClick={(e) => context.fields.set("autoCoralStationIntake", !context.fields.autoCoralStationIntake)}
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                    />
+                } 
+                label={<span>Collected Coral 🪸 From Station 🏢</span>}
+            />
+
+            <div className="my-4 w-full max-w-md h-1 bg-background-secondary undefined"></div>
+
+            <FormControlLabel
+                control={
+                    <Checkbox 
+                        checked={context.fields.autoAlgaeGroundIntake} 
+                        onClick={(e) => context.fields.set("autoAlgaeGroundIntake", !context.fields.autoAlgaeGroundIntake)}
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                    />
+                } 
+                label={<span>Collected Algae 🟢 From Ground</span>}
+            />
+
+            <FormControlLabel
+                control={
+                    <Checkbox 
+                        checked={context.fields.autoAlgaeReefIntake} 
+                        onClick={(e) => context.fields.set("autoAlgaeReefIntake", !context.fields.autoAlgaeReefIntake)}
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                    />
+                } 
+                label={<span>Collected Algae 🟢 From Reef 🪸</span>}
+            />
+
+            
         </div>
         </>
     );
