@@ -31,18 +31,58 @@ message MatchData {
     AllianceColor allianceColor = 3;
 
     // fields ## EDIT THESE ##
-    HumanPlayerLocation humanPlayerLocation = 4;
-    bool preload = 5;
-    ClimbResult climb = 6;
-    float defense = 7;
-    uint32 humanPlayerPerformance = 8;
-    MatchResult matchResult = 9;
-    string notes = 10;
+    // Prematch
+    float autoStartPositionX = 7;
+    float autoStartPositionY = 8;
+    // Auto
+    uint32 autoCoralL1Score = 9;
+    uint32 autoCoralL1Miss = 10;
+    uint32 autoCoralL2Score = 11;
+    uint32 autoCoralL2Miss = 12;
+    uint32 autoCoralL3Score = 13;
+    uint32 autoCoralL3Miss = 14;
+    uint32 autoCoralL4Score = 15;
+    uint32 autoCoralL4Miss = 16;
+    uint32 autoAlgaeScore = 17;
+    uint32 autoAlgaeMiss = 18;
+    uint32 autoAlgaeNetScore = 19;
+    uint32 autoAlgaeNetMiss = 20;
+    bool autoCoralGroundIntake = 21;
+    bool autoCoralStationIntake = 22;
+    bool autoAlgaeGroundIntake = 23;
+    bool autoAlgaeReefIntake = 24;
+    bool autoRemoveL2Algae = 25;
+    bool autoRemoveL3Algae = 26;
+    // Teleop
+    uint32 teleopCoralL1Score = 27;
+    uint32 teleopCoralL1Miss = 28;
+    uint32 teleopCoralL2Score = 29;
+    uint32 teleopCoralL2Miss = 30;
+    uint32 teleopCoralL3Score = 31;
+    uint32 teleopCoralL3Miss = 32;
+    uint32 teleopCoralL4Score = 33;
+    uint32 teleopCoralL4Miss = 34;
+    uint32 teleopAlgaeScore = 35;
+    uint32 teleopAlgaeMiss = 36;
+    uint32 teleopAlgaeNetScore = 37;
+    uint32 teleopAlgaeNetMiss = 38;
+    bool teleopCoralGroundIntake = 39;
+    bool teleopCoralStationIntake = 40;
+    bool teleopAlgaeGroundIntake = 41;
+    bool teleopAlgaeReefIntake = 42;
+    bool teleopRemoveL2Algae = 43;
+    bool teleopRemoveL3Algae = 44;
+    uint32 teleopHumanPlayerAlgaeScore = 45;
+    uint32 teleopHumanPlayerAlgaeMiss = 46;
+    // Endgame
+    float timeDefending = 47;
+    repeated Observation observations = 48;
+    string notes = 49;
 
     // footer
-    string scoutName = 11;
-    uint64 matchStart = 12;
-    uint64 submitTime = 13;
+    string scoutName = 4;
+    uint64 matchStart = 5;
+    uint64 submitTime = 6;
 }
 
 enum AllianceColor {
@@ -51,21 +91,21 @@ enum AllianceColor {
 }
 
 enum HumanPlayerLocation {
-    None = 0;
-    Source = 1;
-    Amp = 2;
+    Unknown = 0;
+    None = 1;
+    CoralStation = 2;
+    Processor = 3;
 }
 
-enum ClimbResult {
-    None = 0;
-    Parked = 1;
-    Climb = 2;
-}
-
-enum MatchResult {
-    Loss = 0;
-    Tie = 1;
-    Win = 2;
+enum Observation {
+    Tippy = 0;
+    DroppingCoral = 1;
+    DroppingAlgae = 2;
+    DifficultyAligningScore = 3;
+    DifficultyAligningIntake = 4;
+    Immobilized = 5;
+    DisabledPartially = 6;
+    DisabledFully = 7;
 }
 
 // Schedule Data

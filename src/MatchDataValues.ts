@@ -17,7 +17,6 @@ export type MatchDataFields = {
     autoStartPositionY: number|undefined, // Relative to the entire height of the field on blue side without field rotation (0-500)
     humanPlayerLocation: HumanPlayerLocation,
     // Auto
-    autoLeave: boolean,
     autoCoralL1Score: number,
     autoCoralL1Miss: number,
     autoCoralL2Score: number,
@@ -87,10 +86,6 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
         average: enumAverageCalculator,
     },
     // Auto
-    autoLeave: {
-        name: "Auto Leave",
-        defaultValue: false,
-    },
     autoCoralL1Score: { name: "Auto Coral L1 Score", defaultValue: 0 },
     autoCoralL1Miss: { name: "Auto Coral L1 Miss", defaultValue: 0 },
     autoCoralL2Score: { name: "Auto Coral L2 Score", defaultValue: 0 },

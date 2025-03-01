@@ -1,5 +1,5 @@
 import { QRCodeData } from "../../types/QRCodeData";
-import { compressBytes, decompressBytes, toBase64 } from "./compression";
+import { compressBytes, decompressBytes, fromBase64, toBase64 } from "./compression";
 import proto from "./proto";
 
 /**
@@ -32,7 +32,7 @@ async function decodeQrBase64(base64: string): Promise<QRCodeData> {
 
     const qrCodeDataProto = await proto.getType("QrCodeData");
 
-    const compressed = Buffer.from(base64, "base64");
+    const compressed = fromBase64(base64);
     const decompressed = await decompressBytes(compressed);
     const decoded = qrCodeDataProto.decode(decompressed);
     const data = qrCodeDataProto.toObject(decoded) as QRCodeData;
