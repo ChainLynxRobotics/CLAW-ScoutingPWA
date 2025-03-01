@@ -1,4 +1,4 @@
-import { BlueAllianceMatch, BlueAllianceMatchScoreBreakdown2025, BlueAllianceMatchScoreBreakdown2025Alliance } from "./blueAllianceTypes";
+import { BlueAllianceMatch, BlueAllianceMatchScoreBreakdown2025 } from "./blueAllianceTypes";
 
 export interface BlueAllianceMatchExtended extends BlueAllianceMatch {
     score_breakdown: BlueAllianceMatchScoreBreakdown2025Extended | null;

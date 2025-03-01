@@ -73,7 +73,7 @@ export default function CurrentMatchContextProvider({children}: {children: React
     // Prompt to update when settings change
     useEffect(() => {
         update();
-    }, [schedule.currentMatchIndex, settings.clientId, schedule.matches]);
+    }, [update]);
 
     const value = {
         update,

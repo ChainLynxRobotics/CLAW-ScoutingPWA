@@ -90,7 +90,7 @@ const Teleop = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.teleopRemoveL2Algae} 
-                        onClick={(e) => context.fields.set("teleopRemoveL2Algae", !context.fields.teleopRemoveL2Algae)}
+                        onClick={() => context.fields.set("teleopRemoveL2Algae", !context.fields.teleopRemoveL2Algae)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -101,7 +101,7 @@ const Teleop = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.teleopRemoveL3Algae} 
-                        onClick={(e) => context.fields.set("teleopRemoveL3Algae", !context.fields.teleopRemoveL3Algae)}
+                        onClick={() => context.fields.set("teleopRemoveL3Algae", !context.fields.teleopRemoveL3Algae)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -114,7 +114,7 @@ const Teleop = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.teleopCoralGroundIntake} 
-                        onClick={(e) => context.fields.set("teleopCoralGroundIntake", !context.fields.teleopCoralGroundIntake)}
+                        onClick={() => context.fields.set("teleopCoralGroundIntake", !context.fields.teleopCoralGroundIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -125,7 +125,7 @@ const Teleop = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.teleopCoralStationIntake} 
-                        onClick={(e) => context.fields.set("teleopCoralStationIntake", !context.fields.teleopCoralStationIntake)}
+                        onClick={() => context.fields.set("teleopCoralStationIntake", !context.fields.teleopCoralStationIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -138,7 +138,7 @@ const Teleop = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.teleopAlgaeGroundIntake} 
-                        onClick={(e) => context.fields.set("teleopAlgaeGroundIntake", !context.fields.teleopAlgaeGroundIntake)}
+                        onClick={() => context.fields.set("teleopAlgaeGroundIntake", !context.fields.teleopAlgaeGroundIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -149,7 +149,7 @@ const Teleop = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.teleopAlgaeReefIntake} 
-                        onClick={(e) => context.fields.set("teleopAlgaeReefIntake", !context.fields.teleopAlgaeReefIntake)}
+                        onClick={() => context.fields.set("teleopAlgaeReefIntake", !context.fields.teleopAlgaeReefIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 

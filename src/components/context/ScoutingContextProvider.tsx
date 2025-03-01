@@ -79,7 +79,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
         currentMatchContext?.increment();
         currentMatchContext?.setShowConfetti(true);
         navigate("/scout");
-    }, [allianceColor, currentMatchContext, matchFields, matchId, navigate, settings, teamNumber]);
+    }, [allianceColor, currentMatchContext, matchFields, matchId, navigate, settings, teamNumber, bluetooth]);
 
 
     // ****************************************************
@@ -99,7 +99,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
     // This function is used to create a field setter function for each fields in the MatchDataFields object
     const fieldSetter = useCallback(<T extends keyof MatchDataFields>(field: T, value: MatchDataFields[T]) => {
         setMatchFields((currentMatchFields)=>({...currentMatchFields, [field]: value}));
-    }, [matchFields]);
+    }, []);
 
     // All the data and functions that can be accessed from the context
     const value: ScoutingContextType = {

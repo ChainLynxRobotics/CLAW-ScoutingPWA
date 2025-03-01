@@ -100,7 +100,7 @@ export default function CurrentMatchContextProvider({children}: {children: React
             bluetoothServer.events.off('packet', _onPacket);
             clearInterval(interval);
         }
-    }, []);
+    }, [_onPacket]);
 
     // *******************************
     // Connection

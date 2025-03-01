@@ -1,6 +1,6 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, SelectProps, TextField } from "@mui/material"
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, InputLabel, MenuItem, Select, SelectProps, TextField } from "@mui/material"
 import { useSnackbar } from "notistack";
-import { use, useContext, useEffect, useMemo, useState } from "react"
+import { useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
 

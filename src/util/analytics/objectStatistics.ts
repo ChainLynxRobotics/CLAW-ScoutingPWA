@@ -22,7 +22,7 @@ export function describeQuantitativeProportionalObjects<T>(successPath: Leaves<T
     )
 }
 
-export function describeCategoricalObjects<T,E = any>(path: Leaves<T>, positive: T[][], negative?: T[][]): CategoricalStats<E> {
+export function describeCategoricalObjects<T,E extends number|string|boolean>(path: Leaves<T>, positive: T[][], negative?: T[][]): CategoricalStats<E> {
     return subtractCategoricalData<E>(
         addCategoricalData<E>(
             ...positive.map(sampleObj => describeCategoricalData<E>(sampleObj.map(o => atPath(o, path)))
@@ -91,7 +91,7 @@ export function addQuantitativeData(...data: QuantitativeStats[]): QuantitativeS
     if (data.length === 0) return describeQuantitativeData([]);
     if (data.length === 1) return data[0];
 
-    let combined_sample: number[] = [];
+    const combined_sample: number[] = [];
     for (const stat of data) {
         combined_sample.push(...stat.sample);
     }
@@ -138,9 +138,9 @@ export function subtractQuantitativeData(a: QuantitativeStats, b?: QuantitativeS
  * @returns The x, n and p of each sample quantitatively described
  */
 export function describeQuantitativeProportionalData(samples: Iterable<[number, number]>): QuantitativeProportionalStats {
-    let x_list: number[] = []; // Successes
-    let p_list: number[] = []; // Proportions
-    let n_list: number[] = []; // Sample sizes
+    const x_list: number[] = []; // Successes
+    const p_list: number[] = []; // Proportions
+    const n_list: number[] = []; // Sample sizes
 
     for (const [s, f] of samples) {
         x_list.push(s);
@@ -171,7 +171,7 @@ export function addQuantitativeProportionalData(...data: QuantitativeProportiona
     if (data.length === 0) return { samples: [], x: addQuantitativeData(), n: addQuantitativeData(), p: addProportionalData() };
     if (data.length === 1) return data[0];
 
-    let combined_samples: [number, number][] = [];
+    const combined_samples: [number, number][] = [];
     for (const stat of data) {
         combined_samples.push(...stat.samples);
     }
@@ -210,7 +210,7 @@ export function subtractQuantitativeProportionalData(a: QuantitativeProportional
  * @returns The sum of each, p of each, pMin, pMax, and n of the sample
  */
 export function describeCategoricalData<T>(sample: Iterable<T>): CategoricalStats<T> {
-    let sum = new Map<T, number>();
+    const sum = new Map<T, number>();
     let n = 0;
 
     for (const obj of sample) {
@@ -220,7 +220,7 @@ export function describeCategoricalData<T>(sample: Iterable<T>): CategoricalStat
         n++;
     }
 
-    let p = new Map<T, number>();
+    const p = new Map<T, number>();
     let pMin: [T|undefined, number] = [sum.keys().next().value, Infinity];
     let pMax: [T|undefined, number] = [sum.keys().next().value, -Infinity];
 
@@ -245,8 +245,8 @@ export function addCategoricalData<T>(...data: CategoricalStats<T>[]): Categoric
     if (data.length === 0) return describeCategoricalData([]);
     if (data.length === 1) return data[0];
 
-    let combined_sample: T[] = [];
-    let combined_sum = new Map<T, number>();
+    const combined_sample: T[] = [];
+    const combined_sum = new Map<T, number>();
     let combined_n = 0;
     for (const stat of data) {
         combined_sample.push(...stat.sample);
@@ -257,7 +257,7 @@ export function addCategoricalData<T>(...data: CategoricalStats<T>[]): Categoric
         combined_n += stat.n;
     }
 
-    let combined_p = new Map<T, number>();
+    const combined_p = new Map<T, number>();
     let combined_pMin: [T|undefined, number] = [combined_sum.keys().next().value, Infinity];
     let combined_pMax: [T|undefined, number] = [combined_sum.keys().next().value, -Infinity];
 
@@ -280,7 +280,7 @@ export function addCategoricalData<T>(...data: CategoricalStats<T>[]): Categoric
 export function subtractCategoricalData<T>(a: CategoricalStats<T>, b?: CategoricalStats<T>): CategoricalStats<T> {
     if (b === undefined || b.n === 0) return a;
 
-    let combined_sum = new Map<T, number>();
+    const combined_sum = new Map<T, number>();
 
     for (const [key, value] of a.sum) {
         if (!combined_sum.has(key)) combined_sum.set(key, 0);
@@ -291,7 +291,7 @@ export function subtractCategoricalData<T>(a: CategoricalStats<T>, b?: Categoric
         combined_sum.set(key, combined_sum.get(key)! - value);
     }
 
-    let combined_p = new Map<T, number>();
+    const combined_p = new Map<T, number>();
     
     for (const [key, value] of a.p) {
         if (!combined_p.has(key)) combined_p.set(key, 0);
@@ -393,7 +393,7 @@ export function subtractProportionalData(a: ProportionalStats, b?: ProportionalS
  * @param path - The path to get the value from
  * @returns The value or undefined if it doesn't exist
  */
-export function atPath<T>(obj: T, path: Leaves<T>): any {
+export function atPath<T>(obj: T, path: Leaves<T>): any {// eslint-disable-line @typescript-eslint/no-explicit-any
     let current = obj as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     for (const key of path.split(".")) {
         if (current === undefined || current === null || !(key in current)) return undefined;

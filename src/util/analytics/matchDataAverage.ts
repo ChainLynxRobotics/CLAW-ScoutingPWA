@@ -11,7 +11,7 @@ import { MatchData } from "../../types/MatchData";
 export default function matchDataAverage(matchData: MatchData[]): MatchData {
     if (matchData.length === 0) throw new Error("No data provided");
 
-    let fields: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const fields: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
     for (const [field, info] of Object.entries(MatchDataFieldInformation)) {
         const values = matchData.map(v => v[field as keyof MatchDataFields]);
         if (info.average !== undefined) fields[field as keyof MatchDataFields] = info.average(values as any); // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -41,6 +41,6 @@ export function enumAverageCalculator<T extends string | number | symbol>(values
     // Return the most common value, prioritizing higher enum values if there is a tie
     const counts = values.reduce((a, b) => ({...a, [b]: (a[b] ?? 0) + 1}), {} as EnumMap<T>);
     const max = Math.max(...Object.values(counts) as number[]);
-    const mostCommon = Object.entries(counts).filter(([_, v]) => v === max).sort(([a], [b]) => a > b ? -1 : 1)[0][0];
+    const mostCommon = Object.entries(counts).filter(([, v]) => v === max).sort(([a], [b]) => a > b ? -1 : 1)[0][0];
     return mostCommon as T;
 }

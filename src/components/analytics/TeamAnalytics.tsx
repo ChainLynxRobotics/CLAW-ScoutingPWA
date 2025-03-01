@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, Chip, Divider, Paper } from "@mui/material";
 import { Masonry } from "@mui/lab";
 import { useContext, useMemo, useState, useEffect } from "react";
-import { BlueAllianceMatch } from "../../types/blueAllianceTypes";
 import { MatchData } from "../../types/MatchData";
 import blueAllianceApi from "../../util/blueAllianceApi";
 import matchDatabase from "../../util/db/matchDatabase";
@@ -71,7 +70,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
 
                 // Calculate average for each match if there are multiple entries for a single match
                 const matches: MatchData[] = [];
-                for (const [_, matchData] of matchMap) matches.push(matchData.length === 1 ? matchData[0] : matchDataAverage(matchData));
+                for (const [, matchData] of matchMap) matches.push(matchData.length === 1 ? matchData[0] : matchDataAverage(matchData));
 
                 return [team, matches] as [number, MatchData[]];
             }));
@@ -95,12 +94,12 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
             const entries = await Promise.all(allTeams.map(async team => {
                 const data = await blueAllianceApi.getMatchesByTeam(team, settings!.competitionId, analyticsSettings!.currentCompetitionOnly);
                 const extendedMatch = data.map(match => extendBlueAllianceScoreBreakdown2025(match, team));
-                return [team, data] as [number, BlueAllianceMatchExtended[]];
+                return [team, extendedMatch] as [number, BlueAllianceMatchExtended[]];
             }));
             setTbaMatchData(new Map(entries));
         }
         loadData();
-    }, [allTeams, analyticsSettings.includeBlueAllianceData, analyticsCompetition]);
+    }, [allTeams, analyticsCompetition, settings, analyticsSettings]);
 
     const tbaMatchDataPositive = useMemo(() => teams.map(team => tbaMatchData.get(team)).filter(v => !!v), [teams, tbaMatchData]);
     const tbaMatchDataPositiveFlat = useMemo(() => tbaMatchDataPositive.flat(), [tbaMatchDataPositive]);
@@ -171,7 +170,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
             value: tbaMatchDataPositiveFlat.filter(match => match.score_breakdown?.endGameRobot === "DeepCage").length - (tbaMatchDataNegativeFlat?.filter(match => match.score_breakdown?.endGameRobot === "DeepCage").length || 0),
             color: 'DarkSlateBlue',
         },
-    ], [matchDataPositiveFlat, matchDataNegativeFlat]);
+    ], [tbaMatchDataPositiveFlat, tbaMatchDataNegativeFlat]);
 
     const observationsBarChartRobots = useMemo(() => [...teams, ...(minusTeams ?? [])], [teams, minusTeams]);
     const observationsBarChartData = useMemo(() => 

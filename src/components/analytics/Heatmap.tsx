@@ -22,7 +22,7 @@ export default function HeatMap({ data, config }: HeatMapProps) {
         return () => {
             key.current++
         };
-    }, [ref, config]);
+    }, [ref, config, data]);
 
     return (
         <div key={key.current} ref={ref} style={{ top: 0, left: 0, width: "100%", height: "100%", position: "absolute" }}></div>

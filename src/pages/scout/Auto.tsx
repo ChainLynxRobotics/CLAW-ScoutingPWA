@@ -86,7 +86,7 @@ const Auto = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.autoRemoveL2Algae} 
-                        onClick={(e) => context.fields.set("autoRemoveL2Algae", !context.fields.autoRemoveL2Algae)}
+                        onClick={() => context.fields.set("autoRemoveL2Algae", !context.fields.autoRemoveL2Algae)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -97,7 +97,7 @@ const Auto = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.autoRemoveL3Algae} 
-                        onClick={(e) => context.fields.set("autoRemoveL3Algae", !context.fields.autoRemoveL3Algae)}
+                        onClick={() => context.fields.set("autoRemoveL3Algae", !context.fields.autoRemoveL3Algae)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -110,7 +110,7 @@ const Auto = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.autoCoralGroundIntake} 
-                        onClick={(e) => context.fields.set("autoCoralGroundIntake", !context.fields.autoCoralGroundIntake)}
+                        onClick={() => context.fields.set("autoCoralGroundIntake", !context.fields.autoCoralGroundIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -121,7 +121,7 @@ const Auto = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.autoCoralStationIntake} 
-                        onClick={(e) => context.fields.set("autoCoralStationIntake", !context.fields.autoCoralStationIntake)}
+                        onClick={() => context.fields.set("autoCoralStationIntake", !context.fields.autoCoralStationIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -134,7 +134,7 @@ const Auto = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.autoAlgaeGroundIntake} 
-                        onClick={(e) => context.fields.set("autoAlgaeGroundIntake", !context.fields.autoAlgaeGroundIntake)}
+                        onClick={() => context.fields.set("autoAlgaeGroundIntake", !context.fields.autoAlgaeGroundIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 
@@ -145,7 +145,7 @@ const Auto = () => {
                 control={
                     <Checkbox 
                         checked={context.fields.autoAlgaeReefIntake} 
-                        onClick={(e) => context.fields.set("autoAlgaeReefIntake", !context.fields.autoAlgaeReefIntake)}
+                        onClick={() => context.fields.set("autoAlgaeReefIntake", !context.fields.autoAlgaeReefIntake)}
                         sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                     />
                 } 

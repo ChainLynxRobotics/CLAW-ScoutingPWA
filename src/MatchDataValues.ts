@@ -1,6 +1,6 @@
 import HumanPlayerLocation from "./enums/HumanPlayerLocation"
 import Observation from "./enums/Observation"
-import { enumAverageCalculator, EnumMap } from "./util/analytics/matchDataAverage";
+import { enumAverageCalculator } from "./util/analytics/matchDataAverage";
 
 /**
  * This is the data that is stored in the MatchDataContext, and only gets stored once per match (unlike events).

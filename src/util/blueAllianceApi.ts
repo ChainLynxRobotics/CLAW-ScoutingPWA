@@ -3,7 +3,7 @@ import { TBA_API_BASE, TBA_API_KEY } from '../constants';
 import { BlueAllianceEventRanking, BlueAllianceMatch, BlueAllianceMatchSimple } from '../types/blueAllianceTypes';
 import matchCompare from './matchCompare';
 
-export async function fetchFromBlueAlliance(relativeUrl: string): Promise<any> {
+export async function fetchFromBlueAlliance(relativeUrl: string): Promise<object> {
     const url = new URL(relativeUrl, TBA_API_BASE).toString();
 
     const res = await fetch(url, {
@@ -37,7 +37,7 @@ export async function getSchedule(competitionId: string): Promise<ScheduledMatch
 
     const matches: ScheduledMatch[] = json
         .sort((a, b)=>(matchCompare(a.key, b.key)))
-        .map((match): ScheduledMatch => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        .map((match): ScheduledMatch => {
             return {
                 matchId: match.key.substring(competitionId.length+1),
                 blue1: parseInt(match.alliances.blue.team_keys[0].substring(3)),
@@ -67,8 +67,8 @@ export async function getEventRankings(competitionId: string): Promise<number[]>
     }
 
     const teams = rankings
-        .sort((a, b) => a.rank - b.rank) // eslint-disable-line @typescript-eslint/no-explicit-any
-        .map((team) => Number(team.team_key.substring(3))); // eslint-disable-line @typescript-eslint/no-explicit-any
+        .sort((a, b) => a.rank - b.rank)
+        .map((team) => Number(team.team_key.substring(3)));
 
     return teams;
 }

@@ -23,7 +23,7 @@ import Teleop from './pages/scout/Teleop';
 import Auto from './pages/scout/Auto';
 import SchedulePage from './pages/SchedulePage';
 import ScheduleContextProvider from './components/context/ScheduleContextProvider';
-import AnalyticsSettingsContextProvider, { AnalyticsSettingsContext } from './components/context/AnalyticsSettingsContextProvider';
+import AnalyticsSettingsContextProvider from './components/context/AnalyticsSettingsContextProvider';
 import BluetoothContextProvider from './components/context/BluetoothContextProvider';
 
 const darkTheme = createTheme({

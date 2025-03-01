@@ -1,10 +1,9 @@
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader, MenuItem, Select } from "@mui/material";
+import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader, MenuItem, Select } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import { AnalyticsSettingsContext } from "../../components/context/AnalyticsSettingsContextProvider";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext } from "react";
 import ListItemTeam from "../../components/analytics/ListItemTeam";
 import { SettingsContext } from "../../components/context/SettingsContextProvider";
-import matchDatabase from "../../util/db/matchDatabase";
 import { ScheduleContext } from "../../components/context/ScheduleContextProvider";
 import ListItemTeamGroup from "../../components/analytics/ListItemTeamGroup";
 

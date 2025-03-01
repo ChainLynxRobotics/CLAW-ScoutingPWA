@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from "react";
 import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
-import { Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, List, ListItemButton, ListItemButtonProps, ListItemText, Modal, TextField } from "@mui/material";
+import { Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItemButton, ListItemButtonProps, ListItemText, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ListItemTeam from "./ListItemTeam";
 import { useSnackbar } from "notistack";
@@ -35,7 +35,7 @@ export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setO
     return (
         <>
             <ListItemButton onClick={() => setActuallyOpen(!actuallyOpen)} {...props}>
-                <ListItemText slots={{primary: "button"}} primary={name} onClick={(e)=>{e.stopPropagation();teams.length !== 0 && navigate(`/analytics/team/${teams.join('+')}`)}} tabIndex={0} />
+                <ListItemText slots={{primary: "button"}} primary={name} onClick={(e)=>{e.stopPropagation(); if (teams.length !== 0) navigate(`/analytics/team/${teams.join('+')}`)}} tabIndex={0} />
                 {editable &&
                     <button onClick={()=>setModalOpen(true)} tabIndex={0}>
                         <span className="material-symbols-outlined">edit</span>
@@ -64,7 +64,7 @@ export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setO
                                 event.preventDefault();
                                 try {
                                     const formData = new FormData(event.currentTarget);
-                                    const formJson = Object.fromEntries((formData as any).entries());
+                                    const formJson = Object.fromEntries((formData as any).entries()); // eslint-disable-line @typescript-eslint/no-explicit-any
                                     setGroup?.(formJson.name, formJson.teams.split(/[\s,]+/).filter((team: string) => team.length > 0).map((team: string) => parseInt(team)));
                                     setModalOpen(false);
                                 } catch (e) {

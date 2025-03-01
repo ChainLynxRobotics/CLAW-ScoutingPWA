@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { ScoutingContext } from "../../components/context/ScoutingContextProvider";
 import NoMatchAvailable from "./NoMatchAvailable";
 import { MAX_NOTE_LENGTH } from "../../constants";
