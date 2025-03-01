@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Divider, Paper } from "@mui/material";
+import { Card, CardContent, CardHeader, Chip, Divider, Paper } from "@mui/material";
 import { Masonry } from "@mui/lab";
 import { useContext, useMemo, useState, useEffect } from "react";
 import { BlueAllianceMatch } from "../../types/blueAllianceTypes";
@@ -18,11 +18,24 @@ import { useNavigate } from "react-router-dom";
 import Heatmap from "./Heatmap";
 import QuantitativeStatistic from "./QuantitativeStatistic";
 import Observation from "../../enums/Observation";
+import { extendBlueAllianceScoreBreakdown2025 } from "../../util/analytics/blueAllianceExtend";
+import { BlueAllianceMatchExtended } from "../../types/blueAllianceTypesExtended";
 
 const heatmapOriginalWidth = 200;
 const heatmapOriginalHeight = 500;
 const heatmapWidth = 150;
 const heatmapHeight = 375;
+
+const observationLabels = {
+    [Observation.Tippy]: "Tippy",
+    [Observation.DroppingCoral]: "Dropped Coral",
+    [Observation.DroppingAlgae]: "Dropped Algae",
+    [Observation.DifficultyAligningScore]: "Difficulty Aligning Score",
+    [Observation.DifficultyAligningIntake]: "Difficulty Aligning Intake",
+    [Observation.Immobilized]: "Immobilized",
+    [Observation.DisabledPartially]: "Disabled Partially",
+    [Observation.DisabledFully]: "Disabled Fully",
+}
 
 export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], minusTeams?: number[] }) {
 
@@ -74,14 +87,15 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
 
     // Data from The Blue Alliance
     // Maps Team Number -> Set of TBA Matches
-    const [tbaMatchData, setTbaMatchData] = useState(new Map<number, BlueAllianceMatch[]>());
+    const [tbaMatchData, setTbaMatchData] = useState(new Map<number, BlueAllianceMatchExtended[]>());
     useEffect(() => {
         if (!analyticsSettings.includeBlueAllianceData) return setTbaMatchData(new Map(allTeams.map(team => [team, []])));
 
         async function loadData() {
             const entries = await Promise.all(allTeams.map(async team => {
                 const data = await blueAllianceApi.getMatchesByTeam(team, settings!.competitionId, analyticsSettings!.currentCompetitionOnly);
-                return [team, data] as [number, BlueAllianceMatch[]];
+                const extendedMatch = data.map(match => extendBlueAllianceScoreBreakdown2025(match, team));
+                return [team, data] as [number, BlueAllianceMatchExtended[]];
             }));
             setTbaMatchData(new Map(entries));
         }
@@ -132,6 +146,33 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         })
     ), [matchDataPositiveFlat]);
 
+    const climbPieData = useMemo<PieValueType[]>(() => [
+        {
+            id: "None",
+            label: 'None',
+            value: tbaMatchDataPositiveFlat.filter(match => match.score_breakdown?.endGameRobot === "None").length - (tbaMatchDataNegativeFlat?.filter(match => match.score_breakdown?.endGameRobot === "None").length || 0),
+            color: 'lightgrey'
+        },
+        {
+            id: "Parked",
+            label: 'Parked',
+            value: tbaMatchDataPositiveFlat.filter(match => match.score_breakdown?.endGameRobot === "Parked").length - (tbaMatchDataNegativeFlat?.filter(match => match.score_breakdown?.endGameRobot === "Parked").length || 0),
+            color: 'snow'
+        },
+        {
+            id: "ShallowCage",
+            label: 'Shallow Cage',
+            value: tbaMatchDataPositiveFlat.filter(match => match.score_breakdown?.endGameRobot === "ShallowCage").length - (tbaMatchDataNegativeFlat?.filter(match => match.score_breakdown?.endGameRobot === "ShallowCage").length || 0),
+            color: 'lightskyblue',
+        },
+        {
+            id: "DeepCage",
+            label: 'Deep Cage',
+            value: tbaMatchDataPositiveFlat.filter(match => match.score_breakdown?.endGameRobot === "DeepCage").length - (tbaMatchDataNegativeFlat?.filter(match => match.score_breakdown?.endGameRobot === "DeepCage").length || 0),
+            color: 'DarkSlateBlue',
+        },
+    ], [matchDataPositiveFlat, matchDataNegativeFlat]);
+
     const observationsBarChartRobots = useMemo(() => [...teams, ...(minusTeams ?? [])], [teams, minusTeams]);
     const observationsBarChartData = useMemo(() => 
         observationsBarChartRobots.map(team => ({
@@ -165,7 +206,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             outerRadius: 50,
                             innerRadius: 15,
                             cornerRadius: 5,
-                            paddingAngle: 2,
+                            paddingAngle: 5,
                         }]} />
                     </CardContent>
                 </Card>
@@ -218,7 +259,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 <Card className="w-full max-w-md border-4 border-yellow-300">
                     <CardHeader title="Auto - Other" />
                     <CardContent>
-                        {/* <ProportionalStatistic stats={describeProportionalObjects<BlueAllianceMatch>("score_breakdown.blue.mobilityRobot1", tbaMatchDataPositive, tbaMatchDataNegative)} /> */}
+                        <ProportionalStatistic name="Auto Leave" stats={describeProportionalObjects<BlueAllianceMatchExtended>("score_breakdown.autoLineRobot", tbaMatchDataPositive, tbaMatchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
                         <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeScore", "autoAlgaeMiss", matchDataPositive, matchDataNegative)} />
                         <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeNetScore", "autoAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
@@ -295,14 +336,39 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 <Card className="w-full max-w-md border-4 border-blue-300">
                     <CardHeader title="Notes" />
                     <CardContent className="flex flex-col gap-2">
-                        {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>match.notes.trim()).map(match => (
-                            <Card variant="outlined" key={match.matchId}>
-                                <CardHeader subheader={match.teamNumber+" - "+match.matchId} sx={{ p: 2 }} />
+                        {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>(match.notes.trim()||match.observations.length)).map(match => (
+                            <Card variant="outlined" key={match.teamNumber+"-"+match.matchId}>
+                                <CardHeader subheader={
+                                    <span className="flex justify-between">
+                                        <span>{match.teamNumber}</span>
+                                        <span>{match.matchId}</span>
+                                    </span>} 
+                                    sx={{ p: 2 }} />
                                 <CardContent sx={{ py: 0 }}>
                                     {match.notes}
+                                    <div className="flex gap-2 flex-wrap mt-2">
+                                        {match.observations.map((observation) => (
+                                            <Chip key={observation} label={observationLabels[observation]} variant="outlined" />
+                                        ))}
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}
+                    </CardContent>
+                </Card>
+                <Card className="w-full max-w-md border-4 border-green-300">
+                    <CardHeader title="Climb" />
+                    <CardContent>
+                        <div>Climb</div>
+                        <PieChart width={275} height={150} series={[{ 
+                            data: climbPieData,
+                            cx: 50,
+                            cy: "50%",
+                            outerRadius: 50,
+                            innerRadius: 15,
+                            cornerRadius: 5,
+                            paddingAngle: 5,
+                        }]} />
                     </CardContent>
                 </Card>
             </Masonry>

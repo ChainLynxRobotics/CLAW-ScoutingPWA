@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Heatmap from 'visual-heatmap';
 import { HeatmapRenderer } from "visual-heatmap/dist/types/heatmap";
 import { HeatmapConfig, Point } from "visual-heatmap/dist/types/types";
