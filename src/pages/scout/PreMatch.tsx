@@ -79,7 +79,7 @@ const PreMatch = () => {
             { claimedClientID &&
                 <Alert severity="warning" variant="filled">
                     <div className="text-lg mb-1"><b>Somebody else is using your client ID!</b></div>
-                    <div>{claimedClientID.scoutName || "An unnamed scouter"} is using Client ID <code>{claimedClientID.clientID}</code> as of <code>{dayjs(claimedClientID.receivedAt).fromNow()}</code></div>
+                    <div>{claimedClientID.scoutName || "An unnamed scouter"} is using Client ID <code>{claimedClientID.clientID+1}</code> as of <code>{dayjs(claimedClientID.receivedAt).fromNow()}</code></div>
                 </Alert>
             }
 
