@@ -9,7 +9,7 @@ import bluetoothServer from "../../util/io/bluetoothServer";
 import matchDatabase from "../../util/db/matchDatabase";
 
 
-const MAX_PACKET_DATA_SIZE = 512; // Maximum size of a packet's data field, note the max packet size is 10 bytes larger than this
+const MAX_PACKET_DATA_SIZE = 255; // Maximum size of a packet's data field, note the max packet size is 10 bytes larger than this
 const MAX_PACKET_GROUP_LENGTH = 255; // Maximum size of a packet in bytes
 
 const PACKET_SEND_INTERVAL = 100; // Interval between sending packets in milliseconds
@@ -73,6 +73,7 @@ export default function CurrentMatchContextProvider({children}: {children: React
 
     // List of packets to be sent
     const queue = useRef<QueuedRadioPacketGroup[]>([]);
+    const isCurrentlySending = useRef<boolean>(false);
     // List of all packet ids that have been sent, to be used to check for duplicates
     const sentPackets = useRef<Set<number>>(new Set());
     // List of partial packets that have been received, to be assembled into full packets and decoded once all parts are received
@@ -86,33 +87,15 @@ export default function CurrentMatchContextProvider({children}: {children: React
     // The current status of the Bluetooth connection
     const [status, setStatus] = useState<BluetoothStatusEnum>(bluetoothServer.isConnected() ? BluetoothStatusEnum.CONNECTED : BluetoothStatusEnum.DISCONNECTED);
 
-
-    // Setup event listeners
-    useEffect(() => {
-        bluetoothServer.events.on('disconnected', _onDisconnect);
-        bluetoothServer.events.on('connecting', _onConnecting);
-        bluetoothServer.events.on('connected', _onConnect);
-        bluetoothServer.events.on('packet', _onPacket);
-        const interval = setInterval(_processQueue, PACKET_SEND_INTERVAL);
-
-        return () => {
-            bluetoothServer.events.off('disconnected', _onDisconnect);
-            bluetoothServer.events.off('connecting', _onConnecting);
-            bluetoothServer.events.off('connected', _onConnect);
-            bluetoothServer.events.off('packet', _onPacket);
-            clearInterval(interval);
-        }
-    }, [_onPacket]);
-
     // *******************************
     // Connection
     // *******************************
 
-    const _onDisconnect = () => setStatus(BluetoothStatusEnum.DISCONNECTED);
-    const _onConnecting = () => setStatus(BluetoothStatusEnum.CONNECTING);
-    const _onConnect = () => setStatus(BluetoothStatusEnum.CONNECTED);
+    const _onDisconnect = useCallback(() => setStatus(BluetoothStatusEnum.DISCONNECTED), []);
+    const _onConnecting = useCallback(() => setStatus(BluetoothStatusEnum.CONNECTING), []);
+    const _onConnect = useCallback(() => setStatus(BluetoothStatusEnum.CONNECTED), []);
 
-    async function connect() {
+    const connect = useCallback(async () => {
         setStatus(BluetoothStatusEnum.CONNECTING);
         try {
             await bluetoothServer.connect();
@@ -122,50 +105,18 @@ export default function CurrentMatchContextProvider({children}: {children: React
             console.error('Failed to connect to radio:', e);
             throw e;
         }
-    }
+    }, []);
 
-    async function disconnect() {
+    const disconnect = useCallback(async () => {
         setStatus(BluetoothStatusEnum.DISCONNECTED);
         await bluetoothServer.disconnect();
-    }
+    }, []);
 
     // *******************************
     // Sending packets
     // *******************************
-    
-    async function broadcastMatchData(entries: MatchData[], onComplete?: () => void, onError?: (e: unknown) => void) {
-        await _queueFullPacket({
-            packetType: RadioPacketType.MatchDataBroadcast,
-            version: APP_VERSION,
-            matchScoutingData: {
-                entries: entries,
-            },
-        }, onComplete, onError);
-    }
 
-    async function requestMatchData(competitionId: string, knownMatches: number[], onComplete?: () => void, onError?: (e: unknown) => void) {
-        await _queueFullPacket({
-            packetType: RadioPacketType.MatchDataRequest,
-            version: APP_VERSION,
-            matchRequestData: {
-                competitionId: competitionId,
-                knownMatches: knownMatches,
-            },
-        }, onComplete, onError);
-    }
-
-    async function broadcastClientID(clientID: number, scoutName?: string, onComplete?: () => void, onError?: (e: unknown) => void) {
-        await _queueFullPacket({
-            packetType: RadioPacketType.ClientIDBroadcast,
-            version: APP_VERSION,
-            clientIDData: {
-                clientID: clientID,
-                scoutName: scoutName,
-            },
-        }, onComplete, onError);
-    }
-
-    async function _queueFullPacket(data: RadioPacketData, onComplete?: () => void, onError?: (e: unknown) => void) {
+    const _queueFullPacket = useCallback(async (data: RadioPacketData, onComplete?: () => void, onError?: (e: unknown) => void) => {
         const radioPacketDataProto = await proto.getType("RadioPacketData");
         const encoded = radioPacketDataProto.encode(radioPacketDataProto.create(data)).finish();
         const compressed = await compressBytes(encoded);
@@ -190,16 +141,49 @@ export default function CurrentMatchContextProvider({children}: {children: React
         });
         console.log('Queued packet:', packetId, totalPackets);
         sentPackets.current.add(packetId);
-    }
+    }, []);
+
+    const broadcastMatchData = useCallback(async (entries: MatchData[], onComplete?: () => void, onError?: (e: unknown) => void) => {
+        await _queueFullPacket({
+            packetType: RadioPacketType.MatchDataBroadcast,
+            version: APP_VERSION,
+            matchScoutingData: {
+                entries: entries,
+            },
+        }, onComplete, onError);
+    }, [_queueFullPacket]);
+
+    const requestMatchData = useCallback(async (competitionId: string, knownMatches: number[], onComplete?: () => void, onError?: (e: unknown) => void) => {
+        await _queueFullPacket({
+            packetType: RadioPacketType.MatchDataRequest,
+            version: APP_VERSION,
+            matchRequestData: {
+                competitionId: competitionId,
+                knownMatches: knownMatches,
+            },
+        }, onComplete, onError);
+    }, [_queueFullPacket]);
+
+    const broadcastClientID = useCallback(async (clientID: number, scoutName?: string, onComplete?: () => void, onError?: (e: unknown) => void) => {
+        await _queueFullPacket({
+            packetType: RadioPacketType.ClientIDBroadcast,
+            version: APP_VERSION,
+            clientIDData: {
+                clientID: clientID,
+                scoutName: scoutName,
+            },
+        }, onComplete, onError);
+    }, [_queueFullPacket]);
 
     // Runs every PACKET_SEND_INTERVAL milliseconds to send packets in the queue
-    async function _processQueue() {
+    const _processQueue = useCallback(async () => {
         if (!bluetoothServer.isConnected()) return; // Do nothing if the server is not connected
+        if (isCurrentlySending.current) return; // Do nothing if we are already sending
         if (queue.current.length === 0) return; // Do nothing if the queue is empty
         const group = queue.current[0];
     
+        isCurrentlySending.current = true;
         try {
-    
             const i = group.data.findIndex((p) => p !== undefined); // Find the first packet that hasn't been sent in the group
             const data = group.data[i];
             if (data) {
@@ -213,17 +197,18 @@ export default function CurrentMatchContextProvider({children}: {children: React
                 packet.set(new Uint8Array(packetHeader.buffer), 0);
                 packet.set(data, packetHeader.buffer.byteLength);
     
-                await bluetoothServer.sendPacket(packet.buffer)
+                await bluetoothServer.sendPacket(packet.buffer);
                 group.data[i] = undefined;
                 if (group.data.every((p) => p === undefined)) { // If all packets have been sent
                     group.onComplete?.(); // Run the onComplete callback
                     queue.current.shift(); // Remove the group
                 }
             }
-    
         } catch (e) {
             console.error('Failed to process queue:', e);
             group.onError?.(e);
+        } finally {
+            isCurrentlySending.current = false;
         }
     
         // Now is also a good time to cleanup old incomplete packets
@@ -236,87 +221,15 @@ export default function CurrentMatchContextProvider({children}: {children: React
             }
         }
         // And clean up old received client ids
-        setReceivedClientIDs(receivedClientIDs.filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME));
-    }
+        setReceivedClientIDs(r=>r.filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME));
+    }, []);
 
     // *******************************
     // Receiving packets
     // *******************************
 
-    // Decodes a partial packet received from the server
-    function _onPacket(data: DataView) {
-        console.log('Received packet:', data);
-        if (data.byteLength < 6) throw new Error('Invalid packet length');
-    
-        const packetId = data.getUint32(0); // Packet ID
-        const packetIndex = data.getUint8(4) // Packet index
-        const totalPackets = data.getUint8(5); // Total packets
-        const packetData = new Uint8Array(data.buffer, 6); // Packet data
-
-        if (sentPackets.current.has(packetId)) return console.log('Received own packet (Ignoring):', packetId); // Ignore own packets
-    
-        console.log('Received packet:', packetId, packetIndex, totalPackets, packetData);
-    
-        // Check to see if we already received a packet with this ID
-        if (receivedPackets.current.has(packetId)) {
-            const group = receivedPackets.current.get(packetId) as RadioPacketGroup;
-    
-            if (group.total !== totalPackets) throw new Error('Total packets mismatch for id ' + packetId); // Prevent array out of bounds
-            if (packetIndex >= totalPackets) throw new Error('Packet index out of bounds for id ' + packetId); // Prevent array out of bounds
-            group.data[packetIndex] = packetData;
-            group.lastReceivedAt = Date.now();
-    
-            if (group.data.every((p) => p !== undefined)) _decodeFullPacket(group);
-        } else {
-            const packets = new Array<Uint8Array|undefined>(totalPackets);
-            packets.fill(undefined);
-            packets[packetIndex] = packetData;
-    
-            receivedPackets.current.set(packetId, {
-                packetId: packetId,
-                data: packets,
-                total: totalPackets,
-                lastReceivedAt: Date.now(),
-            });
-    
-            if (packets.every((p) => p !== undefined)) _decodeFullPacket(receivedPackets.current.get(packetId)!);
-        }
-    }
-
-    // Decode a full packet from a group of packets to a RadioPacketData object
-    async function _decodeFullPacket(group: RadioPacketGroup) {
-        console.log('Decoding full packet:', group);
-        try {
-            const fullPacket = new Uint8Array(group.data.reduce((acc, packet) => { // Get the total length of all the packet data
-                if (packet === undefined) throw new Error('Missing packet');
-                return acc + packet.byteLength;
-            }, 0));
-    
-            // Combine all the packet data into one
-            for (let i = 0, offset = 0; i < group.data.length; i++) {
-                if (group.data[i] === undefined) throw new Error('Missing packet');
-                const packetData = group.data[i]!;
-                fullPacket.set(packetData, offset);
-                offset += packetData.byteLength;
-            }
-    
-            // Decode the packet
-            const decompressed = await decompressBytes(fullPacket);
-    
-            const radioPacketDataProto = await proto.getType("RadioPacketData");
-            const decoded = radioPacketDataProto.decode(decompressed);
-            const data = radioPacketDataProto.toObject(decoded) as RadioPacketData;
-    
-            await _onDecodedPacket(data);
-        } catch (e) {
-            console.error('Failed to decode packet:', e);
-        } finally {
-            receivedPackets.current.delete(group.packetId);
-        }
-    }
-
     // On every full decoded packet
-    async function _onDecodedPacket(packet: RadioPacketData) {
+    const _onDecodedPacket = useCallback(async (packet: RadioPacketData) => {
         console.log('Decoded packet:', packet);
 
         // Handle the packet based on its type
@@ -353,13 +266,108 @@ export default function CurrentMatchContextProvider({children}: {children: React
         } else {
             console.error('Unknown packet type:', packet.packetType);
         }
-    }
+    }, [broadcastMatchData, receivedClientIDs]);
+
+    // Decode a full packet from a group of packets to a RadioPacketData object
+    const _decodeFullPacket = useCallback(async (group: RadioPacketGroup) => {
+        console.log('Decoding full packet:', group);
+        try {
+            const fullPacket = new Uint8Array(group.data.reduce((acc, packet) => { // Get the total length of all the packet data
+                if (packet === undefined) throw new Error('Missing packet');
+                return acc + packet.byteLength;
+            }, 0));
+    
+            // Combine all the packet data into one
+            for (let i = 0, offset = 0; i < group.data.length; i++) {
+                if (group.data[i] === undefined) throw new Error('Missing packet');
+                const packetData = group.data[i]!;
+                fullPacket.set(packetData, offset);
+                offset += packetData.byteLength;
+            }
+    
+            // Decode the packet
+            const decompressed = await decompressBytes(fullPacket);
+    
+            const radioPacketDataProto = await proto.getType("RadioPacketData");
+            const decoded = radioPacketDataProto.decode(decompressed);
+            const data = radioPacketDataProto.toObject(decoded) as RadioPacketData;
+    
+            await _onDecodedPacket(data);
+        } catch (e) {
+            console.error('Failed to decode packet:', e);
+        } finally {
+            receivedPackets.current.delete(group.packetId);
+        }
+    }, [_onDecodedPacket]);
+
+    // Decodes a partial packet received from the server
+    const _onPacket = useCallback((data: DataView) => {
+        console.log('Received packet:', data);
+        if (data.byteLength < 6) throw new Error('Invalid packet length');
+    
+        const packetId = data.getUint32(0); // Packet ID
+        const packetIndex = data.getUint8(4) // Packet index
+        const totalPackets = data.getUint8(5); // Total packets
+        const packetData = new Uint8Array(data.buffer, 6); // Packet data
+
+        if (sentPackets.current.has(packetId)) return console.log('Received own packet (Ignoring):', packetId); // Ignore own packets
+    
+        console.log('Received packet:', packetId, packetIndex, totalPackets, packetData);
+    
+        // Check to see if we already received a packet with this ID
+        if (receivedPackets.current.has(packetId)) {
+            const group = receivedPackets.current.get(packetId) as RadioPacketGroup;
+    
+            if (group.total !== totalPackets) throw new Error('Total packets mismatch for id ' + packetId); // Prevent array out of bounds
+            if (packetIndex >= totalPackets) throw new Error('Packet index out of bounds for id ' + packetId); // Prevent array out of bounds
+            group.data[packetIndex] = packetData;
+            group.lastReceivedAt = Date.now();
+    
+            if (group.data.every((p) => p !== undefined)) _decodeFullPacket(group);
+        } else {
+            const packets = new Array<Uint8Array|undefined>(totalPackets);
+            packets.fill(undefined);
+            packets[packetIndex] = packetData;
+    
+            receivedPackets.current.set(packetId, {
+                packetId: packetId,
+                data: packets,
+                total: totalPackets,
+                lastReceivedAt: Date.now(),
+            });
+    
+            if (packets.every((p) => p !== undefined)) _decodeFullPacket(receivedPackets.current.get(packetId)!);
+        }
+    }, [_decodeFullPacket]);
 
     const getClaimedClientID = useCallback(function getClaimedClientID(clientID: number) {
         // Remove old client IDs
         return receivedClientIDs.filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME)
             .sort((a, b) => b.receivedAt - a.receivedAt).find((d) => d.clientID === clientID);
     }, [receivedClientIDs]);
+
+
+    // Setup event listeners
+    useEffect(() => {
+        bluetoothServer.events.on('disconnected', _onDisconnect);
+        bluetoothServer.events.on('connecting', _onConnecting);
+        bluetoothServer.events.on('connected', _onConnect);
+        bluetoothServer.events.on('packet', _onPacket);
+
+        return () => {
+            bluetoothServer.events.off('disconnected', _onDisconnect);
+            bluetoothServer.events.off('connecting', _onConnecting);
+            bluetoothServer.events.off('connected', _onConnect);
+            bluetoothServer.events.off('packet', _onPacket);
+        }
+    }, [_onPacket, _onConnect, _onDisconnect, _onConnecting]);
+
+    useEffect(() => {
+        const interval = setInterval(_processQueue, PACKET_SEND_INTERVAL);
+        return () => {
+            clearInterval(interval);
+        }
+    }, [_processQueue]);
 
     // *******************************
     // Context

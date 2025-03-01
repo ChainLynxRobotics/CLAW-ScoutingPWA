@@ -18,11 +18,13 @@ const ScoutPage = () => {
     const bluetooth = useContext(BluetoothContext);
 
     useEffect(() => {
-        const interval = setInterval(() => {
+        const broadcast = () => {
             if (!settings) return;
             if (!(bluetooth?.status === BluetoothStatusEnum.CONNECTED)) return;
             bluetooth?.broadcastClientID(settings?.clientId, settings.scoutName);
-        }, 5000);
+        }
+        const interval = setInterval(broadcast, 5000);
+        broadcast();
         return () => clearInterval(interval);
     }, [settings, bluetooth]);
 

@@ -32,7 +32,7 @@ const PreMatch = () => {
     const context = useContext(ScoutingContext);
     if (!context) throw new Error("Scouting context not found.");
 
-    const claimedClientID: RememberedClientID|undefined = useMemo(() => bluetooth.getClaimedClientID(settings.clientId), [bluetooth.getClaimedClientID, settings.clientId]);
+    const claimedClientID: RememberedClientID|undefined = useMemo(() => bluetooth.getClaimedClientID(settings.clientId), [bluetooth, settings.clientId]);
 
     const handleHumanPlayerLocationChange = (event: SelectChangeEvent) => {
         context.fields.set("humanPlayerLocation", parseInt(event.target.value) as HumanPlayerLocation);
