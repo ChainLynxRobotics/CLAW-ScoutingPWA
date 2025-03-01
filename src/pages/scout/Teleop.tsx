@@ -30,8 +30,10 @@ const Teleop = () => {
             <PageTitle>Tele Operated</PageTitle>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4 pb-12">
+
+            <div className="mt-4 mb-2 italic text-secondary">Push and hold a button to undo</div>
             
-            <div className="max-w-md relative my-6 whitespace-nowrap border-4 border-pink-400">
+            <div className="max-w-md relative mb-6 whitespace-nowrap border-4 border-pink-400">
                 <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
                     alt="Reefscape Field Render" className={`w-full ${rotateField ? '-scale-100' : ''}`} />
                 

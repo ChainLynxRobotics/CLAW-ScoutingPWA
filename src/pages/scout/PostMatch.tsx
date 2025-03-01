@@ -72,11 +72,14 @@ const PostMatch = () => {
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-left px-4 gap-4">
 
-            <div className="flex flex-row items-center gap-6 my-2">
-                <span className="text-lg text-nowrap">Time Defending: </span>
-                <Slider value={context.fields.timeDefending} onChange={(_e, newValue) => {
-                    context.fields.set("timeDefending", newValue as number);
-                }} aria-label="Disabled slider" className="max-w-xs" />
+            <div className="mb-8">
+                <div className="flex flex-row items-center gap-6 my-2">
+                    <span className="text-lg text-nowrap">Time Defending: </span>
+                    <Slider value={context.fields.timeDefending} onChange={(_e, newValue) => {
+                        context.fields.set("timeDefending", newValue as number);
+                    }} aria-label="Disabled slider" className="max-w-xs" />
+                </div>
+                <div className="text-secondary">(% of total match)</div>
             </div>
 
             <FormControl sx={{ maxWidth: 544 }}>
