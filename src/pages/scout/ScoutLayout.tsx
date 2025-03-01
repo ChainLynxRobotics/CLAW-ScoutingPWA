@@ -18,15 +18,15 @@ const ScoutPage = () => {
     const bluetooth = useContext(BluetoothContext);
 
     useEffect(() => {
+        if (!settings) return;
+        if (!(bluetooth?.status === BluetoothStatusEnum.CONNECTED)) return;
         const broadcast = () => {
-            if (!settings) return;
-            if (!(bluetooth?.status === BluetoothStatusEnum.CONNECTED)) return;
             bluetooth?.broadcastClientID(settings?.clientId, settings.scoutName);
         }
         const interval = setInterval(broadcast, 5000);
         broadcast();
         return () => clearInterval(interval);
-    }, [settings, bluetooth]);
+    }, [settings, bluetooth?.status, bluetooth?.broadcastClientID]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className="w-full h-full flex flex-col relative">
