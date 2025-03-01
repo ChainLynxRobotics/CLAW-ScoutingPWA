@@ -1,4 +1,4 @@
-import { createContext, ReactElement, useEffect, useRef, useState } from "react";
+import { createContext, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { BluetoothStatusEnum, QueuedRadioPacketGroup, RadioPacketData, RadioPacketGroup, RememberedClientID } from "../../types/RadioPacketData";
 import { MatchData } from "../../types/MatchData";
 import RadioPacketType from "../../enums/RadioPacketType";
@@ -15,7 +15,7 @@ const MAX_PACKET_GROUP_LENGTH = 255; // Maximum size of a packet in bytes
 const PACKET_SEND_INTERVAL = 100; // Interval between sending packets in milliseconds
 const PACKET_CLEANUP_TIMEOUT = 5000; // How long to wait since last received packet to clean up incomplete groups in milliseconds
 
-const CLIENT_ID_REMEMBER_TIME = 1000 * 60 * 1; // How long to "remember" a received client ID broadcast, in milliseconds
+const CLIENT_ID_REMEMBER_TIME = 1000 * 30 * 1; // How long to "remember" a received client ID broadcast, in milliseconds
 
 
 export const BluetoothContext = createContext<BluetoothContextType|undefined>(undefined);
@@ -73,13 +73,15 @@ export default function CurrentMatchContextProvider({children}: {children: React
 
     // List of packets to be sent
     const queue = useRef<QueuedRadioPacketGroup[]>([]);
+    // List of all packet ids that have been sent, to be used to check for duplicates
+    const sentPackets = useRef<Set<number>>(new Set());
     // List of partial packets that have been received, to be assembled into full packets and decoded once all parts are received
     const receivedPackets = useRef<Map<number, RadioPacketGroup>>(new Map());
 
     /**
      * Recently received client IDs, list of known outside known client IDs and when they were received. These last for CLIENT_ID_REMEMBER_TIME milliseconds.
      */
-    const receivedClientIDs = useRef<RememberedClientID[]>([]);
+    const [receivedClientIDs, setReceivedClientIDs] = useState<RememberedClientID[]>([]);
 
     // The current status of the Bluetooth connection
     const [status, setStatus] = useState<BluetoothStatusEnum>(bluetoothServer.isConnected() ? BluetoothStatusEnum.CONNECTED : BluetoothStatusEnum.DISCONNECTED);
@@ -186,6 +188,8 @@ export default function CurrentMatchContextProvider({children}: {children: React
             onComplete: onComplete,
             onError: onError,
         });
+        console.log('Queued packet:', packetId, totalPackets);
+        sentPackets.current.add(packetId);
     }
 
     // Runs every PACKET_SEND_INTERVAL milliseconds to send packets in the queue
@@ -231,6 +235,8 @@ export default function CurrentMatchContextProvider({children}: {children: React
                 receivedPackets.current.delete(id);
             }
         }
+        // And clean up old received client ids
+        setReceivedClientIDs(receivedClientIDs.filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME));
     }
 
     // *******************************
@@ -242,10 +248,12 @@ export default function CurrentMatchContextProvider({children}: {children: React
         console.log('Received packet:', data);
         if (data.byteLength < 6) throw new Error('Invalid packet length');
     
-        const packetId = data.getUint32(0, true); // Packet ID
+        const packetId = data.getUint32(0); // Packet ID
         const packetIndex = data.getUint8(4) // Packet index
         const totalPackets = data.getUint8(5); // Total packets
         const packetData = new Uint8Array(data.buffer, 6); // Packet data
+
+        if (sentPackets.current.has(packetId)) return console.log('Received own packet (Ignoring):', packetId); // Ignore own packets
     
         console.log('Received packet:', packetId, packetIndex, totalPackets, packetData);
     
@@ -333,26 +341,25 @@ export default function CurrentMatchContextProvider({children}: {children: React
 
             const req = packet.clientIDData!;
             // Remove ones by the same scout name (if defined) or that are too old
-            receivedClientIDs.current = receivedClientIDs.current.filter((d) => (d.scoutName && req.scoutName) ? d.scoutName !== req.scoutName : true)
+            const newReceivedClientIDs = receivedClientIDs.filter((d) => (d.scoutName && req.scoutName) ? d.scoutName !== req.scoutName : true)
                 .filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME);
             // Add the new one
-            receivedClientIDs.current.push({
+            newReceivedClientIDs.push({
                 clientID: req.clientID,
                 scoutName: req.scoutName,
                 receivedAt: Date.now(),
             });
-
+            setReceivedClientIDs(newReceivedClientIDs);
         } else {
             console.error('Unknown packet type:', packet.packetType);
         }
     }
 
-    function getClaimedClientID(clientID: number) {
+    const getClaimedClientID = useCallback(function getClaimedClientID(clientID: number) {
         // Remove old client IDs
-        receivedClientIDs.current = receivedClientIDs.current.filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME);
-    
-        return receivedClientIDs.current.sort((a, b) => b.receivedAt - a.receivedAt).find((d) => d.clientID === clientID);
-    }
+        return receivedClientIDs.filter((d) => Date.now() - d.receivedAt < CLIENT_ID_REMEMBER_TIME)
+            .sort((a, b) => b.receivedAt - a.receivedAt).find((d) => d.clientID === clientID);
+    }, [receivedClientIDs]);
 
     // *******************************
     // Context
