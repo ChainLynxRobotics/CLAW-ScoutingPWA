@@ -1,7 +1,7 @@
 import InputLabel from "@mui/material/InputLabel/InputLabel";
 import MenuItem from "@mui/material/MenuItem/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select/Select";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { ScoutingContext } from "../../components/context/ScoutingContextProvider";
 import FormControl from "@mui/material/FormControl/FormControl";
 import { Alert, Button, TextField } from "@mui/material";
@@ -13,6 +13,9 @@ import { MAX_NOTE_LENGTH } from "../../constants";
 import PageTitle from "../../components/ui/PageTitle";
 import allianceTeamIndex from "../../util/allianceTeamIndex";
 import { ScheduleContext } from "../../components/context/ScheduleContextProvider";
+import { BluetoothContext } from "../../components/context/BluetoothContextProvider";
+import { RememberedClientID } from "../../types/RadioPacketData";
+import dayjs from "../../util/dayjs";
 
 
 const PreMatch = () => {
@@ -23,8 +26,13 @@ const PreMatch = () => {
     const schedule = useContext(ScheduleContext);
     if (!schedule) throw new Error("Schedule context not found.");
 
+    const bluetooth = useContext(BluetoothContext);
+    if (!bluetooth) throw new Error("Bluetooth context not found.");
+
     const context = useContext(ScoutingContext);
     if (!context) throw new Error("Scouting context not found.");
+
+    const claimedClientID: RememberedClientID|undefined = useMemo(() => bluetooth.getClaimedClientID(settings.clientId), [bluetooth, settings.clientId]);
 
     const handleHumanPlayerLocationChange = (event: SelectChangeEvent) => {
         context.fields.set("humanPlayerLocation", parseInt(event.target.value) as HumanPlayerLocation);
@@ -62,9 +70,16 @@ const PreMatch = () => {
         <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
 
             { settings.scoutName === "" &&
-                <Alert severity="warning">
+                <Alert severity="warning" variant="outlined" className="mb-4">
                     <div className="text-lg mb-1"><b>You have not set your name!</b></div>
                     <div>Set your name in <Link to='/settings'><u>settings</u></Link> to track your contributions!</div>
+                </Alert>
+            }
+
+            { claimedClientID &&
+                <Alert severity="warning" variant="filled">
+                    <div className="text-lg mb-1"><b>Somebody else is using your client ID!</b></div>
+                    <div>{claimedClientID.scoutName || "An unnamed scouter"} is using Client ID <code>{claimedClientID.clientID}</code> as of <code>{dayjs(claimedClientID.receivedAt).fromNow()}</code></div>
                 </Alert>
             }
 
