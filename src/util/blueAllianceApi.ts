@@ -1,19 +1,31 @@
 import { ScheduledMatch } from '../components/context/SettingsContextProvider';
 import { TBA_API_BASE, TBA_API_KEY } from '../constants';
+import { BlueAllianceEventRanking, BlueAllianceMatch, BlueAllianceMatchSimple } from '../types/blueAllianceTypes';
 import matchCompare from './matchCompare';
 
-export async function getSchedule(competitionId: string): Promise<ScheduledMatch[]> {
-    const res = await fetch(`${TBA_API_BASE}/event/${competitionId}/matches/simple`, {
+export async function fetchFromBlueAlliance(relativeUrl: string): Promise<object> {
+    const url = new URL(relativeUrl, TBA_API_BASE).toString();
+
+    const res = await fetch(url, {
+        //cache: 'default', // Use the browser cache, by default it respects cache-control and etag headers
         headers: {
             'X-TBA-Auth-Key': TBA_API_KEY,
             'accept': 'application/json',
         }
-    })
+    });
+
     const json = await res.json();
 
-    if (json.Error) {
-        throw new Error("TBA returned error: "+json.Error);
+    if (!res.ok || json.Error) {
+        throw new Error(`Failed to fetch from blue alliance: ${json.Error}`);
     }
+
+    return json;
+}
+
+export async function getSchedule(competitionId: string): Promise<ScheduledMatch[]> {
+    
+    const json = await fetchFromBlueAlliance(`event/${competitionId}/matches/simple`) as BlueAllianceMatchSimple[];
 
     if (!Array.isArray(json)) {
         throw new Error("TBA returned an unexpected response: "+JSON.stringify(json));
@@ -25,7 +37,7 @@ export async function getSchedule(competitionId: string): Promise<ScheduledMatch
 
     const matches: ScheduledMatch[] = json
         .sort((a, b)=>(matchCompare(a.key, b.key)))
-        .map((match: any): ScheduledMatch => { // eslint-disable-line @typescript-eslint/no-explicit-any
+        .map((match): ScheduledMatch => {
             return {
                 matchId: match.key.substring(competitionId.length+1),
                 blue1: parseInt(match.alliances.blue.team_keys[0].substring(3)),
@@ -41,17 +53,8 @@ export async function getSchedule(competitionId: string): Promise<ScheduledMatch
 }
 
 export async function getEventRankings(competitionId: string): Promise<number[]> {
-    const res = await fetch(`${TBA_API_BASE}/event/${competitionId}/rankings`, {
-        headers: {
-            'X-TBA-Auth-Key': TBA_API_KEY,
-            'accept': 'application/json',
-        }
-    })
-    const json = await res.json();
-
-    if (json.Error) {
-        throw new Error("TBA returned error: "+json.Error);
-    }
+    
+    const json = await fetchFromBlueAlliance(`event/${competitionId}/rankings`) as BlueAllianceEventRanking;
 
     const rankings = json.rankings;
 
@@ -64,8 +67,29 @@ export async function getEventRankings(competitionId: string): Promise<number[]>
     }
 
     const teams = rankings
-        .sort((a: any, b: any) => a.rank - b.rank) // eslint-disable-line @typescript-eslint/no-explicit-any
-        .map((team: any) => Number(team.team_key.substring(3))); // eslint-disable-line @typescript-eslint/no-explicit-any
+        .sort((a, b) => a.rank - b.rank)
+        .map((team) => Number(team.team_key.substring(3)));
 
     return teams;
+}
+
+// competitionId can only be the year if currentCompetitionOnly is false
+export async function getMatchesByTeam(team: number, competitionId: string, currentCompetitionOnly?: boolean): Promise<BlueAllianceMatch[]> {
+
+    const url = currentCompetitionOnly ? `team/frc${team}/event/${competitionId}/matches` : `team/frc${team}/matches/${competitionId.substring(0, 4)}`;
+    
+    const json = await fetchFromBlueAlliance(url) as BlueAllianceMatch[];
+
+    if (!Array.isArray(json)) {
+        throw new Error("TBA returned an unexpected response: "+JSON.stringify(json));
+    }
+
+    return json;
+}
+
+export default {
+    fetchFromBlueAlliance,
+    getSchedule,
+    getEventRankings,
+    getMatchesByTeam,
 }

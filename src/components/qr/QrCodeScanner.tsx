@@ -1,11 +1,10 @@
-import protobuf from "protobufjs";
 import QrScanner from "qr-scanner";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { decompressBytes, fromBase64 } from "../../util/compression";
 import { QRCodeData } from "../../types/QRCodeData";
 import { useSnackbar } from "notistack";
 import { TextField } from "@mui/material";
-import LoadingBackdrop from "../LoadingBackdrop";
+import LoadingBackdrop from "../ui/LoadingBackdrop";
+import qr from "../../util/io/qr";
 
 export const QR_PROTOCOL_REGEX = /^scoutingdata:(\d+)\/(\d+):(.+)$/;
 
@@ -34,12 +33,7 @@ export default function QrCodeScanner({onReceiveData, allowTextPaste}: {onReceiv
     const decodeFullQrCode = useCallback(async (data: string) => {
         setLoading(true);
         try {
-            const protos = await protobuf.load("/protobuf/data_transfer.proto");
-            const DataTransfer = protos.lookupType("DataTransfer");
-
-            const bytes = await decompressBytes(fromBase64(data));
-            const message = DataTransfer.decode(bytes);
-            const object = DataTransfer.toObject(message) as QRCodeData;
+            const object = await qr.decodeQrBase64(data);
             setLoading(false);
             
             await onReceiveData(object);
@@ -135,24 +129,25 @@ export default function QrCodeScanner({onReceiveData, allowTextPaste}: {onReceiv
 
 function InternalQrCodeScanner({onDecode}: {onDecode: (data: QrScanner.ScanResult) => void}) {
     
-    const scanner = useRef<QrScanner>();
+    const scanner = useRef<QrScanner>(null);
     const videoEl = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
-        if (!scanner.current && videoEl.current) {
-            scanner.current = new QrScanner(videoEl.current, onDecode, {
+        const video = videoEl.current;
+        if (!scanner.current && video) {
+            scanner.current = new QrScanner(video, onDecode, {
                 preferredCamera: "environment",
                 highlightScanRegion: true,
                 highlightCodeOutline: true,
                 returnDetailedScanResult: true
             });
             scanner.current?.start();
-        } else if (scanner.current && videoEl.current) {
+        } else if (scanner.current && video) {
             scanner.current.start();
         }
 
         return () => {
-            if (scanner.current && !videoEl.current) { // eslint-disable-line react-hooks/exhaustive-deps
+            if (scanner.current && !video) {
                 scanner.current.stop();
             }
         }

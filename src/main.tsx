@@ -9,7 +9,6 @@ import DataPage from './pages/DataPage';
 import SettingsPage from './pages/SettingsPage';
 import IndexPage from './pages/IndexPage';
 import PreMatch from './pages/scout/PreMatch';
-import DuringMatch from './pages/scout/DuringMatch';
 import PostMatch from './pages/scout/PostMatch';
 import createTheme from '@mui/material/styles/createTheme';
 import { ThemeProvider } from '@emotion/react';
@@ -19,8 +18,13 @@ import CurrentMatchContextProvider from './components/context/CurrentMatchContex
 import ReloadPrompt from './components/ReloadPrompt';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import AnalyticsTeamPage from './pages/analytics/AnalyticsTeamPage';
-import AnalyticsMatchPage from './pages/analytics/AnalyticsMatchPage';
 import AnalyticsLayout from './pages/analytics/AnalyticsLayout';
+import Teleop from './pages/scout/Teleop';
+import Auto from './pages/scout/Auto';
+import SchedulePage from './pages/SchedulePage';
+import ScheduleContextProvider from './components/context/ScheduleContextProvider';
+import AnalyticsSettingsContextProvider from './components/context/AnalyticsSettingsContextProvider';
+import BluetoothContextProvider from './components/context/BluetoothContextProvider';
 
 const darkTheme = createTheme({
   palette: {
@@ -49,31 +53,29 @@ export default function App() {
     <ThemeProvider theme={darkTheme}>
       <BrowserRouter>
         <SettingsContextProvider defaultCompetitionId={DEFAULT_COMPETITION_ID}>
-          <CurrentMatchContextProvider>
-            
-            <Routes>
-              <Route index element={<IndexPage />} />
+          <Routes>
+            <Route index element={<IndexPage />} />
 
-              <Route path="/" element={<Layout />}>
-                <Route path="scout" element={<ScoutPage />}>
-                  <Route index element={<PreMatch />} />
-                  <Route path="during" element={<DuringMatch />} />
-                  <Route path="post" element={<PostMatch />} />
-                  <Route path="*" element={<NoPage />} />
-                </Route>
-                <Route path="data" element={<DataPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="analytics" element={<AnalyticsLayout />}>
-                  <Route path="team/:team" element={<AnalyticsTeamPage />} />
-                  <Route path="match/:matchId" element={<AnalyticsMatchPage />} />
-                </Route>
-                <Route path="settings" element={<SettingsPage />} />
+            <Route path="/" element={<BluetoothContextProvider><Layout /></BluetoothContextProvider>}>
+              <Route path="scout" element={<ScheduleContextProvider><CurrentMatchContextProvider><ScoutPage /></CurrentMatchContextProvider></ScheduleContextProvider>}>
+                <Route index element={<PreMatch />} />
+                <Route path="auto" element={<Auto />} />
+                <Route path="teleop" element={<Teleop />} />
+                <Route path="post" element={<PostMatch />} />
                 <Route path="*" element={<NoPage />} />
               </Route>
+              <Route path="data" element={<DataPage />} />
+              <Route path="Schedule" element={<ScheduleContextProvider><SchedulePage /></ScheduleContextProvider>} />
+              <Route path="analytics" element={<ScheduleContextProvider><AnalyticsSettingsContextProvider><AnalyticsLayout /></AnalyticsSettingsContextProvider></ScheduleContextProvider>}>
+                <Route index element={<AnalyticsPage />} />
+                <Route path="team/:teams" element={<AnalyticsTeamPage />} />
+                <Route path="team/:teams/vs/:minusTeams" element={<AnalyticsTeamPage />} />
+              </Route>
+              <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<NoPage />} />
-            </Routes>
-            
-          </CurrentMatchContextProvider>
+            </Route>
+            <Route path="*" element={<NoPage />} />
+          </Routes>
         </SettingsContextProvider>
       </BrowserRouter>
       <ReloadPrompt />

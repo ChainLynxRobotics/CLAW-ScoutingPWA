@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeData } from "../../types/QRCodeData";
-import protobuf from "protobufjs";
-import { compressBytes, toBase64 } from "../../util/compression";
 import QRCode from "react-qr-code";
 import { QR_CHUNK_SIZE } from "../../constants";
 import { CircularProgress, FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput, Tooltip } from "@mui/material";
+import qr from "../../util/io/qr";
 
 /**
  * Displays a list of QR codes generated from the given data.
@@ -23,15 +22,8 @@ export default function QrCodeList({data, allowTextCopy}: {data: QRCodeData, all
     const textArea = useRef<HTMLTextAreaElement>(null);
 
     const generateQrCodes = useCallback(async (data: QRCodeData) => {
-        const protos = await protobuf.load("/protobuf/data_transfer.proto");
-        const DataTransfer = protos.lookupType("DataTransfer");
 
-        const errMsg = DataTransfer.verify(data);
-        if (errMsg) throw Error(errMsg);
-
-        const protoData = DataTransfer.create(data);
-        const compressed = await compressBytes(DataTransfer.encode(protoData).finish());
-        const base64 = toBase64(compressed);
+        const base64 = await qr.encodeQrBase64(data);
 
         console.log("Compressed Length: ", base64.length, "Chunks: ", Math.ceil(base64.length / QR_CHUNK_SIZE));
 
@@ -108,7 +100,7 @@ export default function QrCodeList({data, allowTextCopy}: {data: QRCodeData, all
                                 </InputAdornment>
                             }
                         />
-                        <FormHelperText id="data-transfer-code-helper-text">If you don't want use QR codes, you can copy and message this code to the receiver instead.</FormHelperText>
+                        <FormHelperText id="data-transfer-code-helper-text">If you don&apos;t want use QR codes, you can copy and message this code to the receiver instead.</FormHelperText>
                     </FormControl>
                 </div>
             }

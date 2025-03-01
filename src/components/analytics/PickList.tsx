@@ -1,9 +1,8 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import SettingsContext from "../context/SettingsContext";
-import { DragDropContext, Draggable, DropResult } from "react-beautiful-dnd";
-import { StrictModeDroppable } from "../StrickModeDroppable";
+import { SettingsContext } from "../context/SettingsContextProvider";
+import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd";
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import MatchDatabase from "../../util/MatchDatabase";
+import matchDatabase from "../../util/db/matchDatabase";
 import useLocalStorageState from "../hooks/localStorageState";
 import { useNavigate } from "react-router-dom";
 import { QRCodeData } from "../../types/QRCodeData";
@@ -12,7 +11,8 @@ import QrCodeList from "../qr/QrCodeList";
 import QrCodeScanner from "../qr/QrCodeScanner";
 import { useSnackbar } from "notistack";
 import { getEventRankings } from "../../util/blueAllianceApi";
-import LoadingBackdrop from "../LoadingBackdrop";
+import LoadingBackdrop from "../ui/LoadingBackdrop";
+import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
 
 type PickListData = {
     pickList: number[],
@@ -64,7 +64,7 @@ export default function PickList() {
         async function updatePickListIndexTeams() {
             if (!settings) return;
 
-            const teams = await MatchDatabase.getUniqueTeams(settings.competitionId);
+            const teams = await matchDatabase.getUniqueTeams(settings.competitionId);
             
             const combinedList = [...new Set([...(pickListData.pickList), ...teams])];
             setPickListData({pickList: combinedList});
@@ -156,7 +156,7 @@ export default function PickList() {
             </div>
 
             <DragDropContext onDragEnd={onDragEnd}>
-                <StrictModeDroppable droppableId="droppable">
+                <Droppable droppableId="droppable">
                     {(provided) => (
                         <List ref={provided.innerRef} {...provided.droppableProps}>
                             {pickListData.pickList.map((team, index) => (
@@ -168,7 +168,7 @@ export default function PickList() {
                             {provided.placeholder}
                         </List>
                     )}
-                </StrictModeDroppable>
+                </Droppable>
             </DragDropContext>
 
 
@@ -249,7 +249,7 @@ export default function PickList() {
 const DraggableTeamListItem = (props: {team: number, index: number, crossedOut: boolean, setCrossedOut: (value: boolean)=>void}) => {
     
     const navigate = useNavigate();
-    const settings = useContext(SettingsContext);
+    const analyticsSettings = useContext(AnalyticsSettingsContext);
 
     const labelId = `pick-list-label-${props.team}`;
     
@@ -289,7 +289,7 @@ const DraggableTeamListItem = (props: {team: number, index: number, crossedOut: 
                             <span className={"flex gap-2"+(props.crossedOut ? " strikeout opacity-50" : "")}>
                                 <span className="text-secondary">#{props.index + 1}:</span>
                                 <b>{props.team}</b>
-                                {settings?.starredTeams.includes(props.team) && 
+                                {analyticsSettings?.starredTeams.includes(props.team) && 
                                     <span className="material-symbols-outlined inline-icon text-yellow-300 scale-75">star</span>
                                 }
                             </span>
