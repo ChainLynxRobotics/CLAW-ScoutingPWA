@@ -62,7 +62,7 @@ export default function AnalyticsSettingsContextProvider({children}: {children: 
     if (!schedule) throw new Error("ScheduleContext not found");
 
     const [starredTeams, setStarredTeams] = useLocalStorageState<number[]>([8248, 4180], "starredTeams");
-    const [currentCompetitionOnly, setCurrentCompetitionOnly] = useLocalStorageState<boolean>(true, "analyticsCurrentCompetitionOnly");
+    const [currentCompetitionOnly, setCurrentCompetitionOnly] = useLocalStorageState<boolean>(false, "analyticsCurrentCompetitionOnly");
     const [currentMatch, setCurrentMatch] = useLocalStorageState<string>("", "analyticsCurrentMatch");
     const [currentMatchBlueOpen, setCurrentMatchBlueOpen] = useLocalStorageState<boolean>(false, "analyticsCurrentMatchBlueOpen");
     const [currentMatchRedOpen, setCurrentMatchRedOpen] = useLocalStorageState<boolean>(false, "analyticsCurrentMatchRedOpen");
