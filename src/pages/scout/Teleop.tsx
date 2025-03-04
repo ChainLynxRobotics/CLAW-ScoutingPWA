@@ -29,11 +29,13 @@ const Teleop = () => {
         <div className="w-full flex justify-center">
             <PageTitle>Tele Operated</PageTitle>
         </div>
-        <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4 pb-12">
+        <div className="w-full mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center px-4 pb-12 gap-16">
 
-            <div className="mt-4 mb-2 italic text-secondary">Push and hold a button to undo</div>
+            <div className="flex flex-col items-center">
+
+            <div className="mb-2 italic text-secondary">Push and hold a button to undo</div>
             
-            <div className="max-w-md relative mb-6 whitespace-nowrap border-4 border-pink-400">
+            <div className="max-w-md relative whitespace-nowrap border-4 border-pink-400">
                 <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
                     alt="Reefscape Field Render" className={`w-full ${rotateField ? '-scale-100' : ''}`} />
                 
@@ -84,79 +86,86 @@ const Teleop = () => {
 
             </div>
 
-            <div className="mt-4 mb-6 italic text-secondary">
-                Check ✅ if the robot was able to perform the following tasks during the autonomous period:
             </div>
 
-            <FormControlLabel
-                control={
-                    <Checkbox 
-                        checked={context.fields.teleopRemoveL2Algae} 
-                        onClick={() => context.fields.set("teleopRemoveL2Algae", !context.fields.teleopRemoveL2Algae)}
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                    />
-                } 
-                label={<span>Removed Algae ❌🟢 From Reef L2</span>} 
-            />
+            <div className="flex flex-col items-center max-w-md">
 
-            <FormControlLabel
-                control={
-                    <Checkbox 
-                        checked={context.fields.teleopRemoveL3Algae} 
-                        onClick={() => context.fields.set("teleopRemoveL3Algae", !context.fields.teleopRemoveL3Algae)}
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                    />
-                } 
-                label={<span>Removed Algae ❌🟢 From Reef L3</span>}
-            />
-            
-            <Divider className="!my-4" />
+                <div className="mb-6 italic text-secondary text-center">
+                    Check ✅ if the robot was able to perform the following tasks during the teleop period:
+                </div>
 
-            <FormControlLabel
-                control={
-                    <Checkbox 
-                        checked={context.fields.teleopCoralGroundIntake} 
-                        onClick={() => context.fields.set("teleopCoralGroundIntake", !context.fields.teleopCoralGroundIntake)}
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                    />
-                } 
-                label={<span>Collected Coral 🪸 From Ground</span>}
-            />
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={context.fields.teleopRemoveL2Algae} 
+                            onClick={() => context.fields.set("teleopRemoveL2Algae", !context.fields.teleopRemoveL2Algae)}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                        />
+                    } 
+                    label={<span>Removed Algae ❌🟢 From Reef L2</span>} 
+                />
 
-            <FormControlLabel
-                control={
-                    <Checkbox 
-                        checked={context.fields.teleopCoralStationIntake} 
-                        onClick={() => context.fields.set("teleopCoralStationIntake", !context.fields.teleopCoralStationIntake)}
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                    />
-                } 
-                label={<span>Collected Coral 🪸 From Station 🏢</span>}
-            />
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={context.fields.teleopRemoveL3Algae} 
+                            onClick={() => context.fields.set("teleopRemoveL3Algae", !context.fields.teleopRemoveL3Algae)}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                        />
+                    } 
+                    label={<span>Removed Algae ❌🟢 From Reef L3</span>}
+                />
+                
+                <Divider className="!my-4" />
 
-            <Divider className="!my-4" />
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={context.fields.teleopCoralGroundIntake} 
+                            onClick={() => context.fields.set("teleopCoralGroundIntake", !context.fields.teleopCoralGroundIntake)}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                        />
+                    } 
+                    label={<span>Collected Coral 🪸 From Ground</span>}
+                />
 
-            <FormControlLabel
-                control={
-                    <Checkbox 
-                        checked={context.fields.teleopAlgaeGroundIntake} 
-                        onClick={() => context.fields.set("teleopAlgaeGroundIntake", !context.fields.teleopAlgaeGroundIntake)}
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                    />
-                } 
-                label={<span>Collected Algae 🟢 From Ground</span>}
-            />
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={context.fields.teleopCoralStationIntake} 
+                            onClick={() => context.fields.set("teleopCoralStationIntake", !context.fields.teleopCoralStationIntake)}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                        />
+                    } 
+                    label={<span>Collected Coral 🪸 From Station 🏢</span>}
+                />
 
-            <FormControlLabel
-                control={
-                    <Checkbox 
-                        checked={context.fields.teleopAlgaeReefIntake} 
-                        onClick={() => context.fields.set("teleopAlgaeReefIntake", !context.fields.teleopAlgaeReefIntake)}
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                    />
-                } 
-                label={<span>Collected Algae 🟢 From Reef 🪸</span>}
-            />
+                <Divider className="!my-4" />
+
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={context.fields.teleopAlgaeGroundIntake} 
+                            onClick={() => context.fields.set("teleopAlgaeGroundIntake", !context.fields.teleopAlgaeGroundIntake)}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                        />
+                    } 
+                    label={<span>Collected Algae 🟢 From Ground</span>}
+                />
+
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={context.fields.teleopAlgaeReefIntake} 
+                            onClick={() => context.fields.set("teleopAlgaeReefIntake", !context.fields.teleopAlgaeReefIntake)}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                        />
+                    } 
+                    label={<span>Collected Algae 🟢 From Reef 🪸</span>}
+                />
+
+            </div>
+
         </div>
         </>
     );

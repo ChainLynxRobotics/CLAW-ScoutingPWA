@@ -62,12 +62,51 @@ const PreMatch = () => {
     const isBlue = context.allianceColor == AllianceColor.Blue;
     const reverseX = rotateField == isBlue;
     const reverseY = rotateField == isBlue;
+
+    const startPositionComponent =
+        <>
+            <h3 className="text-lg">Auto Start Position</h3>
+            <span className="text-secondary">Click on the field to place a pin</span>
+
+            <div className="max-w-md relative my-4 whitespace-nowrap border-4 border-green-300">
+                <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
+                    alt="Reefscape Field Render" 
+                    className={`w-[200px] h-[500px] object-cover ${!rotateField ? '' : '-scale-100'} ${isBlue ? 'object-right': 'object-left'}`}
+                    onClick={handlePinPlace}
+                />
+                
+                {/* Allows the field to be rotated depending on the pov of the scouter */}
+                <button onClick={()=>settings?.setFieldRotated(!rotateField)}
+                        className={`absolute top-0 bg-black bg-opacity-75 right-0 rounded-bl-lg`}>
+                    <span className="material-symbols-outlined m-2">360</span>
+                </button>
+
+                {context.fields.autoStartPositionX && context.fields.autoStartPositionY &&
+                    <img 
+                        src="/imgs/map_pin_icon.svg" 
+                        width="35.25" 
+                        height="48" 
+                        className="absolute -translate-x-1/2 -translate-y-full"
+                        style={{
+                            left: !reverseX ? context.fields.autoStartPositionX : 200 - context.fields.autoStartPositionX,
+                            top: !reverseY ? context.fields.autoStartPositionY : 500 - context.fields.autoStartPositionY,
+                        }}
+                    />
+                }
+            </div>
+            {context.fields.autoStartPositionX && context.fields.autoStartPositionY &&
+                <Button onClick={()=>{context.fields.set("autoStartPositionX", undefined); context.fields.set("autoStartPositionY", undefined);}}
+                    variant="outlined" color="error" className="!mb-4">
+                    Remove Pin
+                </Button>
+            }
+        </>;
     return (
         <>
         <div className="w-full flex justify-center">
             <PageTitle>Pre Match</PageTitle>
         </div>
-        <div className="w-full max-w-xl mx-auto flex flex-col items-center px-4">
+        <div className="w-full mx-auto flex flex-col items-center px-4">
 
             { settings.scoutName === "" &&
                 <Alert severity="warning" variant="outlined" className="mb-4">
@@ -128,77 +167,80 @@ const PreMatch = () => {
                     </FormControl>
                 </div>
             </h1>
-            <FormControl sx={{ m: 1, minWidth: 224 }}>
-                <InputLabel id="human-player-location-label">
-                    {context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Ella's Location`}
-                </InputLabel>
-                <Select
-                    labelId="human-player-location-label"
-                    id="human-player-location"
-                    value={context.fields.humanPlayerLocation+""}
-                    onChange={handleHumanPlayerLocationChange}
-                    label="Human Player Location"
-                >
-                    <MenuItem value={HumanPlayerLocation.Unknown}>Don't Know</MenuItem>
-                    <MenuItem value={HumanPlayerLocation.None}>Not on field</MenuItem>
-                    <MenuItem value={HumanPlayerLocation.CoralStation}>Coral Station</MenuItem>
-                    <MenuItem value={HumanPlayerLocation.Processor}>Processor</MenuItem>
-                </Select>
-            </FormControl>
+            <div className="flex flex-col md:flex-row gap-24">
+                <div className="flex flex-col items-center mb-4 flex-shrink-0">
+                    <h3 className="text-lg">Auto Start Position</h3>
+                    <span className="text-secondary">Click on the field to place a pin</span>
 
-            <div className="h-4"></div> {/* Spacer */}
+                    <div className="max-w-md relative my-4 whitespace-nowrap border-4 border-green-300">
+                        <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
+                            alt="Reefscape Field Render" 
+                            className={`w-[200px] h-[500px] object-cover ${!rotateField ? '' : '-scale-100'} ${isBlue ? 'object-right': 'object-left'}`}
+                            onClick={handlePinPlace}
+                        />
+                        
+                        {/* Allows the field to be rotated depending on the pov of the scouter */}
+                        <button onClick={()=>settings?.setFieldRotated(!rotateField)}
+                                className={`absolute top-0 bg-black bg-opacity-75 right-0 rounded-bl-lg`}>
+                            <span className="material-symbols-outlined m-2">360</span>
+                        </button>
 
-            <h3 className="text-lg">Auto Start Position</h3>
-            <span className="text-secondary">Click on the field to place a pin</span>
+                        {context.fields.autoStartPositionX && context.fields.autoStartPositionY &&
+                            <img 
+                                src="/imgs/map_pin_icon.svg" 
+                                width="35.25" 
+                                height="48" 
+                                className="absolute -translate-x-1/2 -translate-y-full"
+                                style={{
+                                    left: !reverseX ? context.fields.autoStartPositionX : 200 - context.fields.autoStartPositionX,
+                                    top: !reverseY ? context.fields.autoStartPositionY : 500 - context.fields.autoStartPositionY,
+                                }}
+                            />
+                        }
+                    </div>
+                    {context.fields.autoStartPositionX && context.fields.autoStartPositionY &&
+                        <Button onClick={()=>{context.fields.set("autoStartPositionX", undefined); context.fields.set("autoStartPositionY", undefined);}}
+                            variant="outlined" color="error" className="!mb-4">
+                            Remove Pin
+                        </Button>
+                    }
+                </div>
+                <div className="flex flex-col items-center">
+                    <FormControl sx={{ m: 1, minWidth: 224 }}>
+                        <InputLabel id="human-player-location-label">
+                            {context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Ella's Location`}
+                        </InputLabel>
+                        <Select
+                            labelId="human-player-location-label"
+                            id="human-player-location"
+                            value={context.fields.humanPlayerLocation+""}
+                            onChange={handleHumanPlayerLocationChange}
+                            label="Human Player Location"
+                        >
+                            <MenuItem value={HumanPlayerLocation.Unknown}>Don't Know</MenuItem>
+                            <MenuItem value={HumanPlayerLocation.None}>Not on field</MenuItem>
+                            <MenuItem value={HumanPlayerLocation.CoralStation}>Coral Station</MenuItem>
+                            <MenuItem value={HumanPlayerLocation.Processor}>Processor</MenuItem>
+                        </Select>
+                    </FormControl>
 
-            <div className="max-w-md relative my-4 whitespace-nowrap border-4 border-green-300">
-                <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
-                    alt="Reefscape Field Render" 
-                    className={`w-[200px] h-[500px] object-cover ${!rotateField ? '' : '-scale-100'} ${isBlue ? 'object-right': 'object-left'}`}
-                    onClick={handlePinPlace}
-                />
-                
-                {/* Allows the field to be rotated depending on the pov of the scouter */}
-                <button onClick={()=>settings?.setFieldRotated(!rotateField)}
-                        className={`absolute top-0 bg-black bg-opacity-75 right-0 rounded-bl-lg`}>
-                    <span className="material-symbols-outlined m-2">360</span>
-                </button>
-
-                {context.fields.autoStartPositionX && context.fields.autoStartPositionY &&
-                    <img 
-                        src="/imgs/map_pin_icon.svg" 
-                        width="35.25" 
-                        height="48" 
-                        className="absolute -translate-x-1/2 -translate-y-full"
-                        style={{
-                            left: !reverseX ? context.fields.autoStartPositionX : 200 - context.fields.autoStartPositionX,
-                            top: !reverseY ? context.fields.autoStartPositionY : 500 - context.fields.autoStartPositionY,
-                        }}
+                    <div className="h-4"></div> {/* Spacer */}
+                    <TextField
+                        id="notes"
+                        label="Extra Notes"
+                        multiline
+                        rows={6}
+                        fullWidth
+                        value={context.fields.notes}
+                        onChange={handleNotesChange}
                     />
-                }
+                    <div className="h-4"></div> {/* Spacer */}
+                    <span className="my-4 max-w-md text-center text-secondary">
+                        Reminder that it is ok to make mistakes! The data is collected by humans and read by humans,
+                        it is not the end of the world if you make a mistake. Just do your best!
+                    </span>
+                </div>
             </div>
-            {context.fields.autoStartPositionX && context.fields.autoStartPositionY &&
-                <Button onClick={()=>{context.fields.set("autoStartPositionX", undefined); context.fields.set("autoStartPositionY", undefined);}}
-                    variant="outlined" color="error" className="!mb-4">
-                    Remove Pin
-                </Button>
-            }
-
-            <div className="h-4"></div> {/* Spacer */}
-            <TextField
-                id="notes"
-                label="Extra Notes"
-                multiline
-                rows={6}
-                fullWidth
-                value={context.fields.notes}
-                onChange={handleNotesChange}
-            />
-            <div className="h-4"></div> {/* Spacer */}
-            <span className="my-4 max-w-md text-center text-secondary">
-                Reminder that it is ok to make mistakes! The data is collected by humans and read by humans,
-                it is not the end of the world if you make a mistake. Just do your best!
-            </span>
         </div>
         </>
     );
