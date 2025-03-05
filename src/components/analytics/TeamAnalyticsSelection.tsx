@@ -3,6 +3,7 @@ import { useSnackbar } from "notistack";
 import { useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
+import AnalyticsSettings from "./AnalyticsSettings";
 
 export default function TeamAnalyticsSelection({ teams, minusTeams, onUpdate }: { teams: number[], minusTeams?: number[], onUpdate: (teams: number[], minusTeams?: number[]) => void }) {
     
@@ -36,10 +37,15 @@ export default function TeamAnalyticsSelection({ teams, minusTeams, onUpdate }: 
             console.error(e);
         }
     }
+
+    function switchTeams() {
+        if (!minusTeams || !minusTeams.length) return;
+        onUpdate(minusTeams, teams);
+    }
     
     return (
-        <h1 className="text-xl my-4 flex items-center gap-2">
-            <span>Analytics for: </span>
+        <h1 className="text-xl my-4 flex flex-wrap items-center justify-center gap-2">
+            <span className="whitespace-nowrap">Analytics for: </span>
             
             <TeamAnalyticsSelectMenu
                 current={teams.join('+')}
@@ -54,7 +60,7 @@ export default function TeamAnalyticsSelection({ teams, minusTeams, onUpdate }: 
                 }}
             />
 
-            <span> compared to </span>
+            <span className="whitespace-nowrap"> compared to </span>
 
             <TeamAnalyticsSelectMenu
                 current={minusTeams?.join('+')||""}
@@ -70,10 +76,17 @@ export default function TeamAnalyticsSelection({ teams, minusTeams, onUpdate }: 
                 }}
             />
             
-            
-            <Button onClick={() => setModalOpen(true)}>
-                <span className="material-symbols-outlined">edit</span>
-            </Button>
+            <div className="flex items-center">
+                <Button onClick={() => setModalOpen(true)} color="primary">
+                    <span className="material-symbols-outlined">edit_note</span>
+                </Button>
+                <Button onClick={() => switchTeams()} disabled={!minusTeams || !minusTeams.length} color="warning">
+                    <span className="material-symbols-outlined">compare_arrows</span>
+                </Button>
+                <AnalyticsSettings />
+            </div>
+
+
             <Dialog 
                 open={modalOpen} 
                 onClose={() => setModalOpen(false)}

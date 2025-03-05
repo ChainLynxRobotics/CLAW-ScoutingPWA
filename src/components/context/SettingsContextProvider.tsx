@@ -45,9 +45,6 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
 
     const [autoFetchMatches, setAutoFetchMatches] = useLocalStorageState<boolean>(true, "autoFetchMatches"); // Whether or not to automatically fetch the match schedule from the blue alliance
 
-    const [starredTeams, setStarredTeams] = useLocalStorageState<number[]>([], "starredTeams"); // Special teams we want to know about, used on the analytics page
-    const [analyticsCurrentCompetitionOnly, setAnalyticsCurrentCompetitionOnly] = useLocalStorageState<boolean>(true, "analyticsCurrentCompetitionOnly"); // Whether or not to only show data from the current competition
-
     useEffect(() => {
         // If the competitionId is over COMPETITION_ID_EXPIRE_TIME old, set it to the default
         if (competitionIdLastUpdated.current < Date.now() - COMPETITION_ID_EXPIRE_TIME) {
@@ -72,11 +69,6 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
 
         autoFetchMatches,
         setAutoFetchMatches,
-
-        starredTeams,
-        setStarredTeams,
-        analyticsCurrentCompetitionOnly,
-        setAnalyticsCurrentCompetitionOnly,
     };
 
     return (

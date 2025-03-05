@@ -6,8 +6,8 @@ const ScoutNavBar = () => {
     const location = useLocation();
 
     return (
-        <div className="fixed bottom-8 w-full flex justify-center z-50">
-            <ButtonGroup variant="contained" color="primary" size="large" aria-label="Basic button group" sx={{background: "var(--background)"}}>
+        <div className="fixed bottom-8 w-full flex justify-center z-50 pointer-events-none">
+            <ButtonGroup variant="contained" color="primary" size="large" aria-label="Basic button group" sx={{background: "var(--background)", pointerEvents: "auto"}}>
                 <Link to="/scout">
                     <Button disabled={location.pathname === "/scout"}>
                         <div className="flex flex-col items-center">
