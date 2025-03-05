@@ -215,7 +215,7 @@ const PreMatch = () => {
                             id="human-player-location"
                             value={context.fields.humanPlayerLocation+""}
                             onChange={handleHumanPlayerLocationChange}
-                            label="Human Player Location"
+                            label={context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Ella's Location`}
                         >
                             <MenuItem value={HumanPlayerLocation.Unknown}>Don't Know</MenuItem>
                             <MenuItem value={HumanPlayerLocation.None}>Not on field</MenuItem>
