@@ -25,6 +25,7 @@ import SchedulePage from './pages/SchedulePage';
 import ScheduleContextProvider from './components/context/ScheduleContextProvider';
 import AnalyticsSettingsContextProvider from './components/context/AnalyticsSettingsContextProvider';
 import BluetoothContextProvider from './components/context/BluetoothContextProvider';
+import PitFormPage from './pages/PitFormPage';
 
 const darkTheme = createTheme({
   palette: {
@@ -64,6 +65,7 @@ export default function App() {
                 <Route path="post" element={<PostMatch />} />
                 <Route path="*" element={<NoPage />} />
               </Route>
+              <Route path="pit" element={<PitFormPage />} />
               <Route path="data" element={<DataPage />} />
               <Route path="Schedule" element={<ScheduleContextProvider><SchedulePage /></ScheduleContextProvider>} />
               <Route path="analytics" element={<ScheduleContextProvider><AnalyticsSettingsContextProvider><AnalyticsLayout /></AnalyticsSettingsContextProvider></ScheduleContextProvider>}>

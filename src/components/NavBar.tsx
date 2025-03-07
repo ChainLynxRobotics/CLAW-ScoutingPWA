@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const pages = [
     {name: "Scout", path: "/scout", icon: "description"},
+    {name: "Pit", path: "/pit", icon: "engineering"},
     {name: "Saved Matches", path: "/data", icon: "storage"},
     {name: "Schedule", path: "/schedule", icon: "event_note"},
     {name: "Analytics", path: "/analytics", icon: "query_stats"},
@@ -102,7 +103,7 @@ const NavBar = () => {
                         {pages.map(({name, path, icon}, i) => (
                             <Link key={i} to={path} onClick={handleCloseNavMenu}>
                                 <Button
-                                    sx={{ p: 2, color: location.pathname == path ? 'primary' : 'white' }}
+                                    sx={{ p: 2, color: location.pathname == path ? 'primary' : 'white', whiteSpace: "nowrap" }}
                                     startIcon={icon && <span className="material-symbols-outlined">{icon}</span>}
                                 >
                                     {name}
