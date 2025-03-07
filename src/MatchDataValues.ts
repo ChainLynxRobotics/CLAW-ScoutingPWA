@@ -140,6 +140,7 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     observations: {
         name: "Observations",
         defaultValue: [],
+        serialize: (value) => value.map((v) => Observation[v]).join(", "),
         average: (values) => {
             // Combine all the observations into one list
             const observations = values.reduce((a, b) => a.concat(b), []);

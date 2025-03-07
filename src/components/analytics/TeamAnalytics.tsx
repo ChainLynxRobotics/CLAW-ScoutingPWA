@@ -19,6 +19,38 @@ import QuantitativeStatistic from "./QuantitativeStatistic";
 import Observation from "../../enums/Observation";
 import { extendBlueAllianceScoreBreakdown2025 } from "../../util/analytics/blueAllianceExtend";
 import { BlueAllianceMatchExtended } from "../../types/blueAllianceTypesExtended";
+import { Leaves } from "../../types/analyticsTypes";
+import { describeCycleRateQuantitativeObjects } from "../../util/analytics/cycleRateStatistics";
+
+const autoCycleRatePaths: Leaves<MatchData>[] = [
+    "autoCoralL4Score",
+    "autoCoralL4Miss",
+    "autoCoralL3Score",
+    "autoCoralL3Miss",
+    "autoCoralL2Score",
+    "autoCoralL2Miss",
+    "autoCoralL1Score",
+    "autoCoralL1Miss",
+    "autoAlgaeScore",
+    "autoAlgaeMiss",
+    "autoAlgaeNetScore",
+    "autoAlgaeNetMiss",
+];
+
+const teleopCycleRatePaths: Leaves<MatchData>[] = [
+    "teleopCoralL4Score",
+    "teleopCoralL4Miss",
+    "teleopCoralL3Score",
+    "teleopCoralL3Miss",
+    "teleopCoralL2Score",
+    "teleopCoralL2Miss",
+    "teleopCoralL1Score",
+    "teleopCoralL1Miss",
+    "teleopAlgaeScore",
+    "teleopAlgaeMiss",
+    "teleopAlgaeNetScore",
+    "teleopAlgaeNetMiss",
+];
 
 const heatmapOriginalWidth = 200;
 const heatmapOriginalHeight = 500;
@@ -258,6 +290,8 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 <Card className="w-full max-w-md border-4 border-yellow-300">
                     <CardHeader title="Auto - Other" />
                     <CardContent>
+                        <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(autoCycleRatePaths, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
+                        <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic name="Auto Leave" stats={describeProportionalObjects<BlueAllianceMatchExtended>("score_breakdown.autoLineRobot", tbaMatchDataPositive, tbaMatchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
                         <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeScore", "autoAlgaeMiss", matchDataPositive, matchDataNegative)} />
@@ -287,6 +321,8 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 <Card className="w-full max-w-md border-4 border-pink-400">
                     <CardHeader title="Teleop - Other" />
                     <CardContent>
+                        <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(teleopCycleRatePaths, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
+                        <Divider sx={{ my: 2 }} />
                         <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeScore", "teleopAlgaeMiss", matchDataPositive, matchDataNegative)} />
                         <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeNetScore", "teleopAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
                         <Divider sx={{ my: 2 }} />
