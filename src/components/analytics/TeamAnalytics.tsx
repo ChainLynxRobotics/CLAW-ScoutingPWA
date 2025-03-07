@@ -21,6 +21,9 @@ import { extendBlueAllianceScoreBreakdown2025 } from "../../util/analytics/blueA
 import { BlueAllianceMatchExtended } from "../../types/blueAllianceTypesExtended";
 import { Leaves } from "../../types/analyticsTypes";
 import { describeCycleRateQuantitativeObjects } from "../../util/analytics/cycleRateStatistics";
+import { ScheduleContext } from "../context/ScheduleContextProvider";
+import matchCompare from "../../util/matchCompare";
+import TeamAnalyticsMatchSelection from "./TeamAnalyticsMatchSelection";
 
 const autoCycleRatePaths: Leaves<MatchData>[] = [
     "autoCoralL4Score",
@@ -76,17 +79,22 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
     if (!settings) throw new Error("SettingsContext not found");
     const analyticsSettings = useContext(AnalyticsSettingsContext);
     if (!analyticsSettings) throw new Error("AnalyticsSettingsContext not found");
+    const schedule = useContext(ScheduleContext);
+    if (!schedule) throw new Error("ScheduleContext not found");
 
 
     const allTeams = useMemo(() => [...new Set([...teams, ...(minusTeams ?? [])])], [teams, minusTeams]);
 
     const analyticsCompetition = useMemo(() => analyticsSettings.currentCompetitionOnly ? settings.competitionId : undefined, [analyticsSettings.currentCompetitionOnly, settings.competitionId]);
 
+    const [minMatch, setMinMatch] = useState(0);
+    const [maxMatch, setMaxMatch] = useState(schedule.matches.length - 1);
+    
     // Data from our scouting app
     // Maps Team Number -> Match ID -> Match Data (there can be multiple entries for the same match due to duel scouting)
-    const [matchData, setMatchData] = useState(new Map<number, MatchData[]>());
+    const [rawMatchData, setRawMatchData] = useState(new Map<number, MatchData[]>());
     useEffect(() => {
-        if (!analyticsSettings.includeScoutingData) return setMatchData(new Map(allTeams.map(team => [team, []])));
+        if (!analyticsSettings.includeScoutingData) return setRawMatchData(new Map(allTeams.map(team => [team, []])));
 
         async function loadData() {
             const entries = await Promise.all(allTeams.map(async team => {
@@ -106,10 +114,29 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
 
                 return [team, matches] as [number, MatchData[]];
             }));
-            setMatchData(new Map(entries));
+            setRawMatchData(new Map(entries));
         }
         loadData();
     }, [allTeams, analyticsSettings.includeScoutingData, analyticsCompetition]);
+
+    // Get the data with the min/max match filter applied
+    const matchData = useMemo(() => {
+        if (!analyticsSettings.currentCompetitionOnly) return rawMatchData;
+
+        const minMatchId = schedule.matches[minMatch].matchId;
+        const maxMatchId = schedule.matches[maxMatch].matchId;
+
+        if (!minMatchId || !maxMatchId) {
+            console.error("Could not find match ID for min/max match filter");
+            return rawMatchData;
+        }
+
+        const newMatchData = new Map<number, MatchData[]>();
+        rawMatchData.forEach((matches, team) => {
+            newMatchData.set(team, matches.filter(match => matchCompare(match.matchId, minMatchId) >= 0 && matchCompare(match.matchId, maxMatchId) <= 0));
+        });
+        return newMatchData;
+    }, [rawMatchData, minMatch, maxMatch]);
 
     const matchDataPositive = useMemo(() => teams.map(team => matchData.get(team)).filter(v => !!v), [teams, matchData]);
     const matchDataPositiveFlat = useMemo(() => matchDataPositive.flat(), [matchDataPositive]);
@@ -118,9 +145,9 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
 
     // Data from The Blue Alliance
     // Maps Team Number -> Set of TBA Matches
-    const [tbaMatchData, setTbaMatchData] = useState(new Map<number, BlueAllianceMatchExtended[]>());
+    const [rawTBAMatchData, setRawTBAMatchData] = useState(new Map<number, BlueAllianceMatchExtended[]>());
     useEffect(() => {
-        if (!analyticsSettings.includeBlueAllianceData) return setTbaMatchData(new Map(allTeams.map(team => [team, []])));
+        if (!analyticsSettings.includeBlueAllianceData) return setRawTBAMatchData(new Map(allTeams.map(team => [team, []])));
 
         async function loadData() {
             const entries = await Promise.all(allTeams.map(async team => {
@@ -128,10 +155,29 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 const extendedMatch = data.map(match => extendBlueAllianceScoreBreakdown2025(match, team));
                 return [team, extendedMatch] as [number, BlueAllianceMatchExtended[]];
             }));
-            setTbaMatchData(new Map(entries));
+            setRawTBAMatchData(new Map(entries));
         }
         loadData();
     }, [allTeams, analyticsCompetition, settings, analyticsSettings]);
+
+    // Get the data with the min/max match filter applied
+    const tbaMatchData = useMemo(() => {
+        if (!analyticsSettings.currentCompetitionOnly) return rawTBAMatchData;
+
+        const minMatchId = schedule.matches[minMatch].matchId;
+        const maxMatchId = schedule.matches[maxMatch].matchId;
+
+        if (!minMatchId || !maxMatchId) {
+            console.error("Could not find match ID for min/max match filter");
+            return rawTBAMatchData;
+        }
+
+        const newMatchData = new Map<number, BlueAllianceMatchExtended[]>();
+        rawTBAMatchData.forEach((matches, team) => {
+            newMatchData.set(team, matches.filter(match => matchCompare(match.key, minMatchId) > 0 && matchCompare(match.key, maxMatchId) < 0));
+        });
+        return newMatchData;
+    }, [rawTBAMatchData, minMatch, maxMatch]);
 
     const tbaMatchDataPositive = useMemo(() => teams.map(team => tbaMatchData.get(team)).filter(v => !!v), [teams, tbaMatchData]);
     const tbaMatchDataPositiveFlat = useMemo(() => tbaMatchDataPositive.flat(), [tbaMatchDataPositive]);
@@ -224,6 +270,10 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         <div className="flex flex-col items-center p-2">
             <TeamAnalyticsSelection teams={teams} minusTeams={minusTeams} onUpdate={(newTeams, newMinusTeams)=>{
                 navigate(`/analytics/team/${newTeams.join('+')}${newMinusTeams ? `/vs/${newMinusTeams.join('+')}` : ''}`);
+            }} />
+            <TeamAnalyticsMatchSelection min={minMatch} max={maxMatch} onChange={(min, max) => {
+                setMinMatch(min);
+                setMaxMatch(max);
             }} />
             <Masonry className="w-full h-full" columns={3} spacing={2}>
                 <Card className="w-full max-w-md border-4 border-green-300">
