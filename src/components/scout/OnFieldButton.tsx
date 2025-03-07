@@ -36,7 +36,7 @@ export function OnFieldButton({ label, value, setValue, ...props}: OnFieldButton
     function onHoldClick() {
         if (value <= 0) return;
         setValue(value - 1);
-        enqueueSnackbar(`Decreased ${label} to ${value - 1}`, { variant: 'error' });
+        enqueueSnackbar(`Decreased ${label} to ${value - 1}`, { variant: 'error', preventDuplicate: true, autoHideDuration: 1000 });
         vibrateForDecrease();
     }
 
