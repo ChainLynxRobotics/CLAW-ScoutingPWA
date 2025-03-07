@@ -19,6 +19,42 @@ import QuantitativeStatistic from "./QuantitativeStatistic";
 import Observation from "../../enums/Observation";
 import { extendBlueAllianceScoreBreakdown2025 } from "../../util/analytics/blueAllianceExtend";
 import { BlueAllianceMatchExtended } from "../../types/blueAllianceTypesExtended";
+import { Leaves } from "../../types/analyticsTypes";
+import { describeCycleRateQuantitativeObjects } from "../../util/analytics/cycleRateStatistics";
+import { ScheduleContext } from "../context/ScheduleContextProvider";
+import matchCompare from "../../util/matchCompare";
+import TeamAnalyticsMatchSelection from "./TeamAnalyticsMatchSelection";
+import useTeamAnalyticsData from "./useTeamAnalyticsData";
+
+const autoCycleRatePaths: Leaves<MatchData>[] = [
+    "autoCoralL4Score",
+    "autoCoralL4Miss",
+    "autoCoralL3Score",
+    "autoCoralL3Miss",
+    "autoCoralL2Score",
+    "autoCoralL2Miss",
+    "autoCoralL1Score",
+    "autoCoralL1Miss",
+    "autoAlgaeScore",
+    "autoAlgaeMiss",
+    "autoAlgaeNetScore",
+    "autoAlgaeNetMiss",
+];
+
+const teleopCycleRatePaths: Leaves<MatchData>[] = [
+    "teleopCoralL4Score",
+    "teleopCoralL4Miss",
+    "teleopCoralL3Score",
+    "teleopCoralL3Miss",
+    "teleopCoralL2Score",
+    "teleopCoralL2Miss",
+    "teleopCoralL1Score",
+    "teleopCoralL1Miss",
+    "teleopAlgaeScore",
+    "teleopAlgaeMiss",
+    "teleopAlgaeNetScore",
+    "teleopAlgaeNetMiss",
+];
 
 const heatmapOriginalWidth = 200;
 const heatmapOriginalHeight = 500;
@@ -39,74 +75,28 @@ const observationLabels = {
 export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], minusTeams?: number[] }) {
 
     const navigate = useNavigate();
+
+    const schedule = useContext(ScheduleContext);
+    if (!schedule) throw new Error("ScheduleContext not found");
+
+    const [minMatch, setMinMatch] = useState(0);
+    const [maxMatch, setMaxMatch] = useState(schedule.matches.length - 1);
+
+    // Get the data
+    const {
+        allTeams,
+        matchData,
+        matchDataPositive,
+        matchDataPositiveFlat,
+        matchDataNegative,
+        matchDataNegativeFlat,
+        tbaMatchData,
+        tbaMatchDataPositive,
+        tbaMatchDataPositiveFlat,
+        tbaMatchDataNegative,
+        tbaMatchDataNegativeFlat
+    } = useTeamAnalyticsData(teams, minusTeams, minMatch, maxMatch);
     
-    const settings = useContext(SettingsContext);
-    if (!settings) throw new Error("SettingsContext not found");
-    const analyticsSettings = useContext(AnalyticsSettingsContext);
-    if (!analyticsSettings) throw new Error("AnalyticsSettingsContext not found");
-
-
-    const allTeams = useMemo(() => [...new Set([...teams, ...(minusTeams ?? [])])], [teams, minusTeams]);
-
-    const analyticsCompetition = useMemo(() => analyticsSettings.currentCompetitionOnly ? settings.competitionId : undefined, [analyticsSettings.currentCompetitionOnly, settings.competitionId]);
-
-    // Data from our scouting app
-    // Maps Team Number -> Match ID -> Match Data (there can be multiple entries for the same match due to duel scouting)
-    const [matchData, setMatchData] = useState(new Map<number, MatchData[]>());
-    useEffect(() => {
-        if (!analyticsSettings.includeScoutingData) return setMatchData(new Map(allTeams.map(team => [team, []])));
-
-        async function loadData() {
-            const entries = await Promise.all(allTeams.map(async team => {
-                const data = await matchDatabase.getAllByTeam(team, analyticsCompetition);
-                
-                // Combine multiple entries for the same match
-                const matchMap = new Map<string, MatchData[]>();
-
-                data.forEach(match => {
-                    if (!matchMap.has(match.matchId)) matchMap.set(match.matchId, [match]);
-                    else matchMap.get(match.matchId)?.push(match);
-                });
-
-                // Calculate average for each match if there are multiple entries for a single match
-                const matches: MatchData[] = [];
-                for (const [, matchData] of matchMap) matches.push(matchData.length === 1 ? matchData[0] : matchDataAverage(matchData));
-
-                return [team, matches] as [number, MatchData[]];
-            }));
-            setMatchData(new Map(entries));
-        }
-        loadData();
-    }, [allTeams, analyticsSettings.includeScoutingData, analyticsCompetition]);
-
-    const matchDataPositive = useMemo(() => teams.map(team => matchData.get(team)).filter(v => !!v), [teams, matchData]);
-    const matchDataPositiveFlat = useMemo(() => matchDataPositive.flat(), [matchDataPositive]);
-    const matchDataNegative = useMemo(() => minusTeams?.map(team => matchData.get(team)).filter(v => !!v), [minusTeams, matchData]);
-    const matchDataNegativeFlat = useMemo(() => matchDataNegative?.flat(), [matchDataNegative]);
-
-    // Data from The Blue Alliance
-    // Maps Team Number -> Set of TBA Matches
-    const [tbaMatchData, setTbaMatchData] = useState(new Map<number, BlueAllianceMatchExtended[]>());
-    useEffect(() => {
-        if (!analyticsSettings.includeBlueAllianceData) return setTbaMatchData(new Map(allTeams.map(team => [team, []])));
-
-        async function loadData() {
-            const entries = await Promise.all(allTeams.map(async team => {
-                const data = await blueAllianceApi.getMatchesByTeam(team, settings!.competitionId, analyticsSettings!.currentCompetitionOnly);
-                const extendedMatch = data.map(match => extendBlueAllianceScoreBreakdown2025(match, team));
-                return [team, extendedMatch] as [number, BlueAllianceMatchExtended[]];
-            }));
-            setTbaMatchData(new Map(entries));
-        }
-        loadData();
-    }, [allTeams, analyticsCompetition, settings, analyticsSettings]);
-
-    const tbaMatchDataPositive = useMemo(() => teams.map(team => tbaMatchData.get(team)).filter(v => !!v), [teams, tbaMatchData]);
-    const tbaMatchDataPositiveFlat = useMemo(() => tbaMatchDataPositive.flat(), [tbaMatchDataPositive]);
-    const tbaMatchDataNegative = useMemo(() => minusTeams?.map(team => tbaMatchData.get(team)).filter(v => !!v), [minusTeams, tbaMatchData]);
-    const tbaMatchDataNegativeFlat = useMemo(() => tbaMatchDataNegative?.flat(), [tbaMatchDataNegative]);
-
-
 
     // Data for the human player location pie chart
     const humanPlayerLocationData = useMemo<PieValueType[]>(() => [
@@ -136,6 +126,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         },
     ], [matchDataPositiveFlat, matchDataNegativeFlat]);
 
+    // Data for the heatmap
     const heatmapData = useMemo(() => matchDataPositiveFlat
         .filter(match => match.autoStartPositionX !== undefined && match.autoStartPositionY !== undefined)
         .map(match => ({
@@ -145,6 +136,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         })
     ), [matchDataPositiveFlat]);
 
+    // Data for the climb pie chart
     const climbPieData = useMemo<PieValueType[]>(() => [
         {
             id: "None",
@@ -172,6 +164,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         },
     ], [tbaMatchDataPositiveFlat, tbaMatchDataNegativeFlat]);
 
+    // Data for the observations bar chart
     const observationsBarChartRobots = useMemo(() => [...teams, ...(minusTeams ?? [])], [teams, minusTeams]);
     const observationsBarChartData = useMemo(() => 
         observationsBarChartRobots.map(team => ({
@@ -193,184 +186,207 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
             <TeamAnalyticsSelection teams={teams} minusTeams={minusTeams} onUpdate={(newTeams, newMinusTeams)=>{
                 navigate(`/analytics/team/${newTeams.join('+')}${newMinusTeams ? `/vs/${newMinusTeams.join('+')}` : ''}`);
             }} />
-            <Masonry className="w-full h-full" columns={3} spacing={2}>
-                <Card className="w-full max-w-md border-4 border-green-300">
-                    <CardHeader title="Pre Match" />
-                    <CardContent>
-                        <div>Human Player Location</div>
-                        <PieChart width={275} height={150} series={[{ 
-                            data: humanPlayerLocationData,
-                            cx: 50,
-                            cy: "50%",
-                            outerRadius: 50,
-                            innerRadius: 15,
-                            cornerRadius: 5,
-                            paddingAngle: 5,
-                        }]} />
-                    </CardContent>
-                </Card>
-                <Card className="w-full max-w-md border-4 border-green-300 !overflow-visible">
-                    <CardHeader title="Pre Match Start Position" />
-                    <CardContent>
-                        <div className="flex flex-col items-center">
-                            <div className="relative">
-                                <img src={`/imgs/reefscape_field_render_blue.png`} 
-                                    alt="Reefscape Field Render" 
-                                    className={`object-cover object-right`}
-                                    style={{ width: heatmapWidth, height: heatmapHeight }}
-                                />
-                                <Heatmap data={heatmapData} config={{
-                                    size: 100,
-                                    intensity: 0.75, 
-                                    min: 0,
-                                    gradient: [{
-                                        color: [0, 0, 0, 0.0],
-                                        offset: 0
-                                    }, {
-                                        color: [0, 0, 255, 0.2],
-                                        offset: 0.2
-                                    }, {
-                                        color: [0, 255, 0, 0.5],
-                                        offset: 0.45
-                                    }, {
-                                        color: [255, 255, 0, 1.0],
-                                        offset: 0.85
-                                    }, {
-                                        color: [255, 0, 0, 1.0],
-                                        offset: 1.0
-                                    }]
-                                }} />
+            <TeamAnalyticsMatchSelection min={minMatch} max={maxMatch} onChange={(min, max) => {
+                setMinMatch(min);
+                setMaxMatch(max);
+            }} />
+            <div className="flex flex-wrap items-start justify-center gap-2">
+                <div className="flex flex-col gap-2">
+                    <Card className="w-full max-w-md border-4 border-green-300 !overflow-visible">
+                        <CardHeader title="Pre Match Start Position" />
+                        <CardContent>
+                            <div className="flex flex-col items-center">
+                                <div className="relative">
+                                    <img src={`/imgs/reefscape_field_render_blue.png`} 
+                                        alt="Reefscape Field Render" 
+                                        className={`object-cover object-right`}
+                                        style={{ width: heatmapWidth, height: heatmapHeight }}
+                                    />
+                                    <Heatmap data={heatmapData} config={{
+                                        size: 100,
+                                        intensity: 0.75, 
+                                        min: 0,
+                                        gradient: [{
+                                            color: [0, 0, 0, 0.0],
+                                            offset: 0
+                                        }, {
+                                            color: [0, 0, 255, 0.2],
+                                            offset: 0.2
+                                        }, {
+                                            color: [0, 255, 0, 0.5],
+                                            offset: 0.45
+                                        }, {
+                                            color: [255, 255, 0, 1.0],
+                                            offset: 0.85
+                                        }, {
+                                            color: [255, 0, 0, 1.0],
+                                            offset: 1.0
+                                        }]
+                                    }} />
+                                </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                    <Card className="w-full max-w-md border-4 border-green-300">
+                        <CardHeader title="Pre Match" />
+                        <CardContent>
+                            <div>Human Player Location</div>
+                            <PieChart width={275} height={150} series={[{ 
+                                data: humanPlayerLocationData,
+                                cx: 50,
+                                cy: "50%",
+                                outerRadius: 50,
+                                innerRadius: 15,
+                                cornerRadius: 5,
+                                paddingAngle: 5,
+                            }]} />
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <Card className="w-full max-w-md border-4 border-yellow-300">
+                        <CardHeader title="Auto - Coral" />
+                        <CardContent>
+                            <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL4Score", "autoCoralL4Miss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Coral L3" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL3Score", "autoCoralL3Miss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Coral L2" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL2Score", "autoCoralL2Miss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Coral L1" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL1Score", "autoCoralL1Miss", matchDataPositive, matchDataNegative)} />
+                        </CardContent>
+                    </Card>
 
-                <Card className="w-full max-w-md border-4 border-yellow-300">
-                    <CardHeader title="Auto - Coral" />
-                    <CardContent>
-                        <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL4Score", "autoCoralL4Miss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Coral L3" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL3Score", "autoCoralL3Miss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Coral L2" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL2Score", "autoCoralL2Miss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Coral L1" stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL1Score", "autoCoralL1Miss", matchDataPositive, matchDataNegative)} />
-                    </CardContent>
-                </Card>
+                    <Card className="w-full max-w-md border-4 border-yellow-300">
+                        <CardHeader title="Auto - Other" />
+                        <CardContent>
+                            <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(autoCycleRatePaths, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
+                            <Divider sx={{ my: 2 }} />
+                            <ProportionalStatistic name="Auto Leave" stats={describeProportionalObjects<BlueAllianceMatchExtended>("score_breakdown.autoLineRobot", tbaMatchDataPositive, tbaMatchDataNegative)} />
+                            <Divider sx={{ my: 2 }} />
+                            <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeScore", "autoAlgaeMiss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeNetScore", "autoAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
+                        </CardContent>
+                    </Card>
 
-                <Card className="w-full max-w-md border-4 border-yellow-300">
-                    <CardHeader title="Auto - Other" />
-                    <CardContent>
-                        <ProportionalStatistic name="Auto Leave" stats={describeProportionalObjects<BlueAllianceMatchExtended>("score_breakdown.autoLineRobot", tbaMatchDataPositive, tbaMatchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeScore", "autoAlgaeMiss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeNetScore", "autoAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("autoCoralGroundIntake", matchDataPositive, matchDataNegative)} />
-                        <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("autoCoralStationIntake", matchDataPositive, matchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Remove Algae from Reef L2" stats={describeProportionalObjects<MatchData>("autoRemoveL2Algae", matchDataPositive, matchDataNegative)} />
-                        <ProportionalStatistic name="Remove Algae from Reef L3" stats={describeProportionalObjects<MatchData>("autoRemoveL3Algae", matchDataPositive, matchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
-                        <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
-                    </CardContent>
-                </Card>
+                    <Card className="w-full max-w-md border-4 border-yellow-300">
+                        <CardHeader title="Auto - Abilities" />
+                        <CardContent>
+                            <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("autoCoralGroundIntake", matchDataPositive, matchDataNegative)} />
+                            <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("autoCoralStationIntake", matchDataPositive, matchDataNegative)} />
+                            <Divider sx={{ my: 2 }} />
+                            <ProportionalStatistic name="Remove Algae from Reef L2" stats={describeProportionalObjects<MatchData>("autoRemoveL2Algae", matchDataPositive, matchDataNegative)} />
+                            <ProportionalStatistic name="Remove Algae from Reef L3" stats={describeProportionalObjects<MatchData>("autoRemoveL3Algae", matchDataPositive, matchDataNegative)} />
+                            <Divider sx={{ my: 2 }} />
+                            <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
+                            <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("autoAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <Card className="w-full max-w-md border-4 border-pink-400">
+                        <CardHeader title="Teleop - Coral" />
+                        <CardContent>
+                            <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL4Score", "teleopCoralL4Miss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Coral L3" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL3Score", "teleopCoralL3Miss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Coral L2" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL2Score", "teleopCoralL2Miss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Coral L1" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL1Score", "teleopCoralL1Miss", matchDataPositive, matchDataNegative)} />
+                        </CardContent>
+                    </Card>
 
-                <Card className="w-full max-w-md border-4 border-pink-400">
-                    <CardHeader title="Teleop - Coral" />
-                    <CardContent>
-                        <QuantitativeProportionalStatistic name="Coral L4" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL4Score", "teleopCoralL4Miss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Coral L3" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL3Score", "teleopCoralL3Miss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Coral L2" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL2Score", "teleopCoralL2Miss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Coral L1" stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL1Score", "teleopCoralL1Miss", matchDataPositive, matchDataNegative)} />
-                    </CardContent>
-                </Card>
+                    <Card className="w-full max-w-md border-4 border-pink-400">
+                        <CardHeader title="Teleop - Other" />
+                        <CardContent>
+                            <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(teleopCycleRatePaths, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
+                            <Divider sx={{ my: 2 }} />
+                            <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeScore", "teleopAlgaeMiss", matchDataPositive, matchDataNegative)} />
+                            <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeNetScore", "teleopAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
+                            <Divider sx={{ my: 2 }} />
+                            <QuantitativeProportionalStatistic name="Human Player Shots" stats={describeQuantitativeProportionalObjects<MatchData>("teleopHumanPlayerAlgaeScore", "teleopHumanPlayerAlgaeMiss", 
+                                matchDataPositive.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor)), // Only include matches where the human player is at the processor
+                                matchDataNegative?.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor))
+                            )} />
+                        </CardContent>
+                    </Card>
 
-                <Card className="w-full max-w-md border-4 border-pink-400">
-                    <CardHeader title="Teleop - Other" />
-                    <CardContent>
-                        <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeScore", "teleopAlgaeMiss", matchDataPositive, matchDataNegative)} />
-                        <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeNetScore", "teleopAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("teleopCoralGroundIntake", matchDataPositive, matchDataNegative)} />
-                        <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("teleopCoralStationIntake", matchDataPositive, matchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Remove Algae from Reef L2" stats={describeProportionalObjects<MatchData>("teleopRemoveL2Algae", matchDataPositive, matchDataNegative)} />
-                        <ProportionalStatistic name="Remove Algae from Reef L3" stats={describeProportionalObjects<MatchData>("teleopRemoveL3Algae", matchDataPositive, matchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
-                        <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
-                        <Divider sx={{ my: 2 }} />
-                        <QuantitativeProportionalStatistic name="Human Player Shots" stats={describeQuantitativeProportionalObjects<MatchData>("teleopHumanPlayerAlgaeScore", "teleopHumanPlayerAlgaeMiss", 
-                            matchDataPositive.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor)), // Only include matches where the human player is at the processor
-                            matchDataNegative?.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor))
-                        )} />
-                    </CardContent>
-                </Card>
-
-                <Card className="w-full max-w-md border-4 border-blue-300">
-                    <CardHeader title="Post Match" />
-                    <CardContent>
-                        <QuantitativeStatistic name="Time Defending" stats={describeQuantitativeObjects<MatchData>("timeDefending", matchDataPositive, matchDataNegative)} asPercent asPercentMultiplier={1} />
-                        <Divider sx={{ my: 2 }} />
-                        <div>Observations:</div>
-                        <BarChart 
-                            width={300} 
-                            height={350}
-                            dataset={observationsBarChartData}
-                            xAxis={[{ scaleType: 'band', dataKey: 'team' }]}
-                            series={[
-                                { dataKey: Observation.Tippy+"", label: 'Tippy', color: 'hotpink' },
-                                { dataKey: Observation.DroppingCoral+"", label: 'Dropping Coral', color: 'lightcoral' },
-                                { dataKey: Observation.DroppingAlgae+"", label: 'Dropping Algae', color: 'lightgreen' },
-                                { dataKey: Observation.DifficultyAligningScore+"", label: 'Difficulty Aligning Score', color: 'lightblue' },
-                                { dataKey: Observation.DifficultyAligningIntake+"", label: 'Difficulty Aligning Intake', color: 'lightyellow' },
-                                { dataKey: Observation.Immobilized+"", label: 'Immobilized', color: 'lightgrey' },
-                                { dataKey: Observation.DisabledPartially+"", label: 'Disabled Partially', color: 'orange' },
-                                { dataKey: Observation.DisabledFully+"", label: 'Disabled Fully', color: 'red' },
-                            ]}
-                            barLabel="value"
-                            margin={{ top: 250 }}
-                        />
-                    </CardContent>
-                </Card>
-                <Card className="w-full max-w-md border-4 border-blue-300">
-                    <CardHeader title="Notes" />
-                    <CardContent className="flex flex-col gap-2">
-                        {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>(match.notes.trim()||match.observations.length)).map(match => (
-                            <Card variant="outlined" key={match.teamNumber+"-"+match.matchId}>
-                                <CardHeader subheader={
-                                    <span className="flex justify-between">
-                                        <span>{match.teamNumber}</span>
-                                        <span>{match.matchId}</span>
-                                    </span>} 
-                                    sx={{ p: 2 }} />
-                                <CardContent sx={{ py: 0 }}>
-                                    {match.notes}
-                                    <div className="flex gap-2 flex-wrap mt-2">
-                                        {match.observations.map((observation) => (
-                                            <Chip key={observation} label={observationLabels[observation]} variant="outlined" />
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </CardContent>
-                </Card>
-                <Card className="w-full max-w-md border-4 border-green-300">
-                    <CardHeader title="Climb" />
-                    <CardContent>
-                        <div>Climb</div>
-                        <PieChart width={275} height={150} series={[{ 
-                            data: climbPieData,
-                            cx: 50,
-                            cy: "50%",
-                            outerRadius: 50,
-                            innerRadius: 15,
-                            cornerRadius: 5,
-                            paddingAngle: 5,
-                        }]} />
-                    </CardContent>
-                </Card>
-            </Masonry>
+                    <Card className="w-full max-w-md border-4 border-pink-400">
+                        <CardHeader title="Teleop - Abilities" />
+                        <CardContent>
+                            <ProportionalStatistic name="Coral Ground Intake" stats={describeProportionalObjects<MatchData>("teleopCoralGroundIntake", matchDataPositive, matchDataNegative)} />
+                            <ProportionalStatistic name="Coral Station Intake" stats={describeProportionalObjects<MatchData>("teleopCoralStationIntake", matchDataPositive, matchDataNegative)} />
+                            <Divider sx={{ my: 2 }} />
+                            <ProportionalStatistic name="Remove Algae from Reef L2" stats={describeProportionalObjects<MatchData>("teleopRemoveL2Algae", matchDataPositive, matchDataNegative)} />
+                            <ProportionalStatistic name="Remove Algae from Reef L3" stats={describeProportionalObjects<MatchData>("teleopRemoveL3Algae", matchDataPositive, matchDataNegative)} />
+                            <Divider sx={{ my: 2 }} />
+                            <ProportionalStatistic name="Algae Ground Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeGroundIntake", matchDataPositive, matchDataNegative)} />
+                            <ProportionalStatistic name="Algae Reef Intake" stats={describeProportionalObjects<MatchData>("teleopAlgaeReefIntake", matchDataPositive, matchDataNegative)} />
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="flex flex-col gap-2 w-min">
+                    <Card className="w-full max-w-md border-4 border-blue-300">
+                        <CardHeader title="Climb" />
+                        <CardContent>
+                            <div>Climb</div>
+                            <PieChart width={275} height={150} series={[{ 
+                                data: climbPieData,
+                                cx: 50,
+                                cy: "50%",
+                                outerRadius: 50,
+                                innerRadius: 15,
+                                cornerRadius: 5,
+                                paddingAngle: 5,
+                            }]} />
+                        </CardContent>
+                    </Card>
+                    <Card className="w-full max-w-md border-4 border-blue-300">
+                        <CardHeader title="Post Match" />
+                        <CardContent>
+                            <QuantitativeStatistic name="Time Defending" stats={describeQuantitativeObjects<MatchData>("timeDefending", matchDataPositive, matchDataNegative)} asPercent asPercentMultiplier={1} />
+                            <Divider sx={{ my: 2 }} />
+                            <div>Observations:</div>
+                            <BarChart 
+                                width={300} 
+                                height={350}
+                                dataset={observationsBarChartData}
+                                xAxis={[{ scaleType: 'band', dataKey: 'team' }]}
+                                series={[
+                                    { dataKey: Observation.Tippy+"", label: 'Tippy', color: 'hotpink' },
+                                    { dataKey: Observation.DroppingCoral+"", label: 'Dropping Coral', color: 'lightcoral' },
+                                    { dataKey: Observation.DroppingAlgae+"", label: 'Dropping Algae', color: 'lightgreen' },
+                                    { dataKey: Observation.DifficultyAligningScore+"", label: 'Difficulty Aligning Score', color: 'lightblue' },
+                                    { dataKey: Observation.DifficultyAligningIntake+"", label: 'Difficulty Aligning Intake', color: 'lightyellow' },
+                                    { dataKey: Observation.Immobilized+"", label: 'Immobilized', color: 'lightgrey' },
+                                    { dataKey: Observation.DisabledPartially+"", label: 'Disabled Partially', color: 'orange' },
+                                    { dataKey: Observation.DisabledFully+"", label: 'Disabled Fully', color: 'red' },
+                                ]}
+                                barLabel="value"
+                                margin={{ top: 250 }}
+                            />
+                        </CardContent>
+                    </Card>
+                    <Card className="w-full max-w-md border-4 border-blue-300">
+                        <CardHeader title="Notes" />
+                        <CardContent className="flex flex-col gap-2">
+                            {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>(match.notes.trim()||match.observations.length)).map(match => (
+                                <Card variant="outlined" key={match.teamNumber+"-"+match.matchId}>
+                                    <CardHeader subheader={
+                                        <span className="flex justify-between">
+                                            <span>{match.teamNumber}</span>
+                                            <span>{match.matchId}</span>
+                                        </span>} 
+                                        sx={{ p: 2 }} />
+                                    <CardContent sx={{ py: 0 }}>
+                                        {match.notes}
+                                        <div className="flex gap-2 flex-wrap mt-2">
+                                            {match.observations.map((observation) => (
+                                                <Chip key={observation} label={observationLabels[observation]} variant="outlined" />
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
         </Paper>
     )

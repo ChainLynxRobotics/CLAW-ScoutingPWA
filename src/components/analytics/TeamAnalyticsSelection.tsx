@@ -44,7 +44,7 @@ export default function TeamAnalyticsSelection({ teams, minusTeams, onUpdate }: 
     }
     
     return (
-        <h1 className="text-xl my-4 flex flex-wrap items-center justify-center gap-2">
+        <h1 className="text-xl mt-4 flex flex-wrap items-center justify-center gap-2">
             <span className="whitespace-nowrap">Analytics for: </span>
             
             <TeamAnalyticsSelectMenu
