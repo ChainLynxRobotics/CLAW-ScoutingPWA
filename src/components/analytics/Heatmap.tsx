@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Heatmap from 'visual-heatmap';
 import { HeatmapRenderer } from "visual-heatmap/dist/types/heatmap";
 import { HeatmapConfig, Point } from "visual-heatmap/dist/types/types";
@@ -9,22 +9,24 @@ interface HeatMapProps {
 }
 
 export default function HeatMap({ data, config }: HeatMapProps) {
+    
+    return <InternalHeatMap key={JSON.stringify(data)} data={data} config={config} />
+}
+
+// This is the internal version of the HeatMap component that doesn't reset the heatmap when the data changes.
+function InternalHeatMap({ data, config }: HeatMapProps) {
 
     const ref = useRef<HTMLDivElement>(null);
     const heatmapInstance = useRef<HeatmapRenderer>(null);
 
-    const key = useRef(0);
-
     useEffect(() => {
         if (!ref.current) return;
+        if (heatmapInstance.current) return;
         heatmapInstance.current = Heatmap(ref.current, config);
         heatmapInstance.current.addData(data, true);
-        return () => {
-            key.current++
-        };
     }, [ref, config, data]);
 
     return (
-        <div key={key.current} ref={ref} style={{ top: 0, left: 0, width: "100%", height: "100%", position: "absolute" }}></div>
+        <div ref={ref} style={{ top: 0, left: 0, width: "100%", height: "100%", position: "absolute" }}></div>
     )
 }
