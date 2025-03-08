@@ -169,14 +169,14 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
     const observationsBarChartData = useMemo(() => 
         observationsBarChartRobots.map(team => ({
             team,
-            [Observation.Tippy]: matchData.get(team)?.filter(match => match.observations.includes(Observation.Tippy)).length || 0,
-            [Observation.DroppingCoral]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DroppingCoral)).length || 0,
-            [Observation.DroppingAlgae]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DroppingAlgae)).length || 0,
-            [Observation.DifficultyAligningScore]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DifficultyAligningScore)).length || 0,
-            [Observation.DifficultyAligningIntake]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DifficultyAligningIntake)).length || 0,
-            [Observation.Immobilized]: matchData.get(team)?.filter(match => match.observations.includes(Observation.Immobilized)).length || 0,
-            [Observation.DisabledPartially]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DisabledPartially)).length || 0,
-            [Observation.DisabledFully]: matchData.get(team)?.filter(match => match.observations.includes(Observation.DisabledFully)).length || 0,
+            [Observation.Tippy]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.Tippy)).length || 0,
+            [Observation.DroppingCoral]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.DroppingCoral)).length || 0,
+            [Observation.DroppingAlgae]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.DroppingAlgae)).length || 0,
+            [Observation.DifficultyAligningScore]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.DifficultyAligningScore)).length || 0,
+            [Observation.DifficultyAligningIntake]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.DifficultyAligningIntake)).length || 0,
+            [Observation.Immobilized]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.Immobilized)).length || 0,
+            [Observation.DisabledPartially]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.DisabledPartially)).length || 0,
+            [Observation.DisabledFully]: matchData.get(team)?.filter(match => match.observations?.includes(Observation.DisabledFully)).length || 0,
         }))
     , [matchData, observationsBarChartRobots]);
 
@@ -365,7 +365,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     <Card className="w-full max-w-md border-4 border-blue-300">
                         <CardHeader title="Notes" />
                         <CardContent className="flex flex-col gap-2">
-                            {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>(match.notes.trim()||match.observations.length)).map(match => (
+                            {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>(match.notes.trim()||match.observations?.length)).map(match => (
                                 <Card variant="outlined" key={match.teamNumber+"-"+match.matchId}>
                                     <CardHeader subheader={
                                         <span className="flex justify-between">
@@ -376,7 +376,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                     <CardContent sx={{ py: 0 }}>
                                         {match.notes}
                                         <div className="flex gap-2 flex-wrap mt-2">
-                                            {match.observations.map((observation) => (
+                                            {match.observations?.map((observation) => (
                                                 <Chip key={observation} label={observationLabels[observation]} variant="outlined" />
                                             ))}
                                         </div>
