@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">C.L.A.W. Scouting</string>
+    <string name="title_activity_main">C.L.A.W. Scouting</string>
+    <string name="package_name">com.chainlynx8248.scouting</string>
+    <string name="custom_url_scheme">com.chainlynx8248.scouting</string>
+</resources>
