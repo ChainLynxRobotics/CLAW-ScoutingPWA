@@ -12,8 +12,8 @@ export default function QuantitativeProportionalStatistic({ stats, digits: d = 2
     return (
         <>
             <QuantitativeStatistic digits={d} stats={stats.x} {...props} />
-            <ProportionalStatistic name="└ Accuracy" digits={d} pl="24px" stats={stats.p} />
-            <QuantitativeStatistic name="└ Attempts" digits={d} pl="24px" stats={stats.n} />
+            <ProportionalStatistic name="└ Accuracy" digits={d} pl="24px" disabled stats={stats.p} />
+            <QuantitativeStatistic name="└ Attempts" digits={d} pl="24px" disabled stats={stats.n} />
         </>
     )
 }
