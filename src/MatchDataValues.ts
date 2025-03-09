@@ -74,10 +74,18 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     autoStartPositionX: {
         name: "Auto Start Position",
         defaultValue: undefined,
+        average: (values) => {
+            const arr = values.filter(val => val !== undefined)
+            return arr.reduce((a, b) => a + b, 0) / arr.length
+        }
     },
     autoStartPositionY: {
         name: "Auto Start Position",
         defaultValue: undefined,
+        average: (values) => {
+            const arr = values.filter(val => val !== undefined)
+            return arr.reduce((a, b) => a + b, 0) / arr.length
+        }
     },
     humanPlayerLocation: {
         name: "Human Player Location",
