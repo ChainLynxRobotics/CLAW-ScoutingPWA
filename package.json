@@ -13,6 +13,9 @@
     "generate-tba-client": "npx swagger-typescript-api -p https://www.thebluealliance.com/swagger/api_v3.json -o ./src/types -n blueAllianceTypes.ts --type-prefix BlueAlliance --no-client --union-enums --add-readonly --patch"
   },
   "dependencies": {
+    "@capacitor/android": "^3.9.0",
+    "@capacitor/cli": "^3.9.0",
+    "@capacitor/core": "^3.9.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@hello-pangea/dnd": "^18.0.1",
