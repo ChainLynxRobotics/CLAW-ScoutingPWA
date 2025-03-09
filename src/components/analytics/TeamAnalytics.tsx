@@ -249,7 +249,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     <Card className="w-full max-w-md border-4 border-yellow-300">
                         <CardHeader title="Auto - Other" />
                         <CardContent>
-                            <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(autoCycleRatePaths, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
+                            <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(autoCycleRatePaths, 15, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
                             <Divider sx={{ my: 2 }} />
                             <ProportionalStatistic name="Auto Leave" stats={describeProportionalObjects<BlueAllianceMatchExtended>("score_breakdown.autoLineRobot", tbaMatchDataPositive, tbaMatchDataNegative)} />
                             <Divider sx={{ my: 2 }} />
@@ -286,7 +286,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     <Card className="w-full max-w-md border-4 border-pink-400">
                         <CardHeader title="Teleop - Other" />
                         <CardContent>
-                            <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(teleopCycleRatePaths, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
+                            <QuantitativeStatistic name="Cycle Rate" stats={describeCycleRateQuantitativeObjects<MatchData>(teleopCycleRatePaths, 135, matchDataPositive, matchDataNegative)} desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened." />
                             <Divider sx={{ my: 2 }} />
                             <QuantitativeProportionalStatistic name="Processor" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeScore", "teleopAlgaeMiss", matchDataPositive, matchDataNegative)} />
                             <QuantitativeProportionalStatistic name="Net" stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeNetScore", "teleopAlgaeNetMiss", matchDataPositive, matchDataNegative)} />
