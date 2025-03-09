@@ -1,7 +1,7 @@
 {
   "name": "claw-scoutingpwa",
   "private": true,
-  "version": "2025.0.3",
+  "version": "2025.0.4",
   "type": "module",
   "scripts": {
     "preinstall": "npx only-allow pnpm",

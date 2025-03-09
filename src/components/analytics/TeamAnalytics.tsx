@@ -1,12 +1,6 @@
 import { Card, CardContent, CardHeader, Chip, Divider, Paper } from "@mui/material";
-import { Masonry } from "@mui/lab";
-import { useContext, useMemo, useState, useEffect } from "react";
+import { useContext, useMemo, useState } from "react";
 import { MatchData } from "../../types/MatchData";
-import blueAllianceApi from "../../util/blueAllianceApi";
-import matchDatabase from "../../util/db/matchDatabase";
-import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
-import { SettingsContext } from "../context/SettingsContextProvider";
-import matchDataAverage from "../../util/analytics/matchDataAverage";
 import { BarChart, PieChart, PieValueType } from "@mui/x-charts";
 import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
 import ProportionalStatistic from "./ProporationalStatistic";
@@ -17,12 +11,10 @@ import { useNavigate } from "react-router-dom";
 import Heatmap from "./Heatmap";
 import QuantitativeStatistic from "./QuantitativeStatistic";
 import Observation from "../../enums/Observation";
-import { extendBlueAllianceScoreBreakdown2025 } from "../../util/analytics/blueAllianceExtend";
 import { BlueAllianceMatchExtended } from "../../types/blueAllianceTypesExtended";
 import { Leaves } from "../../types/analyticsTypes";
 import { describeCycleRateQuantitativeObjects } from "../../util/analytics/cycleRateStatistics";
 import { ScheduleContext } from "../context/ScheduleContextProvider";
-import matchCompare from "../../util/matchCompare";
 import TeamAnalyticsMatchSelection from "./TeamAnalyticsMatchSelection";
 import useTeamAnalyticsData from "./useTeamAnalyticsData";
 
@@ -365,7 +357,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     <Card className="w-full max-w-md border-4 border-blue-300">
                         <CardHeader title="Notes" />
                         <CardContent className="flex flex-col gap-2">
-                            {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>(match.notes.trim()||match.observations?.length)).map(match => (
+                            {matchDataPositiveFlat.concat(matchDataNegativeFlat ?? []).filter(match=>(match.notes.trim()||match.observations?.filter(observation => observation !== undefined).length)).map(match => (
                                 <Card variant="outlined" key={match.teamNumber+"-"+match.matchId}>
                                     <CardHeader subheader={
                                         <span className="flex justify-between">
@@ -376,7 +368,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                     <CardContent sx={{ py: 0 }}>
                                         {match.notes}
                                         <div className="flex gap-2 flex-wrap mt-2">
-                                            {match.observations?.map((observation) => (
+                                            {match.observations?.filter(observation => observation !== undefined).map((observation) => (
                                                 <Chip key={observation} label={observationLabels[observation]} variant="outlined" />
                                             ))}
                                         </div>

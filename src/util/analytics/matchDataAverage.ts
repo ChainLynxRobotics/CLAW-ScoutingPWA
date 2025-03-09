@@ -17,7 +17,7 @@ export default function matchDataAverage(matchData: MatchData[]): MatchData {
         if (info.average !== undefined) fields[field as keyof MatchDataFields] = info.average(values as any); // eslint-disable-line @typescript-eslint/no-explicit-any
         else if (values.every(v => typeof v === "number")) fields[field as keyof MatchDataFields] = values.reduce((a, b) => a + b, 0) / values.length;
         else if (values.every(v => typeof v === "boolean")) fields[field as keyof MatchDataFields] = values.reduce((a, b) => a + (b ? 1 : 0), 0) / values.length >= 0.5;
-        else if (values.every(v => typeof v === "string")) fields[field as keyof MatchDataFields] = values.join("\n");
+        else if (values.every(v => typeof v === "string")) fields[field as keyof MatchDataFields] = values.filter(val => val.trim().length).join("\n");
         else throw new Error("Field "+field+" is of type "+typeof values[0]+" which cannot be averaged, and no custom average function was provided");
     };
 
