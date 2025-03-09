@@ -8,6 +8,8 @@ export type StatisticProps = {
     desc?: string,
     /** Padding left for the element, used for indicating one statistic is a child of another in the UI */
     pl?: string,
+    /** If it should show up fainter */
+    disabled?: boolean,
 }
 
 /**
@@ -22,7 +24,7 @@ export default function Statistic(props: StatisticProps & {children: React.React
     const [infoOpen, setInfoOpen] = useState(false);
     
     return (
-        <div className="flex items-center gap-2 whitespace-nowrap" style={props.pl ? {paddingLeft: props.pl} : undefined}>
+        <div className="flex items-center gap-2 whitespace-nowrap" style={{paddingLeft: props.pl, opacity: props.disabled ? 0.4 : 1}}>
             <span className="-indent-2 pl-2">{props.name}: </span>
             {props.children}
             
