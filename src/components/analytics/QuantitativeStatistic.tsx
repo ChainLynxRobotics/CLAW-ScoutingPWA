@@ -8,9 +8,10 @@ export interface QuantitativeStatisticProps extends StatisticProps {
     asPercent?: boolean,
     asPercentMultiplier?: number,
     stats: QuantitativeStats,
+    unit?: string
 }
 
-export default function QuantitativeStatistic({ stats, digits: d = 2, asPercent, asPercentMultiplier = 100, ...props }: QuantitativeStatisticProps) {
+export default function QuantitativeStatistic({ stats, digits: d = 2, asPercent, asPercentMultiplier = 100, unit = "", ...props }: QuantitativeStatisticProps) {
     if (asPercent) {
         return (
             <Statistic {...props}>
@@ -23,10 +24,10 @@ export default function QuantitativeStatistic({ stats, digits: d = 2, asPercent,
     } else {
         return (
             <Statistic {...props}>
-                <Tooltip title={`Average: ${maxDecimal(stats.avg, d)} SD: ${maxDecimal(stats.sd, d)} Total: ${maxDecimal(stats.sum, d)} Samples: ${maxDecimal(stats.n, d)}`} placement="top" arrow>
-                    <b>{maxDecimal(stats.avg, d)}</b>
+                <Tooltip title={`Average: ${maxDecimal(stats.avg, d) + unit} SD: ${maxDecimal(stats.sd, d)} Total: ${maxDecimal(stats.sum, d)} Samples: ${maxDecimal(stats.n, d)}`} placement="top" arrow>
+                    <b>{maxDecimal(stats.avg, d) + unit}</b>
                 </Tooltip>
-                <span className="text-gray-500">(min: {maxDecimal(stats.min, d)} max: {maxDecimal(stats.max, d)})</span>
+                <span className="text-gray-500">(min: {maxDecimal(stats.min, d) + unit} max: {maxDecimal(stats.max, d) + unit})</span>
             </Statistic>
         )
     }
