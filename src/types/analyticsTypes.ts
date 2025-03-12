@@ -4,6 +4,33 @@ export interface CustomTeamGroup {
     teams: number[];
 }
 
+export interface ComparableDataset<T extends object> {
+    /**
+     * The positive samples, split by the given group, and then a list of the data points for each group
+     */
+    positive: T[][];
+    /**
+     * The negative samples, split by the given group, and then a list of the data points for each group
+     */
+    negative: T[][] | undefined;
+}
+
+export interface GraphableDataset<T extends object, K = any> extends ComparableDataset<T> {
+    /**
+     * Optional value but required for graphing of each data point to group data by and use for graphing
+     */
+    xGetter?: (data: T) => K;
+    /**
+     * Optional function to compare the keyPath values for sorting on the graph
+     */
+    xComparator?: (a: K, b: K) => number;
+}
+
+/**
+ * A function or path that access a value from an object
+ */
+export type Getter<T> = Leaves<T> | ((data: T) => any);
+
 // Defines a string union type for the different paths in an object
 // Stolen from https://stackoverflow.com/a/58436959/2887218
 export type Leaves<T> = T extends object ? { [K in keyof T]:

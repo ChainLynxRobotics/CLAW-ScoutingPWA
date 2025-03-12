@@ -1,10 +1,14 @@
-import { ProportionalStats, } from "../../types/analyticsTypes";
+import { Getter, GraphableDataset, ProportionalStats, } from "../../types/analyticsTypes";
 import Statistic, { StatisticProps } from "./Statistic";
 import maxDecimal from "../../util/analytics/maxDecimal";
 
-export interface ProportionalStatisticProps extends StatisticProps {
+export interface ProportionalStatisticProps<T extends object = any> extends StatisticProps {
     digits?: number,
     stats: ProportionalStats,
+    graph?: {
+        dataset: GraphableDataset<T>,
+        getter: Getter<T>,
+    }
 }
 
 export default function ProportionalStatistic({ stats, digits: d = 2, ...props }: ProportionalStatisticProps) {

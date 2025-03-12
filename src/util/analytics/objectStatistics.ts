@@ -1,45 +1,45 @@
-import { ProportionalStats, CategoricalStats, Leaves, QuantitativeStats, QuantitativeProportionalStats } from "../../types/analyticsTypes";
+import { ProportionalStats, CategoricalStats, Leaves, QuantitativeStats, QuantitativeProportionalStats, ComparableDataset, Getter } from "../../types/analyticsTypes";
 
-export function describeQuantitativeObjects<T>(path: Leaves<T>, positive: T[][], negative?: T[][]): QuantitativeStats {
+export function describeQuantitativeObjects<T extends object>(getter: Getter<T>, dataset: ComparableDataset<T>): QuantitativeStats {
     return subtractQuantitativeData(
         addQuantitativeData(
-            ...positive.map(sampleObj => describeQuantitativeData(sampleObj.map(o => atPath(o, path))))
+            ...dataset.positive.map(sampleObj => describeQuantitativeData(sampleObj.map(o => get(o, getter))))
         ),
-        negative && addQuantitativeData(
-            ...negative.map(sampleObj => describeQuantitativeData(sampleObj.map(o => atPath(o, path))))
+        dataset.negative && addQuantitativeData(
+            ...dataset.negative.map(sampleObj => describeQuantitativeData(sampleObj.map(o => get(o, getter))))
         )
     )
 }
 
-export function describeQuantitativeProportionalObjects<T>(successPath: Leaves<T>, failurePath: Leaves<T>, positive: T[][], negative?: T[][]): QuantitativeProportionalStats {
+export function describeQuantitativeProportionalObjects<T extends object>(successGetter: Getter<T>, failureGetter: Getter<T>, dataset: ComparableDataset<T>): QuantitativeProportionalStats {
     return subtractQuantitativeProportionalData(
         addQuantitativeProportionalData(
-            ...positive.map(sampleObj => describeQuantitativeProportionalData(sampleObj.map(o => [atPath(o, successPath), atPath(o, failurePath)])))
+            ...dataset.positive.map(sampleObj => describeQuantitativeProportionalData(sampleObj.map(o => [get(o, successGetter), get(o, failureGetter)])))
         ),
-        negative && addQuantitativeProportionalData(
-            ...negative.map(sampleObj => describeQuantitativeProportionalData(sampleObj.map(o => [atPath(o, successPath), atPath(o, failurePath)])))
+        dataset.negative && addQuantitativeProportionalData(
+            ...dataset.negative.map(sampleObj => describeQuantitativeProportionalData(sampleObj.map(o => [get(o, successGetter), get(o, failureGetter)])))
         )
     )
 }
 
-export function describeCategoricalObjects<T,E extends number|string|boolean>(path: Leaves<T>, positive: T[][], negative?: T[][]): CategoricalStats<E> {
+export function describeCategoricalObjects<T extends object, E extends number|string|boolean>(getter: Getter<T>, dataset: ComparableDataset<T>): CategoricalStats<E> {
     return subtractCategoricalData<E>(
         addCategoricalData<E>(
-            ...positive.map(sampleObj => describeCategoricalData<E>(sampleObj.map(o => atPath(o, path)))
+            ...dataset.positive.map(sampleObj => describeCategoricalData<E>(sampleObj.map(o => get(o, getter)))
         )),
-        negative && addCategoricalData<E>(
-            ...negative.map(sampleObj => describeCategoricalData<E>(sampleObj.map(o => atPath(o, path)))
+        dataset.negative && addCategoricalData<E>(
+            ...dataset.negative.map(sampleObj => describeCategoricalData<E>(sampleObj.map(o => get(o, getter)))
         ))
     )
 }
 
-export function describeProportionalObjects<T>(path: Leaves<T>, positive: T[][], negative?: T[][]): ProportionalStats {
+export function describeProportionalObjects<T extends object>(getter: Getter<T>, dataset: ComparableDataset<T>): ProportionalStats {
     return subtractProportionalData(
         addProportionalData(
-            ...positive.map(sampleObj => describeProportionalData(sampleObj.map(o => atPath(o, path)))
+            ...dataset.positive.map(sampleObj => describeProportionalData(sampleObj.map(o => get(o, getter)))
         )),
-        negative && addProportionalData(
-            ...negative.map(sampleObj => describeProportionalData(sampleObj.map(o => atPath(o, path)))
+        dataset.negative && addProportionalData(
+            ...dataset.negative.map(sampleObj => describeProportionalData(sampleObj.map(o => get(o, getter)))
         ))
     )
 }
@@ -385,6 +385,27 @@ export function subtractProportionalData(a: ProportionalStats, b?: ProportionalS
         p: a.p - b.p,
         n: (a.n - b.n) /2
     };
+}
+
+/**
+ * Sums the values at the given paths in the data object.
+ * @param data - The data object to sum values from.
+ * @param paths - The path/functions to get the values
+ * @returns The sum
+ */
+export function getSum<T>(data: T, getters: Getter<T>[]) {
+    return getters.reduce((acc, getter) => acc + get(data, getter), 0);
+}
+
+/**
+ * Access a value from an object using a path or function
+ * @param data - Data to get a value from
+ * @param getter - A path or function used
+ * @returns The value from the data
+ */
+export function get<T>(data: T, getter: Getter<T>): any {// eslint-disable-line @typescript-eslint/no-explicit-any
+    if (typeof getter === "function") return getter(data);
+    return atPath(data, getter);
 }
 
 /**
