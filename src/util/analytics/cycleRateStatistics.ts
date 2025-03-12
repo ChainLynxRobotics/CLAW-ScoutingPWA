@@ -20,7 +20,7 @@ function sumAtPaths<T>(data: T, paths: Leaves<T>[]) {
  * @param negative - The data objects to subtract from the positive data objects
  * @returns Quantitative data object describing the cycle rate
  */
-export function describeCycleRateQuantitativeObjects<T>(paths: Leaves<T>[], divider: number, positive: T[][], negative?: T[][]) {
+export function describeCycleRateQuantitativeObjects<T>(paths: Leaves<T>[], divider: number | undefined, positive: T[][], negative?: T[][]) {
     return subtractQuantitativeData(
         addQuantitativeData(
             ...positive.map(sampleObj => describeQuantitativeData(sampleObj.map(o => describeCycleRateQuantitativeData(paths, divider, o)).filter(o => o !== null) as number[]))
@@ -31,8 +31,9 @@ export function describeCycleRateQuantitativeObjects<T>(paths: Leaves<T>[], divi
     )
 }
 
-export function describeCycleRateQuantitativeData<T>(paths: Leaves<T>[], divider: number, object: T): number|null {
+export function describeCycleRateQuantitativeData<T>(paths: Leaves<T>[], divider: number | undefined, object: T): number|null {
     const sum = sumAtPaths(object, paths);
     if (sum === 0) return null;
+    if (divider === undefined) return sum;
     return divider / sum;
 }
