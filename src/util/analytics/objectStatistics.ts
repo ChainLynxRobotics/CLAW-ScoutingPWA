@@ -3,21 +3,14 @@ import { ProportionalStats, CategoricalStats, Leaves, QuantitativeStats, Quantit
 export function describeQuantitativeObjects<T extends object>(getter: Getter<T>, dataset: ComparableDataset<T>): QuantitativeStats {
     return subtractQuantitativeData(
         addQuantitativeData(
-            ...dataset.positive.map(sampleObj => describeQuantitativeData(sampleObj.map(o => get(o, getter))))
+            ...dataset.positive.map(sampleObj => 
+                describeQuantitativeData(sampleObj.map(o => get(o, getter)).flat().map(normalizeToNumber).filter(o => o !== undefined) as number[])
+            )
         ),
         dataset.negative && addQuantitativeData(
-            ...dataset.negative.map(sampleObj => describeQuantitativeData(sampleObj.map(o => get(o, getter))))
-        )
-    )
-}
-
-export function describeQuantitativeProportionalObjects<T extends object>(successGetter: Getter<T>, failureGetter: Getter<T>, dataset: ComparableDataset<T>): QuantitativeProportionalStats {
-    return subtractQuantitativeProportionalData(
-        addQuantitativeProportionalData(
-            ...dataset.positive.map(sampleObj => describeQuantitativeProportionalData(sampleObj.map(o => [get(o, successGetter), get(o, failureGetter)])))
-        ),
-        dataset.negative && addQuantitativeProportionalData(
-            ...dataset.negative.map(sampleObj => describeQuantitativeProportionalData(sampleObj.map(o => [get(o, successGetter), get(o, failureGetter)])))
+            ...dataset.negative.map(sampleObj => 
+                describeQuantitativeData(sampleObj.map(o => get(o, getter)).flat().map(normalizeToNumber).filter(o => o !== undefined) as number[])
+            )
         )
     )
 }
@@ -25,22 +18,30 @@ export function describeQuantitativeProportionalObjects<T extends object>(succes
 export function describeCategoricalObjects<T extends object, E extends number|string|boolean>(getter: Getter<T>, dataset: ComparableDataset<T>): CategoricalStats<E> {
     return subtractCategoricalData<E>(
         addCategoricalData<E>(
-            ...dataset.positive.map(sampleObj => describeCategoricalData<E>(sampleObj.map(o => get(o, getter)))
-        )),
+            ...dataset.positive.map(sampleObj => 
+                describeCategoricalData<E>(sampleObj.map(o => get(o, getter)).flat().filter(o => o !== undefined) as E[])
+            )
+        ),
         dataset.negative && addCategoricalData<E>(
-            ...dataset.negative.map(sampleObj => describeCategoricalData<E>(sampleObj.map(o => get(o, getter)))
-        ))
+            ...dataset.negative.map(sampleObj => 
+                describeCategoricalData<E>(sampleObj.map(o => get(o, getter)).flat().filter(o => o !== undefined) as E[])
+            )
+        )
     )
 }
 
 export function describeProportionalObjects<T extends object>(getter: Getter<T>, dataset: ComparableDataset<T>): ProportionalStats {
     return subtractProportionalData(
         addProportionalData(
-            ...dataset.positive.map(sampleObj => describeProportionalData(sampleObj.map(o => get(o, getter)))
-        )),
+            ...dataset.positive.map(sampleObj => 
+                describeProportionalData(sampleObj.map(o => get(o, getter)).map((val) => typeof val === 'object' ? val : normalizeToBoolean(val)).filter(o => o !== undefined))
+            )
+        ),
         dataset.negative && addProportionalData(
-            ...dataset.negative.map(sampleObj => describeProportionalData(sampleObj.map(o => get(o, getter)))
-        ))
+            ...dataset.negative.map(sampleObj => 
+                describeProportionalData(sampleObj.map(o => get(o, getter)).map((val) => typeof val === 'object' ? val : normalizeToBoolean(val)).filter(o => o !== undefined))
+            )
+        )
     )
 }
 
@@ -126,80 +127,6 @@ export function subtractQuantitativeData(a: QuantitativeStats, b?: QuantitativeS
         n: (a.n + b.n) / 2,
         avg: a.avg - b.avg,
         sd: Math.sqrt(a.sd * a.sd + b.sd * b.sd)
-    };
-}
-
-/**
- * Describes multiple samples of success/fail data
- * 
- * Internally uses {@link describeQuantitativeData} on the x, n, and p data for each sample
- * 
- * @param samples - List of [successes, failures] to analyze
- * @returns The x, n and p of each sample quantitatively described
- */
-export function describeQuantitativeProportionalData(samples: Iterable<[number, number]>): QuantitativeProportionalStats {
-    const x_list: number[] = []; // Successes
-    const p_list: number[] = []; // Proportions
-    const n_list: number[] = []; // Sample sizes
-
-    for (const [s, f] of samples) {
-        x_list.push(s);
-        p_list.push(s / (s + f));
-        n_list.push(s + f);
-    }
-
-    const x = describeQuantitativeData(x_list);
-    const n = describeQuantitativeData(n_list);
-
-    return {
-        samples: samples,
-        x,
-        n,
-        p: describeProportionalData({successes: x.sum, failures: n.sum - x.sum})
-    };
-}
-
-/**
- * Combines multiple samples of success/fail data and returns a single sample with the combined stats
- * 
- * Internally uses {@link addQuantitativeData} to combine the x, n, and p data
- * 
- * @param data - List of QuantitativeProportionalStats to combine
- * @returns Resulting QuantitativeProportionalStats of the combined data
- */
-export function addQuantitativeProportionalData(...data: QuantitativeProportionalStats[]): QuantitativeProportionalStats {
-    if (data.length === 0) return { samples: [], x: addQuantitativeData(), n: addQuantitativeData(), p: addProportionalData() };
-    if (data.length === 1) return data[0];
-
-    const combined_samples: [number, number][] = [];
-    for (const stat of data) {
-        combined_samples.push(...stat.samples);
-    }
-
-    return {
-        samples: combined_samples,
-        x: addQuantitativeData(...data.map(stat => stat.x)),
-        n: addQuantitativeData(...data.map(stat => stat.n)),
-        p: addProportionalData(...data.map(stat => stat.p))
-    };
-}
-
-/**
- * Subtracts two sets of success/fail data, to describe the difference in the data
- * 
- * Internally uses {@link subtractQuantitativeData} to subtract the x, n, and p data
- * 
- * @param a - First set of data
- * @param b - Second set of data, to be subtracted from the first
- * @returns Resulting QuantitativeProportionalStats of the subtracted data
- */
-export function subtractQuantitativeProportionalData(a: QuantitativeProportionalStats, b?: QuantitativeProportionalStats): QuantitativeProportionalStats {
-    if (b === undefined || b.n.n === 0) return a;
-    return {
-        samples: [...a.samples, ...b.samples],
-        x: subtractQuantitativeData(a.x, b.x),
-        n: subtractQuantitativeData(a.n, b.n),
-        p: subtractProportionalData(a.p, b.p)
     };
 }
 
@@ -327,8 +254,9 @@ export function subtractCategoricalData<T>(a: CategoricalStats<T>, b?: Categoric
  * @param sample - List of booleans to analyze
  * @returns The sum, sumInverse, p, and n of the sample
  */
-export function describeProportionalData(sample: Iterable<boolean> | {successes: number, failures: number}): ProportionalStats {
-    if ("successes" in sample) {
+export function describeProportionalData(sample: Iterable<boolean> | {successes: number, failures: number} | {successes: number, failures: number}[]): ProportionalStats {
+    if ((typeof sample === 'object' && 'successes' in sample) || (Array.isArray(sample) && sample.length > 0 && typeof sample[0] === 'object' && 'successes' in sample[0])) {
+        if (Array.isArray(sample)) sample = sample.reduce((acc, val) => ({ successes: acc.successes + val.successes, failures: acc.failures + val.failures }), { successes: 0, failures: 0 });
         if (sample.successes + sample.failures === 0) return { x: 0, p: 0, n: 0 };
         return {
             x: sample.successes,
@@ -421,4 +349,29 @@ export function atPath<T>(obj: T, path: Leaves<T>): any {// eslint-disable-line 
         current = current[key as keyof typeof current];
     }
     return current;
+}
+
+export function normalizeToNumber(val: any) {
+    if (typeof val === "number") {
+        if (Number.isNaN(val) || !Number.isFinite(val)) return 0;
+        return val;
+    }
+    if (typeof val === "string") {
+        try {
+            return normalizeToNumber(parseFloat(val));
+        } catch (e) {console.error(e);}
+    }
+    if (typeof val === "boolean") return val ? 1 : 0;
+    return undefined;
+}
+
+export function normalizeToBoolean(val: any) {
+    if (typeof val === "boolean") return val;
+    if (typeof val === "number") return val !== 0;
+    if (typeof val === "string") {
+        const lower = val.toLowerCase();
+        if (["true", "t", "yes", "y", "1" ].includes(lower)) return true;
+        if (["false", "f", "no", "n", "0" ].includes(lower)) return false;
+    }
+    return undefined;
 }

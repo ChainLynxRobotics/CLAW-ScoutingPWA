@@ -4,7 +4,7 @@ import { MatchData } from "../../types/MatchData";
 import { BarChart, PieChart, PieValueType } from "@mui/x-charts";
 import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
 import ProportionalStatistic from "./ProporationalStatistic";
-import { describeProportionalObjects, describeQuantitativeObjects, describeQuantitativeProportionalObjects } from "../../util/analytics/objectStatistics";
+import { getSum } from "../../util/analytics/objectStatistics";
 import QuantitativeProportionalStatistic from "./QuantitativeProportionalStatistic";
 import TeamAnalyticsSelection from "./TeamAnalyticsSelection";
 import { useNavigate } from "react-router-dom";
@@ -12,8 +12,7 @@ import Heatmap from "./Heatmap";
 import QuantitativeStatistic from "./QuantitativeStatistic";
 import Observation from "../../enums/Observation";
 import { BlueAllianceMatchExtended } from "../../types/blueAllianceTypesExtended";
-import { ComparableDataset, GraphableDataset, Leaves } from "../../types/analyticsTypes";
-import { describeCycleRateQuantitativeObjects } from "../../util/analytics/cycleRateStatistics";
+import { GraphableDataset, Leaves } from "../../types/analyticsTypes";
 import { ScheduleContext } from "../context/ScheduleContextProvider";
 import TeamAnalyticsMatchSelection from "./TeamAnalyticsMatchSelection";
 import useTeamAnalyticsData from "./useTeamAnalyticsData";
@@ -90,14 +89,14 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         tbaMatchDataNegativeFlat
     } = useTeamAnalyticsData(teams, minusTeams, minMatch, maxMatch);
 
-    const scoutingMatchDataset: GraphableDataset<MatchData> = useMemo(() => ({
+    const scoutingMatchDataset: GraphableDataset<MatchData, string> = useMemo(() => ({
         positive: matchDataPositive,
         negative: matchDataNegative,
         xGetter: (data) => data.matchId,
         xComparator: matchCompare
     }), [matchDataPositive, matchDataNegative]);
 
-    const tbaMatchDataset: GraphableDataset<BlueAllianceMatchExtended> = useMemo(() => ({
+    const tbaMatchDataset: GraphableDataset<BlueAllianceMatchExtended, string> = useMemo(() => ({
         positive: tbaMatchDataPositive,
         negative: tbaMatchDataNegative,
         xGetter: (data) => data.key,
@@ -255,20 +254,28 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         <CardHeader title="Auto - Coral" />
                         <CardContent>
                             <QuantitativeProportionalStatistic 
-                                name="Coral L4" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL4Score", "autoCoralL4Miss", scoutingMatchDataset)} 
+                                name="Coral L4"
+                                successes="autoCoralL4Score"
+                                failures="autoCoralL4Miss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic 
                                 name="Coral L3" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL3Score", "autoCoralL3Miss", scoutingMatchDataset)}
+                                successes="autoCoralL3Score"
+                                failures="autoCoralL3Miss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic 
                                 name="Coral L2" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL2Score", "autoCoralL2Miss", scoutingMatchDataset)}
+                                successes="autoCoralL2Score"
+                                failures="autoCoralL2Miss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic 
                                 name="Coral L1" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("autoCoralL1Score", "autoCoralL1Miss", scoutingMatchDataset)}
+                                successes="autoCoralL1Score"
+                                failures="autoCoralL1Miss"
+                                dataset={scoutingMatchDataset}
                             />
                         </CardContent>
                     </Card>
@@ -280,27 +287,38 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                 name="Cycle Time" 
                                 unit="s" 
                                 digits={0}
-                                stats={describeCycleRateQuantitativeObjects<MatchData>(autoCycleRatePaths, 15, scoutingMatchDataset)} 
+                                getter={match => {
+                                    let sum = getSum(match, autoCycleRatePaths);
+                                    if (sum === 0) return undefined;
+                                    return 15 / sum;
+                                }}
+                                dataset={scoutingMatchDataset}
                                 desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened."
                             />
                             <QuantitativeStatistic 
                                 name="# of Cycles" 
-                                stats={describeCycleRateQuantitativeObjects<MatchData>(autoCycleRatePaths, undefined, scoutingMatchDataset)} 
+                                getter={match => getSum(match, autoCycleRatePaths) || undefined}
+                                dataset={scoutingMatchDataset}
                                 desc="Number of scores and misses for coral and algae in one match. Exclude matches where nothing happened."
                             />
                             <Divider sx={{ my: 2 }} />
                             <ProportionalStatistic 
                                 name="Auto Leave" 
-                                stats={describeProportionalObjects<BlueAllianceMatchExtended>("score_breakdown.autoLineRobot", tbaMatchDataset)}
+                                getter="score_breakdown.autoLineRobot"
+                                dataset={tbaMatchDataset}
                             />
                             <Divider sx={{ my: 2 }} />
                             <QuantitativeProportionalStatistic 
                                 name="Processor" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeScore", "autoAlgaeMiss", scoutingMatchDataset)}
+                                successes="autoAlgaeScore"
+                                failures="autoAlgaeMiss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic 
                                 name="Net" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("autoAlgaeNetScore", "autoAlgaeNetMiss", scoutingMatchDataset)}
+                                successes="autoAlgaeNetScore"
+                                failures="autoAlgaeNetMiss"
+                                dataset={scoutingMatchDataset}
                             />
                         </CardContent>
                     </Card>
@@ -310,29 +328,35 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         <CardContent>
                             <ProportionalStatistic 
                                 name="Coral Ground Intake" 
-                                stats={describeProportionalObjects<MatchData>("autoCoralGroundIntake", scoutingMatchDataset)}
+                                getter="autoCoralGroundIntake"
+                                dataset={scoutingMatchDataset}
                             />
                             <ProportionalStatistic 
                                 name="Coral Station Intake" 
-                                stats={describeProportionalObjects<MatchData>("autoCoralStationIntake", scoutingMatchDataset)}
+                                getter="autoCoralStationIntake"
+                                dataset={scoutingMatchDataset}
                             />
                             <Divider sx={{ my: 2 }} />
                             <ProportionalStatistic 
                                 name="Remove Algae from Reef L2" 
-                                stats={describeProportionalObjects<MatchData>("autoRemoveL2Algae", scoutingMatchDataset)}
+                                getter="autoRemoveL2Algae"
+                                dataset={scoutingMatchDataset}
                             />
                             <ProportionalStatistic 
                                 name="Remove Algae from Reef L3"
-                                stats={describeProportionalObjects<MatchData>("autoRemoveL3Algae", scoutingMatchDataset)}
+                                getter="autoRemoveL3Algae"
+                                dataset={scoutingMatchDataset}
                             />
                             <Divider sx={{ my: 2 }} />
                             <ProportionalStatistic 
                                 name="Algae Ground Intake" 
-                                stats={describeProportionalObjects<MatchData>("autoAlgaeGroundIntake", scoutingMatchDataset)}
+                                getter="autoAlgaeGroundIntake"
+                                dataset={scoutingMatchDataset}
                             />
                             <ProportionalStatistic 
                                 name="Algae Reef Intake" 
-                                stats={describeProportionalObjects<MatchData>("autoAlgaeReefIntake", scoutingMatchDataset)}
+                                getter="autoAlgaeReefIntake"
+                                dataset={scoutingMatchDataset}
                             />
                         </CardContent>
                     </Card>
@@ -343,19 +367,27 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         <CardContent>
                             <QuantitativeProportionalStatistic 
                                 name="Coral L4" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL4Score", "teleopCoralL4Miss", scoutingMatchDataset)}
+                                successes="teleopCoralL4Score"
+                                failures="teleopCoralL4Miss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic 
                                 name="Coral L3" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL3Score", "teleopCoralL3Miss", scoutingMatchDataset)}
+                                successes="teleopCoralL3Score"
+                                failures="teleopCoralL3Miss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic 
                                 name="Coral L2" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL2Score", "teleopCoralL2Miss", scoutingMatchDataset)}
+                                successes="teleopCoralL2Score"
+                                failures="teleopCoralL2Miss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic 
                                 name="Coral L1" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("teleopCoralL1Score", "teleopCoralL1Miss", scoutingMatchDataset)}
+                                successes="teleopCoralL1Score"
+                                failures="teleopCoralL1Miss"
+                                dataset={scoutingMatchDataset}
                             />
                         </CardContent>
                     </Card>
@@ -367,30 +399,45 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                 name="Cycle Time" 
                                 unit="s" 
                                 digits={0}
-                                stats={describeCycleRateQuantitativeObjects<MatchData>(teleopCycleRatePaths, 135, scoutingMatchDataset)} 
+                                getter={match => {
+                                    let sum = getSum(match, teleopCycleRatePaths);
+                                    if (sum === 0) return undefined;
+                                    return 135 / sum;
+                                }}
+                                dataset={scoutingMatchDataset}
                                 desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened."
                             />
                             <QuantitativeStatistic 
                                 name="# of Cycles" 
-                                stats={describeCycleRateQuantitativeObjects<MatchData>(teleopCycleRatePaths, undefined, scoutingMatchDataset)} 
+                                getter={match => getSum(match, teleopCycleRatePaths) || undefined}
+                                dataset={scoutingMatchDataset}
                                 desc="Number of scores and misses for coral and algae in one match. Exclude matches where nothing happened."
                             />
                             <Divider sx={{ my: 2 }} />
                             <QuantitativeProportionalStatistic
                                 name="Processor" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeScore", "teleopAlgaeMiss", scoutingMatchDataset)}
+                                successes="teleopAlgaeScore"
+                                failures="teleopAlgaeMiss"
+                                dataset={scoutingMatchDataset}
                             />
                             <QuantitativeProportionalStatistic
                                 name="Net" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("teleopAlgaeNetScore", "teleopAlgaeNetMiss", scoutingMatchDataset)}
+                                successes="teleopAlgaeNetScore"
+                                failures="teleopAlgaeNetMiss"
+                                dataset={scoutingMatchDataset}
                             />
                             <Divider sx={{ my: 2 }} />
                             <QuantitativeProportionalStatistic 
                                 name="Human Player Shots" 
-                                stats={describeQuantitativeProportionalObjects<MatchData>("teleopHumanPlayerAlgaeScore", "teleopHumanPlayerAlgaeMiss", {
-                                    positive: matchDataPositive.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor)), // Only include matches where the human player is at the processor
-                                    negative: matchDataNegative ? matchDataNegative?.map(matches => matches.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor)) : undefined
-                                })} 
+                                successes={match => {
+                                    if (match.humanPlayerLocation !== HumanPlayerLocation.Processor) return undefined;
+                                    return match.teleopHumanPlayerAlgaeScore;
+                                }}
+                                failures={match => {
+                                    if (match.humanPlayerLocation !== HumanPlayerLocation.Processor) return undefined;
+                                    return match.teleopHumanPlayerAlgaeMiss;
+                                }}
+                                dataset={scoutingMatchDataset}
                             />
                         </CardContent>
                     </Card>
@@ -400,29 +447,35 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         <CardContent>
                             <ProportionalStatistic 
                                 name="Coral Ground Intake" 
-                                stats={describeProportionalObjects<MatchData>("teleopCoralGroundIntake", scoutingMatchDataset)}
+                                getter="teleopCoralGroundIntake"
+                                dataset={scoutingMatchDataset}
                             />
                             <ProportionalStatistic 
                                 name="Coral Station Intake" 
-                                stats={describeProportionalObjects<MatchData>("teleopCoralStationIntake", scoutingMatchDataset)}
+                                getter="teleopCoralStationIntake"
+                                dataset={scoutingMatchDataset}
                             />
                             <Divider sx={{ my: 2 }} />
-                            <ProportionalStatistic 
+                            <ProportionalStatistic
                                 name="Remove Algae from Reef L2" 
-                                stats={describeProportionalObjects<MatchData>("teleopRemoveL2Algae", scoutingMatchDataset)}
+                                getter="teleopRemoveL2Algae"
+                                dataset={scoutingMatchDataset}
                             />
-                            <ProportionalStatistic 
-                                name="Remove Algae from Reef L3" 
-                                stats={describeProportionalObjects<MatchData>("teleopRemoveL3Algae", scoutingMatchDataset)}
+                            <ProportionalStatistic
+                                name="Remove Algae from Reef L3"
+                                getter="teleopRemoveL3Algae"
+                                dataset={scoutingMatchDataset}
                             />
                             <Divider sx={{ my: 2 }} />
                             <ProportionalStatistic 
                                 name="Algae Ground Intake" 
-                                stats={describeProportionalObjects<MatchData>("teleopAlgaeGroundIntake", scoutingMatchDataset)}
+                                getter="teleopAlgaeGroundIntake"
+                                dataset={scoutingMatchDataset}
                             />
                             <ProportionalStatistic 
                                 name="Algae Reef Intake" 
-                                stats={describeProportionalObjects<MatchData>("teleopAlgaeReefIntake", scoutingMatchDataset)}
+                                getter="teleopAlgaeReefIntake"
+                                dataset={scoutingMatchDataset}
                             />
                         </CardContent>
                     </Card>
@@ -448,8 +501,9 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         <CardContent>
                             <QuantitativeStatistic 
                                 name="Time Defending" 
-                                stats={describeQuantitativeObjects<MatchData>("timeDefending", scoutingMatchDataset)} 
                                 unit="%"
+                                getter="timeDefending"
+                                dataset={scoutingMatchDataset}
                             />
                             <Divider sx={{ my: 2 }} />
                             <div>Observations:</div>

@@ -15,7 +15,7 @@ export interface ComparableDataset<T extends object> {
     negative: T[][] | undefined;
 }
 
-export interface GraphableDataset<T extends object, K = any> extends ComparableDataset<T> {
+export interface GraphableDataset<T extends object, K> extends ComparableDataset<T> {
     /**
      * Optional value but required for graphing of each data point to group data by and use for graphing
      */

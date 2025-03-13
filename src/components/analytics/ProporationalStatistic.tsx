@@ -1,17 +1,20 @@
 import { Getter, GraphableDataset, ProportionalStats, } from "../../types/analyticsTypes";
 import Statistic, { StatisticProps } from "./Statistic";
 import maxDecimal from "../../util/analytics/maxDecimal";
+import { useMemo } from "react";
+import { describeProportionalObjects } from "../../util/analytics/objectStatistics";
 
-export interface ProportionalStatisticProps<T extends object = any> extends StatisticProps {
+export interface ProportionalStatisticProps<T extends object> extends StatisticProps {
     digits?: number,
-    stats: ProportionalStats,
-    graph?: {
-        dataset: GraphableDataset<T>,
-        getter: Getter<T>,
-    }
+    dataset: GraphableDataset<T, any>,
+    getter: Getter<T>,
+    graphable?: boolean,
 }
 
-export default function ProportionalStatistic({ stats, digits: d = 2, ...props }: ProportionalStatisticProps) {
+export default function ProportionalStatistic<T extends object>({ dataset, getter, digits: d = 2, ...props }: ProportionalStatisticProps<T>) {
+
+    const stats = useMemo(() => describeProportionalObjects(getter, dataset), [dataset, getter]);
+
     return (
         <Statistic {...props}>
             <b>{maxDecimal(stats.p * 100, d)}%</b>
