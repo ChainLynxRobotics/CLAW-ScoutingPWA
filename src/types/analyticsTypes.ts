@@ -17,11 +17,11 @@ export interface ComparableDataset<T extends object> {
 
 export interface GraphableDataset<T extends object, K> extends ComparableDataset<T> {
     /**
-     * Optional value but required for graphing of each data point to group data by and use for graphing
+     * Used to get the x value from the data point
      */
-    xGetter?: (data: T) => K;
+    xGetter: (data: T) => K;
     /**
-     * Optional function to compare the keyPath values for sorting on the graph
+     * Optional function to compare the xGetter values for sorting on the graph
      */
     xComparator?: (a: K, b: K) => number;
 }
