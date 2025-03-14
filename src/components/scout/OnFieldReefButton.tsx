@@ -60,6 +60,7 @@ export function OnFieldReefButton({ label, locations, setLocations, ...props}: O
 
     const [open, setOpen] = useState(false);
     const openedAt = useRef<number>(0);
+    const closedAt = useRef<number>(0);
     const [selected, setSelected] = useState<CoralScoreLocation | "close" | null>(null);
 
     function vibrateForIncrease() {
@@ -86,30 +87,44 @@ export function OnFieldReefButton({ label, locations, setLocations, ...props}: O
 
     useEffect(() => {
         const setClosed = () => {
-            if (openedAt.current + 250 < Date.now()) setOpen(false);
+            if (openedAt.current + 250 < Date.now()) {
+                setOpen(false);
+                closedAt.current = Date.now();
+            }
         }
         window.addEventListener('pointerup', setClosed);
         return () => window.removeEventListener('pointerup', setClosed);
     }, []);
 
     useEffect(() => {
-        if (!open) return;
-        const preventScroll = (e: TouchEvent) => e.preventDefault();
-        window.addEventListener('touchmove', preventScroll, { passive: false });
-        return () => window.removeEventListener('touchmove', preventScroll);
-    }, [open]);
-
-    
+        const closeOnEscape = (e: KeyboardEvent) => {
+            if (e.key == "Escape") {
+                setOpen(false);
+                closedAt.current = Date.now();
+            }
+        }
+        window.addEventListener('keydown', closeOnEscape);
+        return () => window.removeEventListener('keydown', closeOnEscape);
+    }, []);
 
     return (
-        <div className="relative">
+        <div className="relative touch-none">
             <Button
                 variant="contained"
                 color="primary"
                 size="small"
                 onPointerDown={() => {
+                    if (closedAt.current + 250 > Date.now()) return;
                     setOpen(true);
                     openedAt.current = Date.now();
+                }}
+                onClick={(e) => {
+                    if (closedAt.current + 250 > Date.now()) return;
+                    setOpen(true);
+                    e.preventDefault();
+                }}
+                onTouchStart={(e) => {
+                    e.currentTarget.releasePointerCapture(e.touches[0].identifier);
                 }}
                 {...props}
             >
@@ -124,9 +139,14 @@ export function OnFieldReefButton({ label, locations, setLocations, ...props}: O
                         <g
                             cursor={"pointer"}
                             tabIndex={0}
-                            onPointerDown={() => setOpen(false)}
-                            onMouseOver={() => setSelected("close")}
-                            onMouseOut={() => setSelected(null)}
+                            onPointerUp={() => {
+                                if (openedAt.current + 250 < Date.now()) {
+                                    setOpen(false);
+                                    closedAt.current = Date.now();
+                                }
+                            }}
+                            onPointerOver={() => setSelected("close")}
+                            onPointerOut={() => setSelected(null)}
                         >
                             <circle 
                                 cx={MENU_WIDTH/2} cy={MENU_WIDTH/2} r={MENU_CENTER_RADIUS} 
@@ -134,7 +154,7 @@ export function OnFieldReefButton({ label, locations, setLocations, ...props}: O
                             />
                             <text 
                                 x={MENU_WIDTH/2} y={MENU_WIDTH/2} 
-                                dominant-baseline="middle" text-anchor="middle"
+                                dominantBaseline="middle" textAnchor="middle"
                                 fill="white" fontSize="32"
                             >
                                 &#10006;
@@ -148,11 +168,12 @@ export function OnFieldReefButton({ label, locations, setLocations, ...props}: O
                             const middleRad = (startRad - MENU_ITEM_WIDTH_RADIANS/2);
                             return (
                             <g
+                                key={item}
                                 cursor={"pointer"}
                                 tabIndex={0}
                                 onPointerUp={() => onClick(item)}
-                                onMouseOver={() => setSelected(item)}
-                                onMouseOut={() => setSelected(null)}
+                                onPointerOver={() => setSelected(item)}
+                                onPointerOut={() => setSelected(null)}
                             >
                                 <path
                                     d={
@@ -168,7 +189,7 @@ export function OnFieldReefButton({ label, locations, setLocations, ...props}: O
                                 <text 
                                     x={xRad(middleRad, MENU_CENTER_TOTAL + 10)} 
                                     y={yRad(middleRad, MENU_CENTER_TOTAL + 10)} 
-                                    dominant-baseline="middle" text-anchor="middle"
+                                    dominantBaseline="middle" textAnchor="middle"
                                     fill="white" fontSize="12"
                                 >
                                     {CoralScoreLocation[item]}
