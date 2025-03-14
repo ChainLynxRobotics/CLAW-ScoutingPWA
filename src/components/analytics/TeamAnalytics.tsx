@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, Chip, Divider, Paper } from "@mui/material";
-import { useContext, useMemo, useState } from "react";
+import { Backdrop, Card, CardContent, CardHeader, Chip, CircularProgress, Divider, Paper } from "@mui/material";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { MatchData } from "../../types/MatchData";
 import { BarChart, PieChart, PieValueType } from "@mui/x-charts";
 import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
@@ -94,8 +94,12 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
     const [minMatch, setMinMatch] = useState(0);
     const [maxMatch, setMaxMatch] = useState(schedule.matches.length - 1);
 
+    const [dismissedLoading, setDismissedLoading] = useState(false);
+
     // Get the data
     const {
+        loadedMatchData,
+        loadedTBAMatchData,
         allTeams,
         matchData,
         matchDataPositive,
@@ -108,6 +112,12 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         tbaMatchDataNegative,
         tbaMatchDataNegativeFlat
     } = useTeamAnalyticsData(teams, minusTeams, minMatch, maxMatch);
+
+    useEffect(() => {
+        if (!loadedMatchData && !loadedTBAMatchData && dismissedLoading) {
+            setDismissedLoading(false);
+        }
+    }, [loadedMatchData, loadedTBAMatchData, dismissedLoading]);
 
     const scoutingMatchDataset: GraphableDataset<MatchData, string> = useMemo(() => ({
         positive: matchDataPositive,
@@ -216,7 +226,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 setMinMatch(min);
                 setMaxMatch(max);
             }} />
-            <div className="w-full flex flex-wrap items-start justify-center gap-2">
+            <div className="w-full flex flex-wrap items-start justify-center gap-2 relative">
                 <div className="flex flex-col gap-2 max-w-sm w-full">
                     <AnalyticsCard title="Pre Match Start Position" className="border-4 border-green-300 !overflow-visible">
                         <div className="flex flex-col items-center">
@@ -523,6 +533,19 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         ))}
                     </AnalyticsCard>
                 </div>
+
+                <Backdrop
+                    sx={() => ({ 
+                        color: '#fff', 
+                        position: 'absolute', 
+                        alignItems: 'start',
+                        paddingTop: '12rem'
+                    })}
+                    open={dismissedLoading || !loadedMatchData || !loadedTBAMatchData}
+                    onClick={() => setDismissedLoading(true)}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
             </div>
         </div>
         </div>

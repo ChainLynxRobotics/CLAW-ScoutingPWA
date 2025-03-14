@@ -1,5 +1,5 @@
-import { Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader, MenuItem, Select } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Button, Drawer, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader, MenuItem, Select } from "@mui/material";
+import { NavigateOptions, Outlet, To, useNavigate } from "react-router-dom";
 import { AnalyticsSettingsContext } from "../../components/context/AnalyticsSettingsContextProvider";
 import { useContext, useEffect, useState } from "react";
 import ListItemTeam from "../../components/analytics/ListItemTeam";
@@ -8,6 +8,8 @@ import { ScheduleContext } from "../../components/context/ScheduleContextProvide
 import ListItemTeamGroup from "../../components/analytics/ListItemTeamGroup";
 
 export default function AnalyticsLayout() {
+
+    const navigate = useNavigate();
 
     const settings = useContext(SettingsContext);
     if (!settings) throw new Error("SettingsContext not found");
@@ -29,6 +31,10 @@ export default function AnalyticsLayout() {
 
     const [open, setOpen] = useState(false);
 
+    function onNavigate(to: To, options?: NavigateOptions) {
+        if (mobile) setOpen(false);
+        navigate(to, options);
+    }
 
     return (
         <div className="w-full h-full flex flex-col items-center relative" style={{ paddingLeft: mobile ? 0 : 240 }}>
@@ -52,7 +58,7 @@ export default function AnalyticsLayout() {
                         }
                     >
                         {analyticsSettings.starredTeams.map(team => (
-                            <ListItemTeam key={team} team={team} />
+                            <ListItemTeam key={team} team={team} onNavigate={onNavigate} />
                         ))}
                     </List>
                 }
@@ -73,6 +79,7 @@ export default function AnalyticsLayout() {
                             editable 
                             setGroup={(name, teams)=>analyticsSettings.setCustomTeamGroupById(group.id, {...group, name, teams})}
                             deleteGroup={()=>analyticsSettings.removeCustomTeamGroup(group)}
+                            onNavigate={onNavigate}
                         />
                     ))}
                     <ListItemButton onClick={() => analyticsSettings.addCustomTeamGroup({id: Date.now(), name: "New Group", teams: []})} className="opacity-60">
@@ -105,6 +112,7 @@ export default function AnalyticsLayout() {
                         teams={analyticsSettings.blueAllianceTeams} 
                         open={analyticsSettings.currentMatchBlueOpen} 
                         setOpen={analyticsSettings.setCurrentMatchBlueOpen} 
+                        onNavigate={onNavigate}
                         className="!bg-blue-500 !bg-opacity-20"
                     />
                     <ListItemTeamGroup 
@@ -112,6 +120,7 @@ export default function AnalyticsLayout() {
                         teams={analyticsSettings.redAllianceTeams} 
                         open={analyticsSettings.currentMatchRedOpen} 
                         setOpen={analyticsSettings.setCurrentMatchRedOpen} 
+                        onNavigate={onNavigate}
                         className="!bg-red-500 !bg-opacity-20"
                     />
                 </List>
@@ -125,21 +134,26 @@ export default function AnalyticsLayout() {
                     }
                 >
                     {analyticsSettings.teamList.map(team => (
-                        <ListItemTeam key={team} team={team} />
+                        <ListItemTeam key={team} team={team} onNavigate={onNavigate} />
                     ))}
                 </List>
 
             </Drawer>
 
+            <Outlet />
+
             <div className="absolute top-0 left-0">
-                <IconButton onClick={() => setOpen(!open)}>
-                    <div className="flex items-center text-sm text-secondary">
+                <Button onClick={() => setOpen(!open)} 
+                    variant="contained"
+                    size="small"
+                    color="secondary"
+                    className="!rounded-tl-none !rounded-bl-none !rounded-tr-none"
+                >
+                    <div className="flex items-center">
                         <span>Teams</span><span className="material-symbols-outlined">{open ? "chevron_left" : "chevron_right"}</span>
                     </div>
-                </IconButton>
+                </Button>
             </div>
-
-            <Outlet />
         </div>
     )
 }
