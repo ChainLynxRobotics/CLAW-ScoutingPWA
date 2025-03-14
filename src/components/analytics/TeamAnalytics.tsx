@@ -18,6 +18,7 @@ import TeamAnalyticsMatchSelection from "./TeamAnalyticsMatchSelection";
 import useTeamAnalyticsData from "./useTeamAnalyticsData";
 import matchCompare from "../../util/matchCompare";
 import AnalyticsCard from "./AnalyticsCard";
+import { GradientElement } from "visual-heatmap/dist/types/types";
 
 const autoCycleRatePaths: Leaves<MatchData>[] = [
     "autoCoralL4Score",
@@ -53,6 +54,24 @@ const heatmapOriginalWidth = 200;
 const heatmapOriginalHeight = 500;
 const heatmapWidth = 150;
 const heatmapHeight = 375;
+const heatmapGradient: GradientElement[] = [
+    {
+        color: [0, 0, 0, 0.0],
+        offset: 0
+    }, {
+        color: [0, 0, 255, 0.2],
+        offset: 0.2
+    }, {
+        color: [0, 255, 0, 0.5],
+        offset: 0.45
+    }, {
+        color: [255, 255, 0, 1.0],
+        offset: 0.85
+    }, {
+        color: [255, 0, 0, 1.0],
+        offset: 1.0
+    }
+];
 
 const observationLabels = {
     [Observation.Tippy]: "Tippy",
@@ -211,22 +230,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                     size: 100,
                                     intensity: 0.75, 
                                     min: 0,
-                                    gradient: [{
-                                        color: [0, 0, 0, 0.0],
-                                        offset: 0
-                                    }, {
-                                        color: [0, 0, 255, 0.2],
-                                        offset: 0.2
-                                    }, {
-                                        color: [0, 255, 0, 0.5],
-                                        offset: 0.45
-                                    }, {
-                                        color: [255, 255, 0, 1.0],
-                                        offset: 0.85
-                                    }, {
-                                        color: [255, 0, 0, 1.0],
-                                        offset: 1.0
-                                    }]
+                                    gradient: heatmapGradient
                                 }} />
                             </div>
                         </div>

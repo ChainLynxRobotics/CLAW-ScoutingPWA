@@ -25,7 +25,6 @@ export default function TeamAnalyticsMatchSelection({ min, max, onChange }: { mi
 
     const handleChange = (event: Event, newValue: number | number[]) => {
         if (typeof newValue === 'number') return;
-        console.log(newValue);
         onChange(newValue[0], newValue[1]);
     };
 

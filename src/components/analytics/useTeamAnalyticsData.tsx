@@ -47,7 +47,6 @@ export default function useTeamAnalyticsData(teams: number[], minusTeams: number
 
                 return [team, matches] as [number, MatchData[]];
             }));
-            console.log("Loaded match data", entries);
             setRawMatchData(new Map(entries));
         }
         loadData();
