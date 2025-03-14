@@ -1,7 +1,7 @@
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader, MenuItem, Select } from "@mui/material";
+import { Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, ListSubheader, MenuItem, Select } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import { AnalyticsSettingsContext } from "../../components/context/AnalyticsSettingsContextProvider";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import ListItemTeam from "../../components/analytics/ListItemTeam";
 import { SettingsContext } from "../../components/context/SettingsContextProvider";
 import { ScheduleContext } from "../../components/context/ScheduleContextProvider";
@@ -16,22 +16,37 @@ export default function AnalyticsLayout() {
     const schedule = useContext(ScheduleContext);
     if (!schedule) throw new Error("ScheduleContext not found");
 
+    const [mobile, setMobile] = useState(false);
+    useEffect(() => {
+        const handleResize = () => {
+            const isMobile = window.innerWidth < 1024;
+            if (isMobile !== mobile) setMobile(isMobile);
+        }
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => window.removeEventListener('resize', handleResize);
+    }, [mobile]);
+
+    const [open, setOpen] = useState(false);
+
 
     return (
-        <div className="w-full h-full flex flex-col items-center relative" style={{ paddingLeft: 240 }}>
+        <div className="w-full h-full flex flex-col items-center relative" style={{ paddingLeft: mobile ? 0 : 240 }}>
             <Drawer
-                open
-                variant="permanent"
+                open={mobile ? open : true}
+                onClose={() => setOpen(false)}
+                variant={mobile ? "temporary" : "permanent"}
                 sx={{
                     '& .MuiDrawer-paperAnchorDockedLeft': { position: 'absolute' },
                     '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
                 }}
+                keepMounted
             >
                 {analyticsSettings.starredTeams.length > 0 && 
                     <List
                         aria-labelledby="starred-list-subheader"
                         subheader={
-                            <ListSubheader component="div" id="starred-list-subheader" >
+                            <ListSubheader component="div" id="starred-list-subheader" sx={{ backgroundImage: "var(--Paper-overlay, initial);" }}>
                                 Starred Teams
                             </ListSubheader>
                         }
@@ -45,7 +60,7 @@ export default function AnalyticsLayout() {
                 <List
                     aria-labelledby="custom-list-subheader"
                     subheader={
-                        <ListSubheader component="div" id="custom-list-subheader">
+                        <ListSubheader component="div" id="custom-list-subheader" sx={{ backgroundImage: "var(--Paper-overlay, initial);" }}>
                             Custom Groups
                         </ListSubheader>
                     }
@@ -71,7 +86,7 @@ export default function AnalyticsLayout() {
                 <List
                     aria-labelledby="alliance-list-subheader"
                     subheader={
-                        <ListSubheader component="div" id="alliance-list-subheader" className="flex items-center gap-4">
+                        <ListSubheader component="div" id="alliance-list-subheader" className="flex items-center gap-4" sx={{ backgroundImage: "var(--Paper-overlay, initial);" }}>
                             <div>Alliances in </div>
                             <Select
                                 variant="standard"
@@ -104,7 +119,7 @@ export default function AnalyticsLayout() {
                 <List
                     aria-labelledby="all-teams-list-subheader"
                     subheader={
-                        <ListSubheader component="div" id="all-teams-list-subheader">
+                        <ListSubheader component="div" id="all-teams-list-subheader" sx={{ backgroundImage: "var(--Paper-overlay, initial);" }}>
                             All Teams
                         </ListSubheader>
                     }
@@ -115,6 +130,14 @@ export default function AnalyticsLayout() {
                 </List>
 
             </Drawer>
+
+            <div className="absolute top-0 left-0">
+                <IconButton onClick={() => setOpen(!open)}>
+                    <div className="flex items-center text-sm text-secondary">
+                        <span>Teams</span><span className="material-symbols-outlined">{open ? "chevron_left" : "chevron_right"}</span>
+                    </div>
+                </IconButton>
+            </div>
 
             <Outlet />
         </div>

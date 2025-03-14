@@ -188,7 +188,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
     , [matchData, observationsBarChartRobots]);
 
     return (
-        <Paper elevation={0} className="w-full h-full overflow-y-scroll">
+        <div className="w-full h-full overflow-y-scroll">
         <div className="flex flex-col items-center p-2">
             <TeamAnalyticsSelection teams={teams} minusTeams={minusTeams} onUpdate={(newTeams, newMinusTeams)=>{
                 navigate(`/analytics/team/${newTeams.join('+')}${newMinusTeams ? `/vs/${newMinusTeams.join('+')}` : ''}`);
@@ -521,6 +521,6 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 </div>
             </div>
         </div>
-        </Paper>
+        </div>
     )
 }
