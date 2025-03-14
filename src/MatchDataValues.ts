@@ -1,5 +1,7 @@
+import CoralScoreLocation from "./enums/CoralScoreLocation";
 import HumanPlayerLocation from "./enums/HumanPlayerLocation"
 import Observation from "./enums/Observation"
+import { MatchData } from "./types/MatchData";
 import { enumAverageCalculator } from "./util/analytics/matchDataAverage";
 
 /**
@@ -19,10 +21,16 @@ export type MatchDataFields = {
     // Auto
     autoCoralL1Score: number,
     autoCoralL1Miss: number,
+    autoCoralL2ScoreLocations: CoralScoreLocation[],
+    /** @deprecated */
     autoCoralL2Score: number,
     autoCoralL2Miss: number,
+    autoCoralL3ScoreLocations: CoralScoreLocation[],
+    /** @deprecated */
     autoCoralL3Score: number,
     autoCoralL3Miss: number,
+    autoCoralL4ScoreLocations: CoralScoreLocation[],
+    /** @deprecated */
     autoCoralL4Score: number,
     autoCoralL4Miss: number,
     autoAlgaeScore: number,
@@ -38,10 +46,16 @@ export type MatchDataFields = {
     // Teleop
     teleopCoralL1Score: number,
     teleopCoralL1Miss: number,
+    teleopCoralL2ScoreLocations: CoralScoreLocation[],
+    /** @deprecated */
     teleopCoralL2Score: number,
     teleopCoralL2Miss: number,
+    teleopCoralL3ScoreLocations: CoralScoreLocation[],
+    /** @deprecated */
     teleopCoralL3Score: number,
     teleopCoralL3Miss: number,
+    teleopCoralL4ScoreLocations: CoralScoreLocation[],
+    /** @deprecated */
     teleopCoralL4Score: number,
     teleopCoralL4Miss: number,
     teleopAlgaeScore: number,
@@ -96,11 +110,14 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     // Auto
     autoCoralL1Score: { name: "Auto Coral L1 Score", defaultValue: 0 },
     autoCoralL1Miss: { name: "Auto Coral L1 Miss", defaultValue: 0 },
-    autoCoralL2Score: { name: "Auto Coral L2 Score", defaultValue: 0 },
+    autoCoralL2ScoreLocations: { name: "Auto Coral L2 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", ") },
+    autoCoralL2Score: { name: "Auto Coral L2 Score", defaultValue: 0, serialize: (value, object) => (object.autoCoralL2ScoreLocations?.length || value)+"" },
     autoCoralL2Miss: { name: "Auto Coral L2 Miss", defaultValue: 0 },
-    autoCoralL3Score: { name: "Auto Coral L3 Score", defaultValue: 0 },
+    autoCoralL3ScoreLocations: { name: "Auto Coral L3 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", ") },
+    autoCoralL3Score: { name: "Auto Coral L3 Score", defaultValue: 0, serialize: (value, object) => (object.autoCoralL3ScoreLocations?.length || value)+"" },
     autoCoralL3Miss: { name: "Auto Coral L3 Miss", defaultValue: 0 },
-    autoCoralL4Score: { name: "Auto Coral L4 Score", defaultValue: 0 },
+    autoCoralL4ScoreLocations: { name: "Auto Coral L4 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", ") },
+    autoCoralL4Score: { name: "Auto Coral L4 Score", defaultValue: 0, serialize: (value, object) => (object.autoCoralL4ScoreLocations?.length || value)+"" },
     autoCoralL4Miss: { name: "Auto Coral L4 Miss", defaultValue: 0 },
     autoAlgaeScore: { name: "Auto Algae Score", defaultValue: 0 },
     autoAlgaeMiss: { name: "Auto Algae Miss", defaultValue: 0 },
@@ -115,11 +132,14 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     // Teleop
     teleopCoralL1Score: { name: "Coral L1 Score", defaultValue: 0 },
     teleopCoralL1Miss: { name: "Coral L1 Miss", defaultValue: 0 },
-    teleopCoralL2Score: { name: "Coral L2 Score", defaultValue: 0 },
+    teleopCoralL2ScoreLocations: { name: "Coral L2 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", ") },
+    teleopCoralL2Score: { name: "Coral L2 Score", defaultValue: 0, serialize: (value, object) => (object.teleopCoralL2ScoreLocations?.length || value)+"" },
     teleopCoralL2Miss: { name: "Coral L2 Miss", defaultValue: 0 },
-    teleopCoralL3Score: { name: "Coral L3 Score", defaultValue: 0 },
+    teleopCoralL3ScoreLocations: { name: "Coral L3 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", ") },
+    teleopCoralL3Score: { name: "Coral L3 Score", defaultValue: 0, serialize: (value, object) => (object.teleopCoralL3ScoreLocations?.length || value)+"" },
     teleopCoralL3Miss: { name: "Coral L3 Miss", defaultValue: 0 },
-    teleopCoralL4Score: { name: "Coral L4 Score", defaultValue: 0 },
+    teleopCoralL4ScoreLocations: { name: "Coral L4 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", ") },
+    teleopCoralL4Score: { name: "Coral L4 Score", defaultValue: 0, serialize: (value, object) => (object.teleopCoralL4ScoreLocations?.length || value)+"" },
     teleopCoralL4Miss: { name: "Coral L4 Miss", defaultValue: 0 },
     teleopAlgaeScore: { name: "Algae Score", defaultValue: 0 },
     teleopAlgaeMiss: { name: "Algae Miss", defaultValue: 0 },
@@ -182,7 +202,7 @@ type MatchDataFieldInformationRecord = {
          * @param value - The value to serialize
          * @returns A nice string representation of the value
          */
-        serialize?: (value: MatchDataFields[K]) => string
+        serialize?: (value: MatchDataFields[K], object: MatchData) => string
         /**
          * A function that takes in a list of values across multiple entries for the same match, and returns the average value
          * 

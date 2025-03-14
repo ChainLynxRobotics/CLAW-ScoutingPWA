@@ -9,6 +9,7 @@ import { OnFieldButton } from "../../components/scout/OnFieldButton";
 import { OnFieldMenuButton } from "../../components/scout/OnFieldMenuButton";
 import { Checkbox, FormControlLabel } from "@mui/material";
 import Divider from "../../components/ui/Divider";
+import { OnFieldReefButton } from "../../components/scout/OnFieldReefButton";
 
 
 const Auto = () => {
@@ -55,29 +56,18 @@ const Auto = () => {
                         <OnFieldButton label="Miss" color="error" value={context.fields.autoAlgaeNetMiss} setValue={(v)=>context.fields.set("autoAlgaeNetMiss", v)} />
                     </OnFieldButtonGroup>
 
-                    <OnFieldButtonGroup label="Auto Coral" top={!reverseY ? 0.5 : 0.5} left={!reverseX ? 0.5 : 0.5}>
-                        <OnFieldMenuButton
-                            id="coral-score-menu-button"
-                            label="Score"
-                            color="success"
-                            menuItems={[
-                                {label: "Level 1", value: context.fields.autoCoralL1Score, setValue: (v)=>context.fields.set("autoCoralL1Score", v)},
-                                {label: "Level 2", value: context.fields.autoCoralL2Score, setValue: (v)=>context.fields.set("autoCoralL2Score", v)},
-                                {label: "Level 3", value: context.fields.autoCoralL3Score, setValue: (v)=>context.fields.set("autoCoralL3Score", v)},
-                                {label: "Level 4", value: context.fields.autoCoralL4Score, setValue: (v)=>context.fields.set("autoCoralL4Score", v)}
-                            ]}
-                        />
-                        <OnFieldMenuButton
-                            id="coral-miss-menu-button"
-                            label="Miss"
-                            color="error"
-                            menuItems={[
-                                {label: "Level 1", value: context.fields.autoCoralL1Miss, setValue: (v)=>context.fields.set("autoCoralL1Miss", v)},
-                                {label: "Level 2", value: context.fields.autoCoralL2Miss, setValue: (v)=>context.fields.set("autoCoralL2Miss", v)},
-                                {label: "Level 3", value: context.fields.autoCoralL3Miss, setValue: (v)=>context.fields.set("autoCoralL3Miss", v)},
-                                {label: "Level 4", value: context.fields.autoCoralL4Miss, setValue: (v)=>context.fields.set("autoCoralL4Miss", v)}
-                            ]}
-                        />
+                    <OnFieldButtonGroup label="Auto Coral" top={!reverseY ? 0.45 : 0.55} left={!reverseX ? 0.5 : 0.5}>
+                        <OnFieldReefButton label="L4" color="success" locations={context.fields.autoCoralL4ScoreLocations} setLocations={(v)=>context.fields.set("autoCoralL4ScoreLocations", v)} />
+                        <OnFieldButton label="Miss" color="error" value={context.fields.autoCoralL4Miss} setValue={(v)=>context.fields.set("autoCoralL4Miss", v)} />
+
+                        <OnFieldReefButton label="L3" color="success" locations={context.fields.autoCoralL3ScoreLocations} setLocations={(v)=>context.fields.set("autoCoralL3ScoreLocations", v)} />
+                        <OnFieldButton label="Miss" color="error" value={context.fields.autoCoralL3Miss} setValue={(v)=>context.fields.set("autoCoralL3Miss", v)} />
+
+                        <OnFieldReefButton label="L2" color="success" locations={context.fields.autoCoralL2ScoreLocations} setLocations={(v)=>context.fields.set("autoCoralL2ScoreLocations", v)} />
+                        <OnFieldButton label="Miss" color="error" value={context.fields.autoCoralL2Miss} setValue={(v)=>context.fields.set("autoCoralL2Miss", v)} />
+                        
+                        <OnFieldButton label="L1" color="success" value={context.fields.autoCoralL1Score} setValue={(v)=>context.fields.set("autoCoralL1Score", v)} />
+                        <OnFieldButton label="Miss" color="error" value={context.fields.autoCoralL1Miss} setValue={(v)=>context.fields.set("autoCoralL1Miss", v)} />
                     </OnFieldButtonGroup>
 
                 </div>

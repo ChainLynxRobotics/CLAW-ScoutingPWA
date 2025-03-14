@@ -24,8 +24,7 @@ export default function OnFieldButtonGroup({ label, vertical, align = 'center', 
                 <label className="text-white">{label}</label>
             </div>
             <div 
-                className={`flex gap-2`} 
-                style={{ alignItems: align, justifyContent: align, flexDirection: vertical ? 'column' : 'row' }}
+                className={`grid gap-2 ` + (vertical ? 'grid-rows-2' : 'grid-cols-2')}
                 {...listProps}
             >
                 {children}

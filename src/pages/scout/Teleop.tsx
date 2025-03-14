@@ -9,6 +9,7 @@ import OnFieldButtonGroup from "../../components/scout/OnFieldButtonGroup";
 import { OnFieldMenuButton } from "../../components/scout/OnFieldMenuButton";
 import { FormControlLabel, Checkbox } from "@mui/material";
 import Divider from "../../components/ui/Divider";
+import { OnFieldReefButton } from "../../components/scout/OnFieldReefButton";
 
 
 const Teleop = () => {
@@ -59,29 +60,18 @@ const Teleop = () => {
                     <OnFieldButton label="Miss" color="error" value={context.fields.teleopHumanPlayerAlgaeMiss} setValue={(v)=>context.fields.set("teleopHumanPlayerAlgaeMiss", v)} />
                 </OnFieldButtonGroup>
 
-                <OnFieldButtonGroup label="Coral" top={!reverseY ? 0.5 : 0.5} left={!reverseX ? 0.5 : 0.5}>
-                    <OnFieldMenuButton
-                        id="coral-score-menu-button"
-                        label="Score"
-                        color="success"
-                        menuItems={[
-                            {label: "Level 1", value: context.fields.teleopCoralL1Score, setValue: (v)=>context.fields.set("teleopCoralL1Score", v)},
-                            {label: "Level 2", value: context.fields.teleopCoralL2Score, setValue: (v)=>context.fields.set("teleopCoralL2Score", v)},
-                            {label: "Level 3", value: context.fields.teleopCoralL3Score, setValue: (v)=>context.fields.set("teleopCoralL3Score", v)},
-                            {label: "Level 4", value: context.fields.teleopCoralL4Score, setValue: (v)=>context.fields.set("teleopCoralL4Score", v)}
-                        ]}
-                    />
-                    <OnFieldMenuButton
-                        id="coral-miss-menu-button"
-                        label="Miss"
-                        color="error"
-                        menuItems={[
-                            {label: "Level 1", value: context.fields.teleopCoralL1Miss, setValue: (v)=>context.fields.set("teleopCoralL1Miss", v)},
-                            {label: "Level 2", value: context.fields.teleopCoralL2Miss, setValue: (v)=>context.fields.set("teleopCoralL2Miss", v)},
-                            {label: "Level 3", value: context.fields.teleopCoralL3Miss, setValue: (v)=>context.fields.set("teleopCoralL3Miss", v)},
-                            {label: "Level 4", value: context.fields.teleopCoralL4Miss, setValue: (v)=>context.fields.set("teleopCoralL4Miss", v)}
-                        ]}
-                    />
+                <OnFieldButtonGroup label="Coral" top={!reverseY ? 0.45 : 0.55} left={!reverseX ? 0.5 : 0.5}>
+                    <OnFieldReefButton label="L4" color="success" locations={context.fields.teleopCoralL4ScoreLocations} setLocations={(v)=>context.fields.set("teleopCoralL4ScoreLocations", v)} />
+                    <OnFieldButton label="Miss" color="error" value={context.fields.teleopCoralL4Miss} setValue={(v)=>context.fields.set("teleopCoralL4Miss", v)} />
+
+                    <OnFieldReefButton label="L3" color="success" locations={context.fields.teleopCoralL3ScoreLocations} setLocations={(v)=>context.fields.set("teleopCoralL3ScoreLocations", v)} />
+                    <OnFieldButton label="Miss" color="error" value={context.fields.teleopCoralL3Miss} setValue={(v)=>context.fields.set("teleopCoralL3Miss", v)} />
+
+                    <OnFieldReefButton label="L2" color="success" locations={context.fields.teleopCoralL2ScoreLocations} setLocations={(v)=>context.fields.set("teleopCoralL2ScoreLocations", v)} />
+                    <OnFieldButton label="Miss" color="error" value={context.fields.teleopCoralL2Miss} setValue={(v)=>context.fields.set("teleopCoralL2Miss", v)} />
+                
+                    <OnFieldButton label="L1" color="success" value={context.fields.teleopCoralL1Score} setValue={(v)=>context.fields.set("teleopCoralL1Score", v)} />
+                    <OnFieldButton label="Miss" color="error" value={context.fields.teleopCoralL1Miss} setValue={(v)=>context.fields.set("teleopCoralL1Miss", v)} />
                 </OnFieldButtonGroup>
 
             </div>
