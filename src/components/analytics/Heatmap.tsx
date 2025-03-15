@@ -9,6 +9,8 @@ interface HeatMapProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export default function HeatMap({ data, config, ...props }: HeatMapProps) {
+
+    if (!data || data.length === 0) return null;
     
     return <InternalHeatMap key={JSON.stringify(data)} data={data} config={config} {...props} />
 }
