@@ -15,15 +15,33 @@ export interface ComparableDataset<T extends object> {
     negative: T[][] | undefined;
 }
 
-export interface GraphableDataset<T extends object, K> extends ComparableDataset<T> {
+export interface GraphableDataset<T extends object, X extends number = number> extends ComparableDataset<T> {
     /**
-     * Used to get the x value from the data point
+     * Should match the positive array in length, as it corresponds to the names of the groups
      */
-    xGetter: (data: T) => K;
+    positiveGroupNames: string[];
     /**
-     * Optional function to compare the xGetter values for sorting on the graph
+     * Should match the negative array in length, as it corresponds to the names of the groups
      */
-    xComparator?: (a: K, b: K) => number;
+    negativeGroupNames: string[] | undefined;
+    /**
+     * The x values for the graph, used to display the ticks
+     */
+    xData: X[];
+    /**
+     * Used to get the x value from each data point, for knowing where to place it on the graph
+     * The y getter (just called getter) is passed in to the component itself
+     */
+    xGetter: (data: T) => X;
+    /**
+     * Optional function to compare the xGetter values for comparing the xData
+     */
+    xEquals?: (a: X, b: X) => boolean;
+
+    /**
+     * Optional function to serialize the x value to a string for the labels
+    */
+    xSerializer?: (x: X) => string;
 }
 
 /**

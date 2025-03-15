@@ -25,16 +25,19 @@ export default function QuantitativeProportionalStatistic<T extends object>({ da
                 name="└ Accuracy" 
                 digits={d} 
                 pl="24px" 
-                disabled 
+                className="text-gray-500"
                 dataset={dataset}
+                graphable={props.graphable}
                 getter={(data) => ({ successes: normalizeToNumber(get(data, successes))||0, failures: normalizeToNumber(get(data, failures))||0 })}
+                graphGetter={(data) => normalizeToNumber(get(data, successes))||0 / ((normalizeToNumber(get(data, successes))||0) + (normalizeToNumber(get(data, failures))||0))}
             />
             <QuantitativeStatistic 
                 name="└ Attempts" 
                 digits={d} 
                 pl="24px" 
-                disabled 
+                className="text-gray-500"
                 dataset={dataset}
+                graphable={props.graphable}
                 getter={(data) => (normalizeToNumber(get(data, successes))||0) + (normalizeToNumber(get(data, failures))||0)}
             />
         </>

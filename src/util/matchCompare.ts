@@ -17,6 +17,13 @@ export default function matchCompare(a: string, b: string): number {
     );
 }
 
+export function matchCompareEquals(a: string, b: string): boolean {
+    const idA = a.includes('_') ? a.substring(a.indexOf('_') + 1) : a;
+    const idB = b.includes('_') ? b.substring(b.indexOf('_') + 1) : b;
+
+    return idA === idB;
+}
+
 export function matchEquals(a: MatchIdentifier, b: MatchIdentifier): boolean {
     return a.id === b.id;
 }

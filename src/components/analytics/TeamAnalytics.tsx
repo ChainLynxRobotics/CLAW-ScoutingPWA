@@ -16,11 +16,12 @@ import { GraphableDataset, Leaves } from "../../types/analyticsTypes";
 import { ScheduleContext } from "../context/ScheduleContextProvider";
 import TeamAnalyticsMatchSelection from "./TeamAnalyticsMatchSelection";
 import useTeamAnalyticsData from "./useTeamAnalyticsData";
-import matchCompare from "../../util/matchCompare";
+import matchCompare, { matchCompareEquals, matchEquals } from "../../util/matchCompare";
 import AnalyticsCard from "./AnalyticsCard";
 import { GradientElement } from "visual-heatmap/dist/types/types";
 import CoralScoreLocation from "../../enums/CoralScoreLocation";
 import Statistic from "./Statistic";
+import StatisticLineChart from "./StatisticLineChart";
 
 const autoCycleRatePaths: Leaves<MatchData>[] = [
     "autoCoralL4Score",
@@ -121,19 +122,25 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
         }
     }, [loadedMatchData, loadedTBAMatchData, dismissedLoading]);
 
-    const scoutingMatchDataset: GraphableDataset<MatchData, string> = useMemo(() => ({
+    const scoutingMatchDataset: GraphableDataset<MatchData> = useMemo(() => ({
         positive: matchDataPositive,
+        positiveGroupNames: teams.map(team => team.toString()),
         negative: matchDataNegative,
-        xGetter: (data) => data.matchId,
-        xComparator: matchCompare
-    }), [matchDataPositive, matchDataNegative]);
+        negativeGroupNames: minusTeams?.map(team => team.toString()),
+        xData: schedule.matches.map((match, i) => i),
+        xGetter: (data) => schedule.matches.findIndex(match => matchCompareEquals(match.matchId, data.matchId)) || 0,
+        xSerializer: (x) => schedule.matches[x]?.matchId,
+    }), [matchDataPositive, matchDataNegative, schedule.matches]);
 
-    const tbaMatchDataset: GraphableDataset<BlueAllianceMatchExtended, string> = useMemo(() => ({
+    const tbaMatchDataset: GraphableDataset<BlueAllianceMatchExtended> = useMemo(() => ({
         positive: tbaMatchDataPositive,
+        positiveGroupNames: teams.map(team => team.toString()),
         negative: tbaMatchDataNegative,
-        xGetter: (data) => data.key,
-        xComparator: matchCompare
-    }), [tbaMatchDataPositive, tbaMatchDataNegative]);
+        negativeGroupNames: minusTeams?.map(team => team.toString()),
+        xData: schedule.matches.map((match, i) => i),
+        xGetter: (data) => schedule.matches.findIndex(match => matchCompareEquals(match.matchId, data.key)) || 0,
+        xSerializer: (x) => schedule.matches[x]?.matchId,
+    }), [tbaMatchDataPositive, tbaMatchDataNegative, schedule.matches]);
     
 
     // Data for the human player location pie chart
@@ -282,24 +289,28 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             successes="autoCoralL4Score"
                             failures="autoCoralL4Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic 
                             name="Coral L3" 
                             successes="autoCoralL3Score"
                             failures="autoCoralL3Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic 
                             name="Coral L2" 
                             successes="autoCoralL2Score"
                             failures="autoCoralL2Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic 
                             name="Coral L1" 
                             successes="autoCoralL1Score"
                             failures="autoCoralL1Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                     </AnalyticsCard>
 
@@ -314,12 +325,14 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                 return 15 / sum;
                             }}
                             dataset={scoutingMatchDataset}
+                            graphable
                             desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened."
                         />
                         <QuantitativeStatistic 
                             name="# of Cycles" 
                             getter={match => getSum(match, autoCycleRatePaths) || undefined}
                             dataset={scoutingMatchDataset}
+                            graphable
                             desc="Number of scores and misses for coral and algae in one match. Exclude matches where nothing happened."
                         />
                         <Divider sx={{ my: 2 }} />
@@ -327,6 +340,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             name="Auto Leave" 
                             getter="score_breakdown.autoLineRobot"
                             dataset={tbaMatchDataset}
+                            graphable
                         />
                         <Divider sx={{ my: 2 }} />
                         <QuantitativeProportionalStatistic 
@@ -334,12 +348,14 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             successes="autoAlgaeScore"
                             failures="autoAlgaeMiss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic 
                             name="Net" 
                             successes="autoAlgaeNetScore"
                             failures="autoAlgaeNetMiss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                     </AnalyticsCard>
 
@@ -348,33 +364,39 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             name="Coral Ground Intake" 
                             getter="autoCoralGroundIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <ProportionalStatistic 
                             name="Coral Station Intake" 
                             getter="autoCoralStationIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic 
                             name="Remove Algae from Reef L2" 
                             getter="autoRemoveL2Algae"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <ProportionalStatistic 
                             name="Remove Algae from Reef L3"
                             getter="autoRemoveL3Algae"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic 
                             name="Algae Ground Intake" 
                             getter="autoAlgaeGroundIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <ProportionalStatistic 
                             name="Algae Reef Intake" 
                             getter="autoAlgaeReefIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                     </AnalyticsCard>
                 </div>
@@ -400,24 +422,28 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             successes="teleopCoralL4Score"
                             failures="teleopCoralL4Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic 
                             name="Coral L3" 
                             successes="teleopCoralL3Score"
                             failures="teleopCoralL3Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic 
                             name="Coral L2" 
                             successes="teleopCoralL2Score"
                             failures="teleopCoralL2Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic 
                             name="Coral L1" 
                             successes="teleopCoralL1Score"
                             failures="teleopCoralL1Miss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                     </AnalyticsCard>
 
@@ -432,12 +458,14 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                 return 135 / sum;
                             }}
                             dataset={scoutingMatchDataset}
+                            graphable
                             desc="Counts both scores and misses for coral and algae. Excludes matches where nothing happened."
                         />
                         <QuantitativeStatistic 
                             name="# of Cycles" 
                             getter={match => getSum(match, teleopCycleRatePaths) || undefined}
                             dataset={scoutingMatchDataset}
+                            graphable
                             desc="Number of scores and misses for coral and algae in one match. Exclude matches where nothing happened."
                         />
                         <Divider sx={{ my: 2 }} />
@@ -446,12 +474,14 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             successes="teleopAlgaeScore"
                             failures="teleopAlgaeMiss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <QuantitativeProportionalStatistic
                             name="Net" 
                             successes="teleopAlgaeNetScore"
                             failures="teleopAlgaeNetMiss"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <Divider sx={{ my: 2 }} />
                         <QuantitativeProportionalStatistic 
@@ -465,6 +495,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                 return match.teleopHumanPlayerAlgaeMiss;
                             }}
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                     </AnalyticsCard>
 
@@ -473,33 +504,39 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             name="Coral Ground Intake" 
                             getter="teleopCoralGroundIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <ProportionalStatistic 
                             name="Coral Station Intake" 
                             getter="teleopCoralStationIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic
                             name="Remove Algae from Reef L2" 
                             getter="teleopRemoveL2Algae"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <ProportionalStatistic
                             name="Remove Algae from Reef L3"
                             getter="teleopRemoveL3Algae"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <Divider sx={{ my: 2 }} />
                         <ProportionalStatistic 
                             name="Algae Ground Intake" 
                             getter="teleopAlgaeGroundIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <ProportionalStatistic 
                             name="Algae Reef Intake" 
                             getter="teleopAlgaeReefIntake"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                     </AnalyticsCard>
                 </div>
@@ -522,6 +559,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             unit="%"
                             getter="timeDefending"
                             dataset={scoutingMatchDataset}
+                            graphable
                         />
                         <Divider sx={{ my: 2 }} />
                         <div>Observations:</div>
@@ -607,13 +645,13 @@ const coralHeatmapWidth = 200;
 const coralHeatmapHeight = 200;
 const leftTranslate = -centerOfReefX + coralHeatmapWidth/2;
 const topTranslate = -centerOfReefY + coralHeatmapHeight/2;
-export function CoralHeatmap({ data }: { data: CoralScoreLocation[] }) {
+export function CoralHeatmap({ data }: { data?: CoralScoreLocation[] }) {
 
-    const heatmapData = useMemo(() => data.map(location => ({
+    const heatmapData = useMemo(() => data?.filter(v => v !== undefined).map(location => ({
         x: coralHeatmapMap[location].x + leftTranslate,
         y: coralHeatmapMap[location].y + topTranslate,
         value: 1
-    })), [data]);
+    })) || [], [data]);
 
     return (
         <div className="relative overflow-hidden" style={{ width: coralHeatmapWidth, height: coralHeatmapHeight }}>

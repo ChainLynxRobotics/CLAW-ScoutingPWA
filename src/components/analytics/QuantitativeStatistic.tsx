@@ -1,9 +1,10 @@
-import { Tooltip } from "@mui/material";
+import { Paper, Popper, Tooltip } from "@mui/material";
 import { Getter, GraphableDataset } from "../../types/analyticsTypes";
 import Statistic, { StatisticProps } from "./Statistic";
 import maxDecimal from "../../util/analytics/maxDecimal";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { describeQuantitativeObjects } from "../../util/analytics/objectStatistics";
+import StatisticLineChart from "./StatisticLineChart";
 
 export interface QuantitativeStatisticProps<T extends object> extends StatisticProps {
     digits?: number,
@@ -11,18 +12,41 @@ export interface QuantitativeStatisticProps<T extends object> extends StatisticP
     dataset: GraphableDataset<T, any>,
     getter: Getter<T>,
     graphable?: boolean,
+    graphGetter?: Getter<T>,
 }
 
-export default function QuantitativeStatistic<T extends object>({ dataset, getter, digits: d = 2, unit = "", ...props }: QuantitativeStatisticProps<T>) {
+export default function QuantitativeStatistic<T extends object>({ dataset, getter, digits: d = 2, unit = "", graphable, graphGetter, ...props }: QuantitativeStatisticProps<T>) {
+    
+    const ref = useRef<HTMLDivElement>(null);
+    const [graphOpen, setGraphOpen] = useState(false);
     
     const stats = useMemo(() => describeQuantitativeObjects(getter, dataset), [dataset, getter]);
 
+    function handleOpen(e: React.MouseEvent) {
+        e.stopPropagation();
+        setGraphOpen(v=>!v);
+    }
+
+    useEffect(() => {
+        const close = () => setGraphOpen(false);
+        document.addEventListener("click", close);
+        return () => document.removeEventListener("click", close);
+    }, [])
+
     return (
-        <Statistic {...props}>
+        <Statistic {...props} ref={ref}>
             <Tooltip title={`Average: ${maxDecimal(stats.avg, d) + unit} SD: ${maxDecimal(stats.sd, d)} Total: ${maxDecimal(stats.sum, d)} Samples: ${maxDecimal(stats.n, d)}`} placement="top" arrow>
                 <b>{maxDecimal(stats.avg, d) + unit}</b>
             </Tooltip>
-            <span className="text-gray-500">(min: {maxDecimal(stats.min, d) + unit} max: {maxDecimal(stats.max, d) + unit})</span>
+            <span className="text-gray-500 text-sm">(min: {maxDecimal(stats.min, d) + unit} max: {maxDecimal(stats.max, d) + unit})</span>
+            {graphable && <>
+                <button onClick={handleOpen} className="material-symbols-outlined text-secondary">query_stats</button>
+                <Popper open={graphOpen} anchorEl={ref.current} placement="right">
+                    <Paper elevation={3} className="p-2">
+                        <StatisticLineChart dataset={dataset} getter={graphGetter || getter} />
+                    </Paper>
+                </Popper>
+            </>}
         </Statistic>
     )
 }
