@@ -19,7 +19,7 @@ export type StatisticProps = {
  * @param props - The props for this statistic. Only the name is required.
  * @returns The statistic element.
  */
-export default function Statistic(props: StatisticProps & {children: React.ReactNode}) {
+export default function Statistic(props: StatisticProps & {children?: React.ReactNode}) {
 
     const [infoOpen, setInfoOpen] = useState(false);
     

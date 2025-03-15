@@ -19,6 +19,8 @@ import useTeamAnalyticsData from "./useTeamAnalyticsData";
 import matchCompare from "../../util/matchCompare";
 import AnalyticsCard from "./AnalyticsCard";
 import { GradientElement } from "visual-heatmap/dist/types/types";
+import CoralScoreLocation from "../../enums/CoralScoreLocation";
+import Statistic from "./Statistic";
 
 const autoCycleRatePaths: Leaves<MatchData>[] = [
     "autoCoralL4Score",
@@ -259,6 +261,21 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     </AnalyticsCard>
                 </div>
                 <div className="flex flex-col gap-2 max-w-sm w-full">
+                    <AnalyticsCard title="Auto - Coral Heatmaps" className="border-4 border-yellow-300">
+                        <div className="flex flex-col items-center">
+                            <div>
+                                <Statistic name="Coral L4" />
+                                <CoralHeatmap data={matchDataPositiveFlat.map(match => match.autoCoralL4ScoreLocations).flat()} />
+                                <Divider sx={{ my: 2 }} />
+                                <Statistic name="Coral L3" />
+                                <CoralHeatmap data={matchDataPositiveFlat.map(match => match.autoCoralL3ScoreLocations).flat()} />
+                                <Divider sx={{ my: 2 }} />
+                                <Statistic name="Coral L2" />
+                                <CoralHeatmap data={matchDataPositiveFlat.map(match => match.autoCoralL2ScoreLocations).flat()} />
+                            </div>
+                        </div>
+                    </AnalyticsCard>
+
                     <AnalyticsCard title="Auto - Coral" className="border-4 border-yellow-300">
                         <QuantitativeProportionalStatistic 
                             name="Coral L4"
@@ -362,6 +379,21 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                     </AnalyticsCard>
                 </div>
                 <div className="flex flex-col gap-2 max-w-sm w-full">
+                    <AnalyticsCard title="Teleop - Coral Heatmaps" className="border-4 border-pink-400">
+                        <div className="flex flex-col items-center">
+                            <div>
+                                <Statistic name="Coral L4" />
+                                <CoralHeatmap data={matchDataPositiveFlat.map(match => match.teleopCoralL4ScoreLocations).flat()} />
+                                <Divider sx={{ my: 2 }} />
+                                <Statistic name="Coral L3" />
+                                <CoralHeatmap data={matchDataPositiveFlat.map(match => match.teleopCoralL3ScoreLocations).flat()} />
+                                <Divider sx={{ my: 2 }} />
+                                <Statistic name="Coral L2" />
+                                <CoralHeatmap data={matchDataPositiveFlat.map(match => match.teleopCoralL2ScoreLocations).flat()} />
+                            </div>
+                        </div>
+                    </AnalyticsCard>
+
                     <AnalyticsCard title="Teleop - Coral" className="border-4 border-pink-400">
                         <QuantitativeProportionalStatistic 
                             name="Coral L4" 
@@ -548,6 +580,71 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 </Backdrop>
             </div>
         </div>
+        </div>
+    )
+}
+
+const coralHeatmapMap: Record<CoralScoreLocation, { x: number, y: number }> = {
+    [CoralScoreLocation.A]: { x: 293, y: 414 },
+    [CoralScoreLocation.B]: { x: 293, y: 440 },
+    [CoralScoreLocation.C]: { x: 312, y: 475 },
+    [CoralScoreLocation.D]: { x: 335, y: 489 },
+    [CoralScoreLocation.E]: { x: 375, y: 489 },
+    [CoralScoreLocation.F]: { x: 398, y: 475 },
+    [CoralScoreLocation.G]: { x: 419, y: 440 },
+    [CoralScoreLocation.H]: { x: 419, y: 414 },
+    [CoralScoreLocation.I]: { x: 398, y: 379 },
+    [CoralScoreLocation.J]: { x: 375, y: 366 },
+    [CoralScoreLocation.K]: { x: 335, y: 366 },
+    [CoralScoreLocation.L]: { x: 312, y: 379 },
+}
+const imageWidth = 747;
+const imageHeight = 850;
+const centerOfReefX = 355;
+const centerOfReefY = 425;
+
+const coralHeatmapWidth = 200;
+const coralHeatmapHeight = 200;
+const leftTranslate = -centerOfReefX + coralHeatmapWidth/2;
+const topTranslate = -centerOfReefY + coralHeatmapHeight/2;
+export function CoralHeatmap({ data }: { data: CoralScoreLocation[] }) {
+
+    const heatmapData = useMemo(() => data.map(location => ({
+        x: coralHeatmapMap[location].x + leftTranslate,
+        y: coralHeatmapMap[location].y + topTranslate,
+        value: 1
+    })), [data]);
+
+    return (
+        <div className="relative overflow-hidden" style={{ width: coralHeatmapWidth, height: coralHeatmapHeight }}>
+            <div
+                className="absolute"
+                style={{ 
+                    width: `${imageWidth}px`,
+                    height: `${imageHeight}px`,
+                    top: `${topTranslate}px`,
+                    left: `${leftTranslate}px`,
+                }}
+            >
+                <img src={`/imgs/reefscape_field_render_blue.png`} 
+                    alt="Reefscape Field Render"
+                    width={imageWidth}
+                    height={imageHeight}
+                    // Zoom in specifically on the reef
+                    style={{
+                        transformOrigin: `${centerOfReefX}px ${centerOfReefY}px`,
+                        scale: 1.2
+                    }}
+                />
+            </div>
+            <Heatmap data={heatmapData} config={{
+                size: 75,
+                intensity: 0.75, 
+                min: 0,
+                gradient: heatmapGradient
+            }}
+                className="scale-[1.2]"
+            />
         </div>
     )
 }
