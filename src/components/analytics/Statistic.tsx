@@ -1,15 +1,15 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { useState } from "react";
+import { HTMLAttributes, useState } from "react";
 
-export type StatisticProps = {
+export type StatisticProps = HTMLAttributes<HTMLDivElement> & {
     /** The name, displays before any child data */
     name: string, 
     /** A longer description for extra info, when this is defined, an info (i) icon will appear that shows the set data in a popup when clicked. */
     desc?: string,
     /** Padding left for the element, used for indicating one statistic is a child of another in the UI */
     pl?: string,
-    /** If it should show up fainter */
-    disabled?: boolean,
+    /** Ref for the element */
+    ref?: React.Ref<HTMLDivElement>
 }
 
 /**
@@ -19,12 +19,12 @@ export type StatisticProps = {
  * @param props - The props for this statistic. Only the name is required.
  * @returns The statistic element.
  */
-export default function Statistic(props: StatisticProps & {children: React.ReactNode}) {
+export default function Statistic(props: StatisticProps & {children?: React.ReactNode}) {
 
     const [infoOpen, setInfoOpen] = useState(false);
     
     return (
-        <div className="flex items-center gap-2 whitespace-nowrap" style={{paddingLeft: props.pl, opacity: props.disabled ? 0.4 : 1}}>
+        <div {...props} className={"flex items-center gap-2 whitespace-nowrap "+props.className} style={{paddingLeft: props.pl, ...props.style}}>
             <span className="-indent-2 pl-2">{props.name}: </span>
             {props.children}
             

@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import { ManifestOptions, VitePWA } from 'vite-plugin-pwa'
 
 const manifest: Partial<ManifestOptions> = {
-  name: "8248 FRC Scouting App",
-  short_name: "FRC Scouting",
+  name: "C.L.A.W. Scouting App",
+  short_name: "C.L.A.W.",
   description: "A scouting app made by FRC team 8248 to collect data about FRC matches during competitions",
   theme_color: "#16181C",
   background_color: "#16181C",

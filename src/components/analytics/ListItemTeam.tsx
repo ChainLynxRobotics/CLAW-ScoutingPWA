@@ -1,17 +1,15 @@
 import { useContext } from "react";
 import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
 import { Checkbox, ListItemButton, ListItemButtonProps, ListItemIcon, ListItemText } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { NavigateOptions, To } from "react-router-dom";
 
-export default function ListItemTeam({ team, ...props }: { team: number } & ListItemButtonProps) {
-
-    const navigate = useNavigate();
+export default function ListItemTeam({ team, onNavigate, ...props }: { team: number, onNavigate?: (to: To, options?: NavigateOptions)=>void } & ListItemButtonProps) {
     
     const analyticsSettings = useContext(AnalyticsSettingsContext);
     if (!analyticsSettings) throw new Error("AnalyticsSettingsContext not found");
     
     return (
-        <ListItemButton onClick={()=>navigate(`/analytics/team/${team}`)} {...props}>
+        <ListItemButton onClick={()=>onNavigate?.(`/analytics/team/${team}`)} {...props}>
             <ListItemIcon>
                 <Checkbox
                     edge="start"

@@ -9,6 +9,7 @@ import matchDataAverage from "../../util/analytics/matchDataAverage";
 import blueAllianceApi from "../../util/blueAllianceApi";
 import matchDatabase from "../../util/db/matchDatabase";
 import matchCompare from "../../util/matchCompare";
+import { useSnackbar } from "notistack";
 
 export default function useTeamAnalyticsData(teams: number[], minusTeams: number[]|undefined, minMatch: number, maxMatch: number) {
     
@@ -19,16 +20,24 @@ export default function useTeamAnalyticsData(teams: number[], minusTeams: number
     const schedule = useContext(ScheduleContext);
     if (!schedule) throw new Error("ScheduleContext not found");
 
+    const {enqueueSnackbar} = useSnackbar();
+
     const allTeams = useMemo(() => [...new Set([...teams, ...(minusTeams ?? [])])], [teams, minusTeams]);
 
     const analyticsCompetition = useMemo(() => analyticsSettings.currentCompetitionOnly ? settings.competitionId : undefined, [analyticsSettings.currentCompetitionOnly, settings.competitionId]);
     
     // Data from our scouting app
     // Maps Team Number -> Match ID -> Match Data (there can be multiple entries for the same match due to duel scouting)
+    const [loadedMatchData, setLoadedMatchData] = useState(false);
     const [rawMatchData, setRawMatchData] = useState(new Map<number, MatchData[]>());
     useEffect(() => {
-        if (!analyticsSettings.includeScoutingData) return setRawMatchData(new Map(allTeams.map(team => [team, []])));
+        if (!analyticsSettings.includeScoutingData) {
+            setRawMatchData(new Map(allTeams.map(team => [team, []])));
+            setLoadedMatchData(true);
+            return;
+        }
 
+        setLoadedMatchData(false);
         async function loadData() {
             const entries = await Promise.all(allTeams.map(async team => {
                 const data = await matchDatabase.getAllByTeam(team, analyticsCompetition);
@@ -47,10 +56,12 @@ export default function useTeamAnalyticsData(teams: number[], minusTeams: number
 
                 return [team, matches] as [number, MatchData[]];
             }));
-            console.log("Loaded match data", entries);
             setRawMatchData(new Map(entries));
         }
-        loadData();
+        loadData().catch(err => {
+            console.error(err);
+            enqueueSnackbar("Failed to load scouting data: "+err.message, {variant: "error"});
+        }).finally(() => setLoadedMatchData(true));
     }, [allTeams, analyticsSettings.includeScoutingData, analyticsCompetition]);
 
     // Get the data with the min/max match filter applied
@@ -79,10 +90,16 @@ export default function useTeamAnalyticsData(teams: number[], minusTeams: number
 
     // Data from The Blue Alliance
     // Maps Team Number -> Set of TBA Matches
+    const [loadedTBAMatchData, setLoadedTBAMatchData] = useState(false);
     const [rawTBAMatchData, setRawTBAMatchData] = useState(new Map<number, BlueAllianceMatchExtended[]>());
     useEffect(() => {
-        if (!analyticsSettings.includeBlueAllianceData) return setRawTBAMatchData(new Map(allTeams.map(team => [team, []])));
+        if (!analyticsSettings.includeBlueAllianceData) {
+            setRawTBAMatchData(new Map(allTeams.map(team => [team, []])));
+            setLoadedTBAMatchData(true);
+            return;
+        }
 
+        setLoadedTBAMatchData(false);
         async function loadData() {
             const entries = await Promise.all(allTeams.map(async team => {
                 const data = await blueAllianceApi.getMatchesByTeam(team, settings!.competitionId, analyticsSettings!.currentCompetitionOnly);
@@ -91,7 +108,10 @@ export default function useTeamAnalyticsData(teams: number[], minusTeams: number
             }));
             setRawTBAMatchData(new Map(entries));
         }
-        loadData();
+        loadData().catch(err => {
+            console.error(err);
+            enqueueSnackbar("Failed to load TBA data: "+err.message, {variant: "error"});
+        }).finally(() => setLoadedTBAMatchData(true));
     }, [allTeams, analyticsCompetition, settings, analyticsSettings]);
 
     // Get the data with the min/max match filter applied
@@ -119,6 +139,8 @@ export default function useTeamAnalyticsData(teams: number[], minusTeams: number
     const tbaMatchDataNegativeFlat = useMemo(() => tbaMatchDataNegative?.flat(), [tbaMatchDataNegative]);
 
     return {
+        loadedMatchData,
+        loadedTBAMatchData,
         allTeams,
         matchData,
         matchDataPositive,

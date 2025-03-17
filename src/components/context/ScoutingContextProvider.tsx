@@ -7,6 +7,7 @@ import { SettingsContext } from "./SettingsContextProvider";
 import { MatchDataFieldInformation, MatchDataFields } from "../../MatchDataValues";
 import { generateRandomUint32 } from "../../util/id";
 import { BluetoothContext } from "./BluetoothContextProvider";
+import { MatchData } from "../../types/MatchData";
 
 /**
  * Provides access the current match id, team, and color, as well as manipulating scouting data during the match.
@@ -62,7 +63,7 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
 
     // Submit the match data to the database
     const submit = useCallback(async () => {
-        const matchData = {
+        const matchData: MatchData = {
             // Header data
             id: generateRandomUint32(),
             matchId: settings.competitionId+"_"+matchId,
@@ -70,6 +71,12 @@ export default function ScoutingContextProvider({children, matchId, teamNumber, 
             allianceColor,
             // Custom fields
             ...matchFields,
+            autoCoralL2Score: matchFields.autoCoralL2ScoreLocations.length, // Backwards compatibility
+            autoCoralL3Score: matchFields.autoCoralL3ScoreLocations.length,
+            autoCoralL4Score: matchFields.autoCoralL4ScoreLocations.length,
+            teleopCoralL2Score: matchFields.teleopCoralL2ScoreLocations.length,
+            teleopCoralL3Score: matchFields.teleopCoralL3ScoreLocations.length,
+            teleopCoralL4Score: matchFields.teleopCoralL4ScoreLocations.length,
             // Footer data
             scoutName: settings.scoutName,
             submitTime: Date.now()

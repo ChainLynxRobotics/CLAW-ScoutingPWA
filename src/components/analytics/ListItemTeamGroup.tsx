@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 import { AnalyticsSettingsContext } from "../context/AnalyticsSettingsContextProvider";
 import { Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItemButton, ListItemButtonProps, ListItemText, TextField } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { NavigateOptions, To, useNavigate } from "react-router-dom";
 import ListItemTeam from "./ListItemTeam";
 import { useSnackbar } from "notistack";
 
@@ -14,11 +14,11 @@ type Props = {
     editable?: boolean,
     setGroup?: (name: string, teams: number[]) => void,
     deleteGroup?: () => void,
+    onNavigate?: (to: To, options?: NavigateOptions)=>void,
 } & ListItemButtonProps;
 
-export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setOpen, editable, setGroup, deleteGroup, ...props }: Props) {
+export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setOpen, editable, setGroup, deleteGroup, onNavigate, ...props }: Props) {
 
-    const navigate = useNavigate();
     const {enqueueSnackbar} = useSnackbar();
     
     const analyticsSettings = useContext(AnalyticsSettingsContext);
@@ -35,7 +35,7 @@ export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setO
     return (
         <>
             <ListItemButton onClick={() => setActuallyOpen(!actuallyOpen)} {...props}>
-                <ListItemText slots={{primary: "button"}} primary={name} onClick={(e)=>{e.stopPropagation(); if (teams.length !== 0) navigate(`/analytics/team/${teams.join('+')}`)}} tabIndex={0} />
+                <ListItemText slots={{primary: "button"}} primary={name} onClick={(e)=>{e.stopPropagation(); if (teams.length !== 0) onNavigate?.(`/analytics/team/${teams.join('+')}`)}} tabIndex={0} />
                 {editable &&
                     <button onClick={()=>setModalOpen(true)} tabIndex={0}>
                         <span className="material-symbols-outlined">edit</span>
@@ -48,7 +48,7 @@ export default function ListItemTeamGroup({ name, teams, defaultOpen, open, setO
             <Collapse in={actuallyOpen} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                     {teams.map(team => (
-                        <ListItemTeam key={team} team={team} sx={{ pl: 4 }} />
+                        <ListItemTeam key={team} team={team} onNavigate={onNavigate} sx={{ pl: 4 }} />
                     ))}
                 </List>
             </Collapse>
