@@ -237,7 +237,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
             }} />
             <div className="w-full flex flex-wrap items-start justify-center gap-2 relative">
                 <div className="flex flex-col gap-2 max-w-sm w-full">
-                    <AnalyticsCard title="Pre Match Start Position" className="border-4 border-green-300 !overflow-visible">
+                    <AnalyticsCard title="Pre Match Start Position" className="border-4 border-green-300">
                         <div className="flex flex-col items-center">
                             <div className="relative">
                                 <img src={`/imgs/reefscape_field_render_blue.png`} 
@@ -565,7 +565,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         <div>Observations:</div>
                         <BarChart 
                             width={300} 
-                            height={350}
+                            height={299}
                             dataset={observationsBarChartData}
                             xAxis={[{ scaleType: 'band', dataKey: 'team' }]}
                             series={[
@@ -579,7 +579,7 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                                 { dataKey: Observation.DisabledFully+"", label: 'Disabled Fully', color: 'red' },
                             ]}
                             barLabel="value"
-                            margin={{ top: 250 }}
+                            margin={{ top: 215, bottom: 20 }}
                         />
                     </AnalyticsCard>
                     <AnalyticsCard title="Notes" className="border-4 border-blue-300">

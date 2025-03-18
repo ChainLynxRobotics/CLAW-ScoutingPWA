@@ -19,7 +19,7 @@ export default function AnalyticsCard({ title, children, ...props}: AnalyticsCar
 
     return (
         <Card {...props}>
-            <CardHeader  title={title}
+            <CardHeader title={title}
                 action={
                     <IconButton onClick={onClick}>
                         <span className="material-symbols-outlined">
@@ -29,7 +29,7 @@ export default function AnalyticsCard({ title, children, ...props}: AnalyticsCar
                 }
             />
             {visible ?
-                <CardContent>
+                <CardContent className="max-h-[420px] !overflow-y-auto">
                     {children}
                 </CardContent>
             : null}
