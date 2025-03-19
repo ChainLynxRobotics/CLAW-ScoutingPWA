@@ -29,7 +29,12 @@ export default function QuantitativeProportionalStatistic<T extends object>({ da
                 dataset={dataset}
                 graphable={props.graphable}
                 getter={(data) => ({ successes: normalizeToNumber(get(data, successes))||0, failures: normalizeToNumber(get(data, failures))||0 })}
-                graphGetter={(data) => normalizeToNumber(get(data, successes))||0 / ((normalizeToNumber(get(data, successes))||0) + (normalizeToNumber(get(data, failures))||0))}
+                graphGetter={(data) => {
+                    const successCount = normalizeToNumber(get(data, successes)) || 0;
+                    const failureCount = normalizeToNumber(get(data, failures)) || 0;
+                    const total = successCount + failureCount;
+                    return (total > 0 ? successCount / total : 0) * 100; // Return the percentage
+                }}
             />
             <QuantitativeStatistic 
                 name="└ Attempts" 

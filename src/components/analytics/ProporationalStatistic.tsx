@@ -16,29 +16,30 @@ export interface ProportionalStatisticProps<T extends object> extends StatisticP
 
 export default function ProportionalStatistic<T extends object>({ dataset, getter, digits: d = 2, graphable, graphGetter, ...props }: ProportionalStatisticProps<T>) {
 
-    const ref = useRef<HTMLDivElement>(null);
+    const graphButtonRef = useRef<HTMLButtonElement>(null);
     const [graphOpen, setGraphOpen] = useState(false);
 
     const stats = useMemo(() => describeProportionalObjects(getter, dataset), [dataset, getter]);
 
     function handleOpen(e: React.MouseEvent) {
-        e.stopPropagation();
         setGraphOpen(v=>!v);
     }
 
     useEffect(() => {
-        const close = () => setGraphOpen(false);
+        const close = (e: MouseEvent) => {
+            if (graphButtonRef.current && !graphButtonRef.current.contains(e.target as Node)) setGraphOpen(false);
+        }
         document.addEventListener("click", close);
         return () => document.removeEventListener("click", close);
     }, [])
 
     return (
-        <Statistic {...props} ref={ref}>
+        <Statistic {...props}>
             <b>{maxDecimal(stats.p * 100, d)}%</b>
             <span className="text-gray-500 text-sm">({maxDecimal(stats.x, d)}/{maxDecimal(stats.n, d)})</span>
             {graphable && <>
-                <button onClick={handleOpen} className="material-symbols-outlined text-secondary">query_stats</button>
-                <Popper open={graphOpen} anchorEl={ref.current} placement="right">
+                <button ref={graphButtonRef} onClick={handleOpen} className="material-symbols-outlined text-secondary">query_stats</button>
+                <Popper open={graphOpen} anchorEl={graphButtonRef.current} placement="right">
                     <Paper elevation={3} className="p-2">
                         <StatisticLineChart dataset={dataset} getter={graphGetter || getter} />
                     </Paper>
