@@ -153,13 +153,14 @@ async function getAllHeaders() {
     const tx = db.transaction(['entries'], 'readonly');
     const store = tx.objectStore('entries');
 
-    const headers: MatchDataHeader[] = [];
+    const headers: (MatchDataHeader & { scoutName: string })[] = [];
     for await (const cursor of store.iterate()) {
         headers.push({
             id: cursor.value.id,
             matchId: cursor.value.matchId,
             teamNumber: cursor.value.teamNumber,
             allianceColor: cursor.value.allianceColor,
+            scoutName: cursor.value.scoutName,
         });
     }
     await tx.done;
