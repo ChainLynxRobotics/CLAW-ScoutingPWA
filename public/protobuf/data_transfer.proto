@@ -38,13 +38,13 @@ message MatchData {
     // Auto
     uint32 autoCoralL1Score = 9;
     uint32 autoCoralL1Miss = 10;
-    CoralScoreLocation autoCoralL2ScoreLocations = 51;
+    repeated CoralScoreLocation autoCoralL2ScoreLocations = 51;
     uint32 autoCoralL2Score = 11;
     uint32 autoCoralL2Miss = 12;
-    CoralScoreLocation autoCoralL3ScoreLocations = 52;
+    repeated CoralScoreLocation autoCoralL3ScoreLocations = 52;
     uint32 autoCoralL3Score = 13;
     uint32 autoCoralL3Miss = 14;
-    CoralScoreLocation autoCoralL4ScoreLocations = 53;
+    repeated CoralScoreLocation autoCoralL4ScoreLocations = 53;
     uint32 autoCoralL4Score = 15;
     uint32 autoCoralL4Miss = 16;
     uint32 autoAlgaeScore = 17;
@@ -60,13 +60,13 @@ message MatchData {
     // Teleop
     uint32 teleopCoralL1Score = 27;
     uint32 teleopCoralL1Miss = 28;
-    CoralScoreLocation teleopCoralL2ScoreLocations = 54;
+    repeated CoralScoreLocation teleopCoralL2ScoreLocations = 54;
     uint32 teleopCoralL2Score = 29;
     uint32 teleopCoralL2Miss = 30;
-    CoralScoreLocation teleopCoralL3ScoreLocations = 55;
+    repeated CoralScoreLocation teleopCoralL3ScoreLocations = 55;
     uint32 teleopCoralL3Score = 31;
     uint32 teleopCoralL3Miss = 32;
-    CoralScoreLocation teleopCoralL4ScoreLocations = 56;
+    repeated CoralScoreLocation teleopCoralL4ScoreLocations = 56;
     uint32 teleopCoralL4Score = 33;
     uint32 teleopCoralL4Miss = 34;
     uint32 teleopAlgaeScore = 35;
