@@ -24,6 +24,9 @@ export type SettingsStateData = {
 
     autoFetchMatches: boolean;
     setAutoFetchMatches: React.Dispatch<React.SetStateAction<boolean>>;
+
+    cycleQrCodes: boolean;
+    setCycleQrCodes: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
@@ -44,6 +47,7 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
     const [fieldRotated, setFieldRotated] = useLocalStorageState<boolean>(false, "fieldRotated"); // Depends on the perspective of the field, used for the during match view
 
     const [autoFetchMatches, setAutoFetchMatches] = useLocalStorageState<boolean>(true, "autoFetchMatches"); // Whether or not to automatically fetch the match schedule from the blue alliance
+    const [cycleQrCodes, setCycleQrCodes] = useLocalStorageState<boolean>(true, "cycleQrCodes"); // Whether or not to cycle through the QR codes
 
     useEffect(() => {
         // If the competitionId is over COMPETITION_ID_EXPIRE_TIME old, set it to the default
@@ -69,6 +73,8 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
 
         autoFetchMatches,
         setAutoFetchMatches,
+        cycleQrCodes,
+        setCycleQrCodes
     };
 
     return (
