@@ -56,3 +56,16 @@ export const AUTO_MATCH_FETCH_INTERVAL = 1000 * 60 * 5; // 5 minutes
  * Larger number means less chunks, but more data per chunk (larger qr codes, harder to scan).
  */
 export const QR_CHUNK_SIZE = 256;
+
+/**
+ * The time between each bluetooth broadcast, in milliseconds
+ * This is how often the app will broadcast the match data to the bluetooth devices
+ */
+export const MATCH_DATA_BLUETOOTH_BROADCAST_INTERVAL = 1000 * 60 * 5;
+
+/**
+ * The maximum number of entries in the bluetooth broadcast,
+ * This is to prevent the bluetooth broadcast from being too large and not working.
+ */
+export const MATCH_DATA_BLUETOOTH_BROADCAST_MAX_ENTRIES = 50;
+
