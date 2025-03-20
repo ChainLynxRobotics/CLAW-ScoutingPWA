@@ -41,9 +41,6 @@ export default function StatisticLineChart<T extends object>({ dataset, getter, 
         })) ?? []),
     ], [dataset, getter]);
 
-
-    console.log(dataset.xData, series);
-
     return (
         <LineChart
             xAxis={[
@@ -57,7 +54,7 @@ export default function StatisticLineChart<T extends object>({ dataset, getter, 
             series={series}
             width={300}
             height={250}
-            margin={{ top: 60, bottom: 25, left: 25, right: 10 }}
+            margin={{ top: 60, bottom: 25, left: 30, right: 10 }}
             slotProps={{
                 legend: {
                     hidden: false,

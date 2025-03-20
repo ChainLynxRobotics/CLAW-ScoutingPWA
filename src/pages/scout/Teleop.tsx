@@ -36,7 +36,7 @@ const Teleop = () => {
 
             <div className="mb-2 italic text-secondary">Push and hold a button to undo</div>
             
-            <div className="max-w-md relative whitespace-nowrap border-4 border-pink-400">
+            <div className="max-w-md relative whitespace-nowrap border-4 border-pink-400 select-none">
                 <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
                     alt="Reefscape Field Render" className={`w-full ${rotateField ? '-scale-100' : ''}`} />
                 

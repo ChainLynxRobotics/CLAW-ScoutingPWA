@@ -66,6 +66,13 @@ const SettingsPage = () => {
             />
             <FormHelperText>When enabled, the match schedule will get automatically downloaded from Blue Alliance every so often</FormHelperText>
         </FormControl>
+
+        <FormControl className="max-w-96">
+            <FormControlLabel label="Cycle QR Codes" 
+                control={<Checkbox checked={settings.cycleQrCodes} onChange={(e)=>settings.setCycleQrCodes(e.target.checked)} color="primary" />}
+            />
+            <FormHelperText>When enabled, sharing data using QR codes will automatically cycle through each one instead of the user having to scroll</FormHelperText>
+        </FormControl>
     </div>
     );
 };

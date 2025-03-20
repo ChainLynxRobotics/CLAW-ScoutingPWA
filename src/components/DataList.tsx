@@ -1,12 +1,12 @@
 import { useState, ChangeEvent, useMemo } from "react";
-import { MatchIdentifier } from "../types/MatchData";
+import { MatchDataHeader } from "../types/MatchData";
 import { Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from '@mui/material/styles';
 import useLocalStorageState from "./hooks/localStorageState";
 
 interface DataListProps {
     /** The list of matches to be displayed, can be large in size as this table uses pages */
-    entries: MatchIdentifier[]|undefined, 
+    entries: (MatchDataHeader & { scoutName: string })[] | undefined, 
     /** The matches that have been marked as scanned */
     readEntries: number[], 
     /** The user has selected these matches to be deleted */
@@ -120,7 +120,7 @@ export default function DataList({ entries, readEntries, deleteItems, markRead, 
                         id="tableTitle"
                         component="div"
                     >
-                        Saves Matches
+                        Saved Matches
                     </Typography>
                 )}
                 {selected.length > 0 ? (
@@ -146,7 +146,7 @@ export default function DataList({ entries, readEntries, deleteItems, markRead, 
             <TableContainer>
                 <Table>
                     <TableHead>
-                        <TableRow>
+                        <TableRow className="!text-nowrap">
                             <TableCell padding="checkbox">
                                 <Checkbox
                                     indeterminate={selected.length > 0 && selected.length < entries.length}
@@ -157,6 +157,7 @@ export default function DataList({ entries, readEntries, deleteItems, markRead, 
                             <TableCell padding="checkbox">Status</TableCell>
                             <TableCell>Match ID</TableCell>
                             <TableCell>Team #</TableCell>
+                            <TableCell>Scout</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -185,12 +186,13 @@ export default function DataList({ entries, readEntries, deleteItems, markRead, 
                                     </TableCell>
                                     <TableCell>{entries.find(e=>e.id===entryId)?.matchId}</TableCell>
                                     <TableCell>{entries.find(e=>e.id===entryId)?.teamNumber}</TableCell>
+                                    <TableCell>{entries.find(e=>e.id===entryId)?.scoutName}</TableCell>
                                 </TableRow>
                             )
                         })}
                         {emptyRows > 0 && (
                             <TableRow style={{ height: 53 * emptyRows }}>
-                                <TableCell colSpan={4} />
+                                <TableCell colSpan={5} />
                             </TableRow>
                         )}
                     </TableBody>

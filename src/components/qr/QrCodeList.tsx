@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { use, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { QRCodeData } from "../../types/QRCodeData";
 import QRCode from "react-qr-code";
 import { QR_CHUNK_SIZE } from "../../constants";
 import { CircularProgress, FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput, Tooltip } from "@mui/material";
 import qr from "../../util/io/qr";
+import { SettingsContext } from "../context/SettingsContextProvider";
 
 /**
  * Displays a list of QR codes generated from the given data.
@@ -16,9 +17,13 @@ import qr from "../../util/io/qr";
  */
 export default function QrCodeList({data, allowTextCopy}: {data: QRCodeData, allowTextCopy?: boolean}) {
 
+    const settings = useContext(SettingsContext);
+
     const [qrCodes, setQrCodes] = useState<string[]>();
     const [textCode, setTextCode] = useState<string>("");
+    const currentCycleIndex = useRef<number>(0);
 
+    const listEl = useRef<HTMLDivElement>(null);
     const textArea = useRef<HTMLTextAreaElement>(null);
 
     const generateQrCodes = useCallback(async (data: QRCodeData) => {
@@ -56,24 +61,41 @@ export default function QrCodeList({data, allowTextCopy}: {data: QRCodeData, all
         }
     }, [textCode]);
 
+    useEffect(() => {
+        if (settings?.cycleQrCodes && qrCodes) {
+            const interval = setInterval(() => {
+                if (!listEl.current) return;
+                currentCycleIndex.current = (currentCycleIndex.current+1) % qrCodes.length;
+                //listEl.current.children[currentCycleIndex.current].scrollIntoView({ block: "end", behavior: "instant" });
+                for (let child of listEl.current.children) child.classList.add("hidden"); // Hide all
+                listEl.current.children[currentCycleIndex.current].classList.remove("hidden"); // Show the current one
+                // The reason this is done here instead of in the component is because all the rerenders were causing insane lag
+            }, 100);
+            return () => clearInterval(interval);
+        }
+    }, [qrCodes, settings?.cycleQrCodes]);
+
     return (
         <div className="flex flex-col w-full items-center">
-            {qrCodes ? 
-                qrCodes.map((qr, index) => {
-                    return <div className="mt-4 w-full snap-center" key={index}>
-                        <p className="mb-1 text-lg text-center">Chunk {index+1}/{qrCodes.length}</p>
-                        <QRCode 
-                            value={qr} 
-                            style={{ width: "100%", maxWidth: "100%", height: "auto", border: "5px solid white"}} 
-                        />
+            <div className="flex flex-col w-full items-center" ref={listEl}>
+                {qrCodes ? 
+                    qrCodes.map((qr, index) => {
+                        return <div className="mt-4 w-full snap-center" key={index}>
+                            <p className="mb-1 text-lg text-center">Chunk {index+1}/{qrCodes.length}</p>
+                            <QRCode 
+                                key={index}
+                                value={qr} 
+                                style={{ width: "100%", maxWidth: "100%", height: "auto", border: "5px solid white"}} 
+                            />
+                        </div>
+                    })
+                : 
+                    <div className="text-center mt-8">
+                        <CircularProgress color="inherit" />
+                        <p className="opacity-75">Generating QR Codes...</p>
                     </div>
-                })
-            : 
-                <div className="text-center mt-8">
-                    <CircularProgress color="inherit" />
-                    <p className="opacity-75">Generating QR Codes...</p>
-                </div>
-            }
+                }
+            </div>
             {allowTextCopy && textCode && 
                 <div className="mt-12 w-full snap-center">
                     <FormControl variant="outlined" fullWidth>

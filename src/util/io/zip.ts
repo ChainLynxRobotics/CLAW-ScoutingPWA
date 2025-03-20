@@ -22,7 +22,7 @@ async function exportDataAsZip(entries: MatchData[]) {
             ...Object.fromEntries(Object.entries(entry).map(([key, value]) => {
                 if (key in MatchDataFieldInformation) {
                     const info = MatchDataFieldInformation[key as keyof MatchDataFields];
-                    return [key, (info.serialize as (value: unknown)=>string)?.(value) || value];
+                    return [key, (info.serialize as (value: unknown, object: MatchData)=>string)?.(value, entry) || value];
                 }
                 return [key, value];
             })),

@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import { useContext, useEffect, useRef, useState } from "react";
 import matchDatabase from "../util/db/matchDatabase";
-import { MatchIdentifier } from "../types/MatchData";
+import { MatchDataHeader, MatchIdentifier } from "../types/MatchData";
 import QrCodeType from "../enums/QrCodeType";
 import zip from "../util/io/zip";
 import useLocalStorageState from "../components/hooks/localStorageState";
@@ -18,13 +18,14 @@ import PageTitle from "../components/ui/PageTitle";
 import { BluetoothContext } from "../components/context/BluetoothContextProvider";
 import { BluetoothStatusEnum } from "../types/RadioPacketData";
 import bluetoothServer from "../util/io/bluetoothServer";
+import LeaderboardDialogueBox from "../components/ui/LeaderboardDialogueBox";
 
 const DataPage = () => {
 
     const settings = useContext(SettingsContext);
     const bluetooth = useContext(BluetoothContext);
 
-    const [entries, setEntries] = useState<MatchIdentifier[]|undefined>(undefined);
+    const [entries, setEntries] = useState<(MatchDataHeader & { scoutName: string })[]|undefined>(undefined);
     const [readentries, setReadEntries] = useLocalStorageState<number[]>([], "dataReadMatches"); 
 
     const [qrData, setQrData] = useState<QRCodeData>(); // Signals the qr code data to be generated
@@ -292,7 +293,7 @@ const DataPage = () => {
             </Menu>
         </div>
 
-        <div className="max-w-lg w-full mb-16 px-1">
+        <div className="max-w-lg w-full mb-8 px-1">
             <DataList 
                 entries={entries}
                 readEntries={readentries}
@@ -301,6 +302,8 @@ const DataPage = () => {
                 markRead={markRead}
             />
         </div>
+
+        <LeaderboardDialogueBox data={entries} className="!mb-16"/>
 
         {/* Share match data popup */}
         <Dialog
