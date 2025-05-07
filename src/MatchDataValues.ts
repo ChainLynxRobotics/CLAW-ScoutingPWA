@@ -17,10 +17,18 @@ export type MatchDataFields = {
     // Prematch
     autoStartPositionX: number|undefined, // Relative to the left 200 pixels of the field on blue side without field rotation (0-200)
     autoStartPositionY: number|undefined, // Relative to the entire height of the field on blue side without field rotation (0-500)
-    humanPlayerLocation: HumanPlayerLocation,
+    humanPlayerLocation: boolean|undefined, // on or off field
+    numberPowerCellsLoaded: number|undefined,
     // Auto
-    autoCoralL1Score: number,
-    autoCoralL1Miss: number,
+    autoMovement: boolean, // If the robot moves, this boolean should be true. Otherwise false.
+    autoPowerPortBottomScore: number, // Amount of Power Cells Scored in Bottom Power Port
+    autoPowerPortBottomMiss: number, // Amount of Power Cells Missed in Bottom Power Port
+    autoPowerPortOuterScore: number, // Amount of Power Cells Scored in Outer Power Port
+    autoPowerPortOuterMiss: number, // Amount of Power Cells Missed in Outer Power Port
+    autoPowerPortInnerScore: number, // Amount of Power Cells Scored in Inner Power Port
+    autoPowerPortInnerMiss: number, // Amount of Power Cells Missed in Inner Power Port
+    autoPowerCellIntakeGround: boolean, // If the robot intakes Power Cells from the ground, this boolean should be true. Otherwise false.
+    autoPowerCellIntakeLoadingBay: boolean, // If the robot intakes Power Cells from the loading bay, this boolean should be true. Otherwise false.
     autoCoralL2ScoreLocations: CoralScoreLocation[],
     /** @deprecated */
     autoCoralL2Score: number,
@@ -44,8 +52,16 @@ export type MatchDataFields = {
     autoRemoveL2Algae: boolean,
     autoRemoveL3Algae: boolean,
     // Teleop
-    teleopCoralL1Score: number,
-    teleopCoralL1Miss: number,
+    teleopPowerPortBottomScore: number, // Amount of Power Cells Scored in Bottom Power Port
+    teleopPowerPortBottomMiss: number, // Amount of Power Cells Missed in Bottom Power Port
+    teleopPowerPortOuterScore: number, // Amount of Power Cells Scored in Outer Power Port
+    teleopPowerPortOuterMiss: number, // Amount of Power Cells Missed in Outer Power Port
+    teleopPowerPortInnerScore: number, // Amount of Power Cells Scored in Inner Power Port
+    teleopPowerPortInnerMiss: number, // Amount of Power Cells Missed in Inner Power Port
+    teleopPowerCellIntakeGround: boolean, // If the robot intakes Power Cells from the ground, this boolean should be true. Otherwise false.
+    teleopPowerCellIntakeLoadingBay: boolean, // If the robot intakes Power Cells from the loading bay, this boolean should be true. Otherwise false.
+    teleopRotationControl: boolean, // If they get to stage 2, are they able to get to over 5 rotations. If not reached stage 2/not attempted, keep this as false.
+    teleopPositionControl: boolean, // If they get to stage 3, did they succeed position control. If not reached stage 2/not attempted, keep this as false.
     teleopCoralL2ScoreLocations: CoralScoreLocation[],
     /** @deprecated */
     teleopCoralL2Score: number,
@@ -71,6 +87,8 @@ export type MatchDataFields = {
     teleopHumanPlayerAlgaeScore: number,
     teleopHumanPlayerAlgaeMiss: number,
     // Endgame
+    shieldGeneratorStage: number,
+    climbedOnGenerator: boolean,
     timeDefending: number,
     observations: Observation[],
     notes: string,
@@ -103,13 +121,27 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     },
     humanPlayerLocation: {
         name: "Human Player Location",
-        defaultValue: HumanPlayerLocation.Unknown,
-        serialize: (value) => HumanPlayerLocation[value],
-        average: enumAverageCalculator,
+        defaultValue: false,
+        serialize: (value) => value ? "1" : "0",
+    },
+    numberPowerCellsLoaded: {
+        name: "Number Of Power Cells Loaded",
+        defaultValue: undefined,
+        average: (values) => {
+            const arr = values.filter(val => val !== undefined)
+            return arr.reduce((a, b) => a + b, 0) / arr.length
+        }
     },
     // Auto
-    autoCoralL1Score: { name: "Auto Coral L1 Score", defaultValue: 0 },
-    autoCoralL1Miss: { name: "Auto Coral L1 Miss", defaultValue: 0 },
+    autoMovement: { name: "Auto Movement", defaultValue: false },
+    autoPowerPortBottomScore: { name: "Auto Power Port Bottom Score", defaultValue: 0 },
+    autoPowerPortBottomMiss: { name: "Auto Power Port Bottom Miss", defaultValue: 0 },
+    autoPowerPortOuterScore: { name: "Auto Power Port Outer Score", defaultValue: 0 },
+    autoPowerPortOuterMiss: { name: "Auto Power Port Outer Miss", defaultValue: 0 },
+    autoPowerPortInnerScore: { name: "Auto Power Port Inner Score", defaultValue: 0 },
+    autoPowerPortInnerMiss: { name: "Auto Power Port Inner Miss", defaultValue: 0 },
+    autoPowerCellIntakeGround: { name: "Auto Power Port Intake Ground", defaultValue: false },
+    autoPowerCellIntakeLoadingBay: { name: "Auto Power Port Intake Loading Bay", defaultValue: false },
     autoCoralL2ScoreLocations: { name: "Auto Coral L2 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
     autoCoralL2Score: { name: "Auto Coral L2 Score", defaultValue: 0 },
     autoCoralL2Miss: { name: "Auto Coral L2 Miss", defaultValue: 0 },
@@ -130,8 +162,16 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     autoRemoveL2Algae: { name: "Auto Remove Level 2 Algae", defaultValue: false },
     autoRemoveL3Algae: { name: "Auto Remove Level 3 Algae", defaultValue: false },
     // Teleop
-    teleopCoralL1Score: { name: "Coral L1 Score", defaultValue: 0 },
-    teleopCoralL1Miss: { name: "Coral L1 Miss", defaultValue: 0 },
+    teleopPowerPortBottomScore: { name: "Teleop Power Port Bottom Score", defaultValue: 0 },
+    teleopPowerPortBottomMiss: { name: "Teleop Power Port Bottom Miss", defaultValue: 0 },
+    teleopPowerPortOuterScore: { name: "Teleop Power Port Outer Score", defaultValue: 0 },
+    teleopPowerPortOuterMiss: { name: "Teleop Power Port Outer Miss", defaultValue: 0 },
+    teleopPowerPortInnerScore: { name: "Teleop Power Port Inner Score", defaultValue: 0 },
+    teleopPowerPortInnerMiss: { name: "Teleop Power Port Inner Miss", defaultValue: 0 },
+    teleopPowerCellIntakeGround: { name: "Teleop Power Port Intake Ground", defaultValue: false },
+    teleopPowerCellIntakeLoadingBay: { name: "Teleop Power Port Intake Loading Bay", defaultValue: false },
+    teleopPositionControl: {name: "Teleop Position Control", defaultValue: false},
+    teleopRotationControl: {name: "Teleop Rotation Control", defaultValue: false},
     teleopCoralL2ScoreLocations: { name: "Coral L2 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
     teleopCoralL2Score: { name: "Coral L2 Score", defaultValue: 0 },
     teleopCoralL2Miss: { name: "Coral L2 Miss", defaultValue: 0 },
@@ -160,6 +200,10 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
         defaultValue: 0
     },
     // Endgame
+    shieldGeneratorStage: {
+        name: "Shield Generator Stage",
+        defaultValue: 1,
+    },
     timeDefending: {
         name: "Time Defending",
         defaultValue: 0,
