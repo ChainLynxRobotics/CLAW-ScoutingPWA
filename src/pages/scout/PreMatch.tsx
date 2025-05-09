@@ -4,7 +4,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select/Select";
 import { useContext, useMemo } from "react";
 import { ScoutingContext } from "../../components/context/ScoutingContextProvider";
 import FormControl from "@mui/material/FormControl/FormControl";
-import { Alert, Button, TextField } from "@mui/material";
+import { Alert, Button, Checkbox, FormControlLabel, OutlinedInput, TextField } from "@mui/material";
 import { Link } from "react-router-dom";
 import HumanPlayerLocation from "../../enums/HumanPlayerLocation";
 import AllianceColor from "../../enums/AllianceColor";
@@ -35,8 +35,18 @@ const PreMatch = () => {
     const claimedClientID: RememberedClientID|undefined = useMemo(() => bluetooth.getClaimedClientID(settings.clientId), [bluetooth, settings.clientId]);
 
     const handleHumanPlayerLocationChange = (event: SelectChangeEvent) => {
-        context.fields.set("humanPlayerLocation", parseInt(event.target.value) as HumanPlayerLocation);
+        context.fields.set("humanPlayerLocation", (event.target.value ? true : false));
     };
+
+    const handleNumberPowerCellsLoadedChange = (event: SelectChangeEvent) => {
+        context.fields.set("numberPowerCellsLoaded", parseInt(event.target.value));
+    };
+
+    const numberPowerCellsLoaded = [
+        '1 Cell Loaded',
+        '2 Cells Loaded',
+        '3 Cells Loaded',
+    ];
 
     const handlePinPlace = (event: React.MouseEvent<HTMLImageElement>) => {
         if (!context) return;
@@ -69,8 +79,8 @@ const PreMatch = () => {
             <span className="text-secondary">Click on the field to place a pin</span>
 
             <div className="max-w-md relative my-4 whitespace-nowrap border-4 border-green-300">
-                <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
-                    alt="Reefscape Field Render" 
+                <img src={`/imgs/recharge_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
+                    alt="Recharge Field Render" 
                     className={`w-[200px] h-[500px] object-cover ${!rotateField ? '' : '-scale-100'} ${isBlue ? 'object-right': 'object-left'}`}
                     onClick={handlePinPlace}
                 />
@@ -173,9 +183,9 @@ const PreMatch = () => {
                     <span className="text-secondary">Click on the field to place a pin</span>
 
                     <div className="max-w-md relative my-4 whitespace-nowrap border-4 border-green-300">
-                        <img src={`/imgs/reefscape_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
-                            alt="Reefscape Field Render" 
-                            className={`w-[200px] h-[500px] object-cover ${!rotateField ? '' : '-scale-100'} ${isBlue ? 'object-right': 'object-left'}`}
+                        <img src={`/imgs/recharge_field_render_${context.allianceColor == AllianceColor.Red ? "red" : "blue"}.png`} 
+                            alt="Infinite Recharge Field Render" 
+                            className={`w-[800px] h-[500px] object-cover ${!rotateField ? '' : '-scale-100'} ${isBlue ? 'object-right': 'object-left'}`}
                             onClick={handlePinPlace}
                         />
                         
@@ -206,21 +216,35 @@ const PreMatch = () => {
                     }
                 </div>
                 <div className="flex flex-col items-center">
-                    <FormControl sx={{ m: 1, minWidth: 224 }}>
-                        <InputLabel id="human-player-location-label">
-                            {context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Ella's Location`}
-                        </InputLabel>
+                    <FormControlLabel
+                        label={"Is " + context.teamNumber + "'s human player on the feild"}
+                        control={
+                            <Checkbox
+                                value={context.fields.humanPlayerLocation}
+                                onChange={handleHumanPlayerLocationChange}
+                            />
+                        }
+                    />
+
+                    <div className="h-4"></div> {/* Spacer */}
+                    
+                    <FormControl sx={{ m: 1, width: 300 }}>
+                        <InputLabel id="Power-Cells-Dropdown">Number of Power Cells</InputLabel>
                         <Select
-                            labelId="human-player-location-label"
-                            id="human-player-location"
-                            value={context.fields.humanPlayerLocation+""}
-                            onChange={handleHumanPlayerLocationChange}
-                            label={context.teamNumber != 8248 ? `${context.teamNumber}'s Human Player Location` : `Ella's Location`}
-                        >
-                            <MenuItem value={HumanPlayerLocation.Unknown}>Don't Know</MenuItem>
-                            <MenuItem value={HumanPlayerLocation.None}>Not on field</MenuItem>
-                            <MenuItem value={HumanPlayerLocation.CoralStation}>Coral Station</MenuItem>
-                            <MenuItem value={HumanPlayerLocation.Processor}>Processor</MenuItem>
+                            labelId="Power-Cells-Dropdown"
+                            id="Power-Cells-Dropdown"
+                            value={context.fields.numberPowerCellsLoaded?.toString()}
+                            onChange={handleNumberPowerCellsLoadedChange}
+                            input={<OutlinedInput label="Number of Power Cells" />}
+                            >
+                            {numberPowerCellsLoaded.map((title) => (
+                                <MenuItem
+                                key={title}
+                                value={title}
+                                >
+                                {title}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
 

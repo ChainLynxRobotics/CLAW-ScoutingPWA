@@ -29,28 +29,6 @@ export type MatchDataFields = {
     autoPowerPortInnerMiss: number, // Amount of Power Cells Missed in Inner Power Port
     autoPowerCellIntakeGround: boolean, // If the robot intakes Power Cells from the ground, this boolean should be true. Otherwise false.
     autoPowerCellIntakeLoadingBay: boolean, // If the robot intakes Power Cells from the loading bay, this boolean should be true. Otherwise false.
-    autoCoralL2ScoreLocations: CoralScoreLocation[],
-    /** @deprecated */
-    autoCoralL2Score: number,
-    autoCoralL2Miss: number,
-    autoCoralL3ScoreLocations: CoralScoreLocation[],
-    /** @deprecated */
-    autoCoralL3Score: number,
-    autoCoralL3Miss: number,
-    autoCoralL4ScoreLocations: CoralScoreLocation[],
-    /** @deprecated */
-    autoCoralL4Score: number,
-    autoCoralL4Miss: number,
-    autoAlgaeScore: number,
-    autoAlgaeMiss: number,
-    autoAlgaeNetScore: number,
-    autoAlgaeNetMiss: number,
-    autoCoralGroundIntake: boolean,
-    autoCoralStationIntake: boolean,
-    autoAlgaeGroundIntake: boolean,
-    autoAlgaeReefIntake: boolean,
-    autoRemoveL2Algae: boolean,
-    autoRemoveL3Algae: boolean,
     // Teleop
     teleopPowerPortBottomScore: number, // Amount of Power Cells Scored in Bottom Power Port
     teleopPowerPortBottomMiss: number, // Amount of Power Cells Missed in Bottom Power Port
@@ -62,30 +40,6 @@ export type MatchDataFields = {
     teleopPowerCellIntakeLoadingBay: boolean, // If the robot intakes Power Cells from the loading bay, this boolean should be true. Otherwise false.
     teleopRotationControl: boolean, // If they get to stage 2, are they able to get to over 5 rotations. If not reached stage 2/not attempted, keep this as false.
     teleopPositionControl: boolean, // If they get to stage 3, did they succeed position control. If not reached stage 2/not attempted, keep this as false.
-    teleopCoralL2ScoreLocations: CoralScoreLocation[],
-    /** @deprecated */
-    teleopCoralL2Score: number,
-    teleopCoralL2Miss: number,
-    teleopCoralL3ScoreLocations: CoralScoreLocation[],
-    /** @deprecated */
-    teleopCoralL3Score: number,
-    teleopCoralL3Miss: number,
-    teleopCoralL4ScoreLocations: CoralScoreLocation[],
-    /** @deprecated */
-    teleopCoralL4Score: number,
-    teleopCoralL4Miss: number,
-    teleopAlgaeScore: number,
-    teleopAlgaeMiss: number,
-    teleopAlgaeNetScore: number,
-    teleopAlgaeNetMiss: number,
-    teleopCoralGroundIntake: boolean,
-    teleopCoralStationIntake: boolean,
-    teleopAlgaeGroundIntake: boolean,
-    teleopAlgaeReefIntake: boolean,
-    teleopRemoveL2Algae: boolean,
-    teleopRemoveL3Algae: boolean,
-    teleopHumanPlayerAlgaeScore: number,
-    teleopHumanPlayerAlgaeMiss: number,
     // Endgame
     shieldGeneratorStage: number,
     climbedOnGenerator: boolean,
@@ -142,25 +96,6 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     autoPowerPortInnerMiss: { name: "Auto Power Port Inner Miss", defaultValue: 0 },
     autoPowerCellIntakeGround: { name: "Auto Power Port Intake Ground", defaultValue: false },
     autoPowerCellIntakeLoadingBay: { name: "Auto Power Port Intake Loading Bay", defaultValue: false },
-    autoCoralL2ScoreLocations: { name: "Auto Coral L2 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
-    autoCoralL2Score: { name: "Auto Coral L2 Score", defaultValue: 0 },
-    autoCoralL2Miss: { name: "Auto Coral L2 Miss", defaultValue: 0 },
-    autoCoralL3ScoreLocations: { name: "Auto Coral L3 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
-    autoCoralL3Score: { name: "Auto Coral L3 Score", defaultValue: 0 },
-    autoCoralL3Miss: { name: "Auto Coral L3 Miss", defaultValue: 0 },
-    autoCoralL4ScoreLocations: { name: "Auto Coral L4 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
-    autoCoralL4Score: { name: "Auto Coral L4 Score", defaultValue: 0 },
-    autoCoralL4Miss: { name: "Auto Coral L4 Miss", defaultValue: 0 },
-    autoAlgaeScore: { name: "Auto Algae Score", defaultValue: 0 },
-    autoAlgaeMiss: { name: "Auto Algae Miss", defaultValue: 0 },
-    autoAlgaeNetScore: { name: "Auto Algae Net Score", defaultValue: 0 },
-    autoAlgaeNetMiss: { name: "Auto Algae Net Miss", defaultValue: 0 },
-    autoCoralGroundIntake: { name: "Auto Coral Ground Intake", defaultValue: false },
-    autoCoralStationIntake: { name: "Auto Coral Station Intake", defaultValue: false },
-    autoAlgaeGroundIntake: { name: "Auto Algae Ground Intake", defaultValue: false },
-    autoAlgaeReefIntake: { name: "Auto Algae Reef Intake", defaultValue: false },
-    autoRemoveL2Algae: { name: "Auto Remove Level 2 Algae", defaultValue: false },
-    autoRemoveL3Algae: { name: "Auto Remove Level 3 Algae", defaultValue: false },
     // Teleop
     teleopPowerPortBottomScore: { name: "Teleop Power Port Bottom Score", defaultValue: 0 },
     teleopPowerPortBottomMiss: { name: "Teleop Power Port Bottom Miss", defaultValue: 0 },
@@ -172,33 +107,6 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     teleopPowerCellIntakeLoadingBay: { name: "Teleop Power Port Intake Loading Bay", defaultValue: false },
     teleopPositionControl: {name: "Teleop Position Control", defaultValue: false},
     teleopRotationControl: {name: "Teleop Rotation Control", defaultValue: false},
-    teleopCoralL2ScoreLocations: { name: "Coral L2 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
-    teleopCoralL2Score: { name: "Coral L2 Score", defaultValue: 0 },
-    teleopCoralL2Miss: { name: "Coral L2 Miss", defaultValue: 0 },
-    teleopCoralL3ScoreLocations: { name: "Coral L3 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
-    teleopCoralL3Score: { name: "Coral L3 Score", defaultValue: 0 },
-    teleopCoralL3Miss: { name: "Coral L3 Miss", defaultValue: 0 },
-    teleopCoralL4ScoreLocations: { name: "Coral L4 Score Locations", defaultValue: [], serialize: (value) => value.map((v) => CoralScoreLocation[v]).join(", "), average: combineArrayNoRepeat },
-    teleopCoralL4Score: { name: "Coral L4 Score", defaultValue: 0 },
-    teleopCoralL4Miss: { name: "Coral L4 Miss", defaultValue: 0 },
-    teleopAlgaeScore: { name: "Algae Score", defaultValue: 0 },
-    teleopAlgaeMiss: { name: "Algae Miss", defaultValue: 0 },
-    teleopAlgaeNetScore: { name: "Algae Net Score", defaultValue: 0 },
-    teleopAlgaeNetMiss: { name: "Algae Net Miss", defaultValue: 0 },
-    teleopCoralGroundIntake: { name: "Coral Ground Intake", defaultValue: false },
-    teleopCoralStationIntake: { name: "Coral Station Intake", defaultValue: false },
-    teleopAlgaeGroundIntake: { name: "Algae Ground Intake", defaultValue: false },
-    teleopAlgaeReefIntake: { name: "Algae Reef Intake", defaultValue: false },
-    teleopRemoveL2Algae: { name: "Auto Remove Level 2 Algae", defaultValue: false },
-    teleopRemoveL3Algae: { name: "Auto Remove Level 3 Algae", defaultValue: false },
-    teleopHumanPlayerAlgaeScore: {
-        name: "Human Player Algae Score",
-        defaultValue: 0
-    },
-    teleopHumanPlayerAlgaeMiss: {
-        name: "Human Player Algae Miss",
-        defaultValue: 0
-    },
     // Endgame
     shieldGeneratorStage: {
         name: "Shield Generator Stage",
@@ -208,14 +116,17 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
         name: "Time Defending",
         defaultValue: 0,
     },
-
     observations: {
         name: "Observations",
         defaultValue: [],
         serialize: (value) => value.map((v) => Observation[v]).join(", "),
         average: combineArrayNoRepeat,
     },
-
+    climbedOnGenerator: {
+        name: "Climbed on Generator",
+        defaultValue: false,
+        serialize: (value) => value ? "1" : "0",
+    },
     notes: {
         name: "Notes",
         defaultValue: "",
