@@ -6,10 +6,7 @@ import { SettingsContext } from "../../components/context/SettingsContextProvide
 import PageTitle from "../../components/ui/PageTitle";
 import OnFieldButtonGroup from "../../components/scout/OnFieldButtonGroup";
 import { OnFieldButton } from "../../components/scout/OnFieldButton";
-import { OnFieldMenuButton } from "../../components/scout/OnFieldMenuButton";
 import { Checkbox, FormControlLabel } from "@mui/material";
-import Divider from "../../components/ui/Divider";
-import { OnFieldReefButton } from "../../components/scout/OnFieldReefButton";
 
 
 const Auto = () => {
@@ -58,6 +55,18 @@ const Auto = () => {
                 <div className="mb-6 italic text-secondary text-center">
                     Check ✅ if the robot was able to perform the following tasks during the autonomous period:
                 </div>
+                
+
+                <FormControlLabel
+                    control={
+                        <Checkbox 
+                            checked={context.fields.autoMovement} 
+                            onClick={() => context.fields.set("autoMovement", !context.fields.autoMovement)}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
+                        />
+                    } 
+                    label={<span>Robot Movement in Auto</span>}
+                />
 
                 <FormControlLabel
                     control={
