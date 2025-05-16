@@ -31,7 +31,7 @@ const Auto = () => {
 
             <div className="flex flex-col items-center">
 
-                <div className="columns-2 break-inside-avoid-column">
+                <div className="columns-2 break-inside-avoid-column items-center">
 
                     <OnFieldButtonGroup label="Score" vertical top={0.3} left={0.45} className="text-5xl break-inside-avoid-column">
                         <OnFieldButton label="Inner" className="text-5xl" color="success" value={context.fields.autoPowerPortInnerScore} setValue={(v)=>context.fields.set("autoPowerPortInnerScore", v)} />
@@ -50,7 +50,7 @@ const Auto = () => {
 
             </div>
 
-            <div className="flex flex-col items-center max-w-md">
+            <div className="flex flex-col items-left max-w-md">
 
                 <div className="mb-6 italic text-secondary text-center">
                     Check ✅ if the robot was able to perform the following tasks during the autonomous period:
