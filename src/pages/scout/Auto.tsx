@@ -31,23 +31,28 @@ const Auto = () => {
 
             <div className="flex flex-col items-center">
 
-                <div className="columns-2 break-inside-avoid-column items-center">
+                <div className="grid grid-cols-2 gap-4">
 
-                    <OnFieldButtonGroup label="Score" vertical top={0.3} left={0.45} className="text-5xl break-inside-avoid-column">
-                        <OnFieldButton label="Inner" className="text-5xl" color="success" value={context.fields.autoPowerPortInnerScore} setValue={(v)=>context.fields.set("autoPowerPortInnerScore", v)} />
-                        <OnFieldButton label="Outer" className="text-5xl" color="success" value={context.fields.autoPowerPortOuterScore} setValue={(v)=>context.fields.set("autoPowerPortOuterScore", v)} />
-                        <OnFieldButton label="Bottom" className="text-5xl" color="success" value={context.fields.autoPowerPortBottomScore} setValue={(v)=>context.fields.set("autoPowerPortBottomScore", v)} />
-                    </OnFieldButtonGroup>
+                    <div className="text-2xl text-center">
+                        Score
+                    </div>
 
-                    <OnFieldButtonGroup label="Miss" vertical top={0.3} left={0.55} className="text-5xl break-inside-avoid-column">
-                        <OnFieldButton label="Inner" className="text-5xl" color="success" value={context.fields.autoPowerPortInnerMiss} setValue={(v)=>context.fields.set("autoPowerPortInnerMiss", v)} />
-                        <OnFieldButton label="Outer" className="text-5xl" color="success" value={context.fields.autoPowerPortOuterMiss} setValue={(v)=>context.fields.set("autoPowerPortOuterMiss", v)} />
-                        <OnFieldButton label="Bottom" className="text-5xl" color="success" value={context.fields.autoPowerPortBottomMiss} setValue={(v)=>context.fields.set("autoPowerPortBottomMiss", v)} />
-                    </OnFieldButtonGroup>
+                    <div className="text-2xl text-center">
+                        Miss
+                    </div>
 
-                    <div className="mb-2 italic text-secondary mt-4">Push and hold a button to undo</div>
+                    <OnFieldButton label="Inner" className="!px-10 !py-4 !text-lg" color="success" value={context.fields.autoPowerPortInnerScore} setValue={(v)=>context.fields.set("autoPowerPortInnerScore", v)} />
+                    <OnFieldButton label="Inner" className="!px-10 !py-4 !text-lg" color="error" value={context.fields.autoPowerPortInnerMiss} setValue={(v)=>context.fields.set("autoPowerPortInnerMiss", v)} />
+
+                    <OnFieldButton label="Outer" className="!px-10 !py-4 !text-lg" color="success" value={context.fields.autoPowerPortOuterScore} setValue={(v)=>context.fields.set("autoPowerPortOuterScore", v)} />
+                    <OnFieldButton label="Outer" className="!px-10 !py-4 !text-lg" color="error" value={context.fields.autoPowerPortOuterMiss} setValue={(v)=>context.fields.set("autoPowerPortOuterMiss", v)} />
+
+                    <OnFieldButton label="Bottom" className="!px-10 !py-4 !text-lg" color="success" value={context.fields.autoPowerPortBottomScore} setValue={(v)=>context.fields.set("autoPowerPortBottomScore", v)} />
+                    <OnFieldButton label="Bottom" className="!px-10 !py-4 !text-lg" color="error" value={context.fields.autoPowerPortBottomMiss} setValue={(v)=>context.fields.set("autoPowerPortBottomMiss", v)} />
+
                 </div>
 
+                <div className="mb-2 italic text-secondary mt-4">Push and hold a button to undo</div>
             </div>
 
             <div className="flex flex-col items-left max-w-md">

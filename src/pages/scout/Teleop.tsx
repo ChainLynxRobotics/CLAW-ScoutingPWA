@@ -34,24 +34,28 @@ const Teleop = () => {
         
                     <div className="flex flex-col items-center">
         
-                        <div className="columns-2 break-inside-avoid-column">
-        
-                            <OnFieldButtonGroup label="Score" vertical top={0.3} left={0.45} className="text-5xl break-inside-avoid-column">
-                                <OnFieldButton label="Inner" className="text-5xl" color="success" value={context.fields.teleopPowerPortInnerScore} setValue={(v)=>context.fields.set("teleopPowerPortInnerScore", v)} />
-                                <OnFieldButton label="Outer" className="text-5xl" color="success" value={context.fields.teleopPowerPortOuterScore} setValue={(v)=>context.fields.set("teleopPowerPortOuterScore", v)} />
-                                <OnFieldButton label="Bottom" className="text-5xl" color="success" value={context.fields.teleopPowerPortBottomScore} setValue={(v)=>context.fields.set("teleopPowerPortBottomScore", v)} />
-                            </OnFieldButtonGroup>
-        
-                            <OnFieldButtonGroup label="Miss" vertical top={0.3} left={0.55} className="text-5xl break-inside-avoid-column">
-                                <OnFieldButton label="Inner" className="text-5xl" color="success" value={context.fields.teleopPowerPortInnerMiss} setValue={(v)=>context.fields.set("teleopPowerPortInnerMiss", v)} />
-                                <OnFieldButton label="Outer" className="text-5xl" color="success" value={context.fields.teleopPowerPortOuterMiss} setValue={(v)=>context.fields.set("teleopPowerPortOuterMiss", v)} />
-                                <OnFieldButton label="Bottom" className="text-5xl" color="success" value={context.fields.teleopPowerPortBottomMiss} setValue={(v)=>context.fields.set("teleopPowerPortBottomMiss", v)} />
-                            </OnFieldButtonGroup>
-        
-                            <div className="mb-2 italic text-secondary mt-4">Push and hold a button to undo</div>
+                        <div className="grid grid-cols-2 gap-4">
+
+                            <div className="text-2xl text-center">
+                                Score
+                            </div>
+
+                            <div className="text-2xl text-center">
+                                Miss
+                            </div>
+
+                            <OnFieldButton label="Inner" className="!px-10 !py-4 !text-lg" color="success" value={context.fields.teleopPowerPortInnerScore} setValue={(v)=>context.fields.set("teleopPowerPortInnerScore", v)} />
+                            <OnFieldButton label="Inner" className="!px-10 !py-4 !text-lg" color="error" value={context.fields.teleopPowerPortInnerMiss} setValue={(v)=>context.fields.set("teleopPowerPortInnerMiss", v)} />
+
+                            <OnFieldButton label="Outer" className="!px-10 !py-4 !text-lg" color="success" value={context.fields.teleopPowerPortOuterScore} setValue={(v)=>context.fields.set("teleopPowerPortOuterScore", v)} />
+                            <OnFieldButton label="Outer" className="!px-10 !py-4 !text-lg" color="error" value={context.fields.teleopPowerPortOuterMiss} setValue={(v)=>context.fields.set("teleopPowerPortOuterMiss", v)} />
+
+                            <OnFieldButton label="Bottom" className="!px-10 !py-4 !text-lg" color="success" value={context.fields.teleopPowerPortBottomScore} setValue={(v)=>context.fields.set("teleopPowerPortBottomScore", v)} />
+                            <OnFieldButton label="Bottom" className="!px-10 !py-4 !text-lg" color="error" value={context.fields.teleopPowerPortBottomMiss} setValue={(v)=>context.fields.set("teleopPowerPortBottomMiss", v)} />
+
+                            </div>
+            
                         </div>
-        
-                    </div>
         
                     <div className="flex flex-col items-left max-w-md">
         
