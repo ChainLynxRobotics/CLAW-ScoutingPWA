@@ -17,8 +17,8 @@ export type MatchDataFields = {
     // Prematch
     autoStartPositionX: number|undefined, // Relative to the left 200 pixels of the field on blue side without field rotation (0-200)
     autoStartPositionY: number|undefined, // Relative to the entire height of the field on blue side without field rotation (0-500)
-    humanPlayerLocation: boolean|undefined, // on or off field
-    numberPowerCellsLoaded: number|undefined,
+    humanPlayerLocation: boolean, // on or off field
+    numberPowerCellsLoaded: number,
     // Auto
     autoMovement: boolean, // If the robot moves, this boolean should be true. Otherwise false.
     autoPowerPortBottomScore: number, // Amount of Power Cells Scored in Bottom Power Port
@@ -80,7 +80,7 @@ export const MatchDataFieldInformation: Readonly<MatchDataFieldInformationRecord
     },
     numberPowerCellsLoaded: {
         name: "Number Of Power Cells Loaded",
-        defaultValue: undefined,
+        defaultValue: 0,
         average: (values) => {
             const arr = values.filter(val => val !== undefined)
             return arr.reduce((a, b) => a + b, 0) / arr.length

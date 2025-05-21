@@ -4,7 +4,7 @@ import NoMatchAvailable from "./NoMatchAvailable";
 import { MAX_NOTE_LENGTH } from "../../constants";
 import { useSnackbar } from "notistack";
 import LoadingBackdrop from "../../components/ui/LoadingBackdrop";
-import { Button, TextField, Slider, Checkbox, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
+import { Button, TextField, Slider, Checkbox, FormControl,FormControlLabel, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent } from "@mui/material";
 import PageTitle from "../../components/ui/PageTitle";
 import Observation from "../../enums/Observation";
 
@@ -36,8 +36,17 @@ const PostMatch = () => {
 
     const {enqueueSnackbar} = useSnackbar();
     const [loading, setLoading] = useState<boolean>(false);
+
+    const handleShieldGeneratorStageChange = (event: SelectChangeEvent) => {
+        if (!context) return;
+        context.fields.set("shieldGeneratorStage", parseInt(event.target.value));
+    };
+
+    const handleClimbedOnGenerator = (event: SelectChangeEvent) => {
+        if (!context) return;
+        context.fields.set("climbedOnGenerator", (event.target.value ? true : false));
+    };
     
- 
     function handleNotesChange(event: React.ChangeEvent<HTMLInputElement>) {
         if (!context) return;
         if (event.target.value.length <= MAX_NOTE_LENGTH) {
@@ -71,6 +80,31 @@ const PostMatch = () => {
             <PageTitle>Post Match</PageTitle>
         </div>
         <div className="w-full max-w-xl mx-auto flex flex-col items-left px-4 gap-4">
+
+            <FormControl sx={{ width: 300 }}>
+                <InputLabel id="Shield-Generator-Stage-Dropdown-Label">Shield Generator Stage</InputLabel>
+                <Select
+                    labelId="Shield-Generator-Stage-Dropdown-Label"
+                    id="Shield-Generator-Stage-Dropdown"
+                    value={context.fields.shieldGeneratorStage.toString()}
+                    onChange={handleShieldGeneratorStageChange}
+                    input={<OutlinedInput label="Shield Generator Stage" />}
+                    >
+                    <MenuItem value="1">1</MenuItem>
+                    <MenuItem value="2">2</MenuItem>
+                    <MenuItem value="3">3</MenuItem>
+                </Select>
+            </FormControl>
+
+            <FormControlLabel
+                label={"Climbed on Generator?"}
+                control={
+                    <Checkbox
+                        value={context.fields.humanPlayerLocation}
+                        onChange={handleClimbedOnGenerator}
+                    />
+                }
+            />
 
             <div className="mb-8">
                 <div className="flex flex-row items-center gap-6 my-2">

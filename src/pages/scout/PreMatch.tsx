@@ -42,11 +42,6 @@ const PreMatch = () => {
         context.fields.set("numberPowerCellsLoaded", parseInt(event.target.value));
     };
 
-    const numberPowerCellsLoaded = [
-        '1 Cell Loaded',
-        '2 Cells Loaded',
-        '3 Cells Loaded',
-    ];
 
     const handlePinPlace = (event: React.MouseEvent<HTMLImageElement>) => {
         if (!context) return;
@@ -217,7 +212,7 @@ const PreMatch = () => {
                 </div>
                 <div className="flex flex-col items-center">
                     <FormControlLabel
-                        label={"Is " + context.teamNumber + "'s human player on the feild"}
+                        label={"Is " + context.teamNumber + "'s human player on the field"}
                         control={
                             <Checkbox
                                 value={context.fields.humanPlayerLocation}
@@ -237,14 +232,10 @@ const PreMatch = () => {
                             onChange={handleNumberPowerCellsLoadedChange}
                             input={<OutlinedInput label="Number of Power Cells" />}
                             >
-                            {numberPowerCellsLoaded.map((title) => (
-                                <MenuItem
-                                key={title}
-                                value={title}
-                                >
-                                {title}
-                                </MenuItem>
-                            ))}
+                                <MenuItem value="0">0 Power Cells Loaded</MenuItem>
+                                <MenuItem value="1">1 Power Cell Loaded</MenuItem>
+                                <MenuItem value="2">2 Power Cells Loaded</MenuItem>
+                                <MenuItem value="3">3 Power Cells Loaded</MenuItem>
                         </Select>
                     </FormControl>
 
