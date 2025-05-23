@@ -24,33 +24,21 @@ import Statistic from "./Statistic";
 import StatisticLineChart from "./StatisticLineChart";
 
 const autoCycleRatePaths: Leaves<MatchData>[] = [
-    "autoCoralL4Score",
-    "autoCoralL4Miss",
-    "autoCoralL3Score",
-    "autoCoralL3Miss",
-    "autoCoralL2Score",
-    "autoCoralL2Miss",
-    "autoCoralL1Score",
-    "autoCoralL1Miss",
-    "autoAlgaeScore",
-    "autoAlgaeMiss",
-    "autoAlgaeNetScore",
-    "autoAlgaeNetMiss",
+    "autoPowerPortBottomScore",
+    "autoPowerPortBottomMiss",
+    "autoPowerPortInnerMiss",
+    "autoPowerPortInnerScore",
+    "autoPowerPortOuterMiss",
+    "autoPowerPortOuterScore",
 ];
 
 const teleopCycleRatePaths: Leaves<MatchData>[] = [
-    "teleopCoralL4Score",
-    "teleopCoralL4Miss",
-    "teleopCoralL3Score",
-    "teleopCoralL3Miss",
-    "teleopCoralL2Score",
-    "teleopCoralL2Miss",
-    "teleopCoralL1Score",
-    "teleopCoralL1Miss",
-    "teleopAlgaeScore",
-    "teleopAlgaeMiss",
-    "teleopAlgaeNetScore",
-    "teleopAlgaeNetMiss",
+    "teleopPowerPortBottomMiss",
+    "teleopPowerPortBottomScore",
+    "teleopPowerPortInnerMiss",
+    "teleopPowerPortInnerScore",
+    "teleopPowerPortOuterMiss",
+    "teleopPowerPortOuterScore",
 ];
 
 const heatmapOriginalWidth = 200;
@@ -146,28 +134,16 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
     // Data for the human player location pie chart
     const humanPlayerLocationData = useMemo<PieValueType[]>(() => [
         {
-            id: HumanPlayerLocation.Unknown,
-            label: 'Unknown',
-            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Unknown).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Unknown).length || 0),
+            id: 0,
+            label: 'Not on Field',
+            value: matchDataPositiveFlat.filter(match => !match.humanPlayerLocation).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation).length || 0),
             color: 'lightgrey'
         },
         {
-            id: HumanPlayerLocation.None,
-            label: 'None',
-            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.None).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.None).length || 0),
+            id: 1,
+            label: 'On Field',
+            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation).length - (matchDataNegativeFlat?.filter(match => !match.humanPlayerLocation).length || 0),
             color: 'snow'
-        },
-        {
-            id: HumanPlayerLocation.CoralStation,
-            label: 'Coral Station',
-            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.CoralStation).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.CoralStation).length || 0),
-            color: 'lightcoral',
-        },
-        {
-            id: HumanPlayerLocation.Processor,
-            label: 'Processor',
-            value: matchDataPositiveFlat.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor).length - (matchDataNegativeFlat?.filter(match => match.humanPlayerLocation === HumanPlayerLocation.Processor).length || 0),
-            color: 'lightskyblue',
         },
     ], [matchDataPositiveFlat, matchDataNegativeFlat]);
 
@@ -283,32 +259,25 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                         </div>
                     </AnalyticsCard>
 
-                    <AnalyticsCard title="Auto - Coral" className="border-4 border-yellow-300">
+                    <AnalyticsCard title="Auto - Power Port" className="border-4 border-yellow-300">
                         <QuantitativeProportionalStatistic 
-                            name="Coral L4"
-                            successes="autoCoralL4Score"
-                            failures="autoCoralL4Miss"
+                            name="Power Port Bottom"
+                            successes="autoPowerPortBottomScore"
+                            failures="autoPowerPortBottomMiss"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
                         <QuantitativeProportionalStatistic 
-                            name="Coral L3" 
-                            successes="autoCoralL3Score"
-                            failures="autoCoralL3Miss"
+                            name="Power Port Inner" 
+                            successes="autoPowerPortInnerScore"
+                            failures="autoPowerPortInnerMiss"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
                         <QuantitativeProportionalStatistic 
-                            name="Coral L2" 
-                            successes="autoCoralL2Score"
-                            failures="autoCoralL2Miss"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <QuantitativeProportionalStatistic 
-                            name="Coral L1" 
-                            successes="autoCoralL1Score"
-                            failures="autoCoralL1Miss"
+                            name="Power Port Outer" 
+                            successes="autoPowerPortOuterScore"
+                            failures="autoPowerPortOuterMiss"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
@@ -342,59 +311,15 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             dataset={tbaMatchDataset}
                             graphable
                         />
-                        <Divider sx={{ my: 2 }} />
-                        <QuantitativeProportionalStatistic 
-                            name="Processor" 
-                            successes="autoAlgaeScore"
-                            failures="autoAlgaeMiss"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <QuantitativeProportionalStatistic 
-                            name="Net" 
-                            successes="autoAlgaeNetScore"
-                            failures="autoAlgaeNetMiss"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                    </AnalyticsCard>
-
-                    <AnalyticsCard title="Auto - Abilities" className="border-4 border-yellow-300">
                         <ProportionalStatistic 
-                            name="Coral Ground Intake" 
-                            getter="autoCoralGroundIntake"
+                            name="Power Cell Ground Intake" 
+                            getter="autoPowerCellIntakeGround"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
                         <ProportionalStatistic 
-                            name="Coral Station Intake" 
-                            getter="autoCoralStationIntake"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic 
-                            name="Remove Algae from Reef L2" 
-                            getter="autoRemoveL2Algae"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <ProportionalStatistic 
-                            name="Remove Algae from Reef L3"
-                            getter="autoRemoveL3Algae"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic 
-                            name="Algae Ground Intake" 
-                            getter="autoAlgaeGroundIntake"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <ProportionalStatistic 
-                            name="Algae Reef Intake" 
-                            getter="autoAlgaeReefIntake"
+                            name="Power Cell Loading Bay Intake Intake" 
+                            getter="autoPowerCellIntakeLoadingBay"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
@@ -418,30 +343,23 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
 
                     <AnalyticsCard title="Teleop - Coral" className="border-4 border-pink-400">
                         <QuantitativeProportionalStatistic 
-                            name="Coral L4" 
-                            successes="teleopCoralL4Score"
-                            failures="teleopCoralL4Miss"
+                            name="Power Port Bottom" 
+                            successes="teleopPowerPortBottomScore"
+                            failures="teleopPowerPortBottomMiss"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
                         <QuantitativeProportionalStatistic 
-                            name="Coral L3" 
-                            successes="teleopCoralL3Score"
-                            failures="teleopCoralL3Miss"
+                            name="Power Port Inner" 
+                            successes="teleopPowerPortInnerScore"
+                            failures="teleopPowerPortInnerMiss"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
                         <QuantitativeProportionalStatistic 
-                            name="Coral L2" 
-                            successes="teleopCoralL2Score"
-                            failures="teleopCoralL2Miss"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <QuantitativeProportionalStatistic 
-                            name="Coral L1" 
-                            successes="teleopCoralL1Score"
-                            failures="teleopCoralL1Miss"
+                            name="Power Port Outer" 
+                            successes="teleopPowerPortOuterScore"
+                            failures="teleopPowerPortOuterMiss"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
@@ -469,72 +387,15 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                             desc="Number of scores and misses for coral and algae in one match. Exclude matches where nothing happened."
                         />
                         <Divider sx={{ my: 2 }} />
-                        <QuantitativeProportionalStatistic
-                            name="Processor" 
-                            successes="teleopAlgaeScore"
-                            failures="teleopAlgaeMiss"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <QuantitativeProportionalStatistic
-                            name="Net" 
-                            successes="teleopAlgaeNetScore"
-                            failures="teleopAlgaeNetMiss"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <Divider sx={{ my: 2 }} />
-                        <QuantitativeProportionalStatistic 
-                            name="Human Player Shots" 
-                            successes={match => {
-                                if (match.humanPlayerLocation !== HumanPlayerLocation.Processor) return undefined;
-                                return match.teleopHumanPlayerAlgaeScore;
-                            }}
-                            failures={match => {
-                                if (match.humanPlayerLocation !== HumanPlayerLocation.Processor) return undefined;
-                                return match.teleopHumanPlayerAlgaeMiss;
-                            }}
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                    </AnalyticsCard>
-
-                    <AnalyticsCard title="Teleop - Abilities" className="border-4 border-pink-400">
                         <ProportionalStatistic 
-                            name="Coral Ground Intake" 
-                            getter="teleopCoralGroundIntake"
+                            name="Power Cell Ground Intake" 
+                            getter="teleopPowerCellIntakeGround"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
                         <ProportionalStatistic 
-                            name="Coral Station Intake" 
-                            getter="teleopCoralStationIntake"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic
-                            name="Remove Algae from Reef L2" 
-                            getter="teleopRemoveL2Algae"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <ProportionalStatistic
-                            name="Remove Algae from Reef L3"
-                            getter="teleopRemoveL3Algae"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <Divider sx={{ my: 2 }} />
-                        <ProportionalStatistic 
-                            name="Algae Ground Intake" 
-                            getter="teleopAlgaeGroundIntake"
-                            dataset={scoutingMatchDataset}
-                            graphable
-                        />
-                        <ProportionalStatistic 
-                            name="Algae Reef Intake" 
-                            getter="teleopAlgaeReefIntake"
+                            name="Power Cell Loading Bay Intake" 
+                            getter="teleopPowerCellIntakeLoadingBay"
                             dataset={scoutingMatchDataset}
                             graphable
                         />
@@ -542,7 +403,6 @@ export default function TeamAnalytics({ teams, minusTeams }: { teams: number[], 
                 </div>
                 <div className="flex flex-col gap-2 max-w-sm w-full">
                     <AnalyticsCard title="Climb" className="border-4 border-blue-300">
-                        <div>Climb</div>
                         <PieChart width={275} height={150} series={[{ 
                             data: climbPieData,
                             cx: 50,
