@@ -135,19 +135,19 @@ The Pick List tab is similar to the Teams tab but allows you to reorder and rank
 
 # Developing
 
-### Required Programs:
+### Required Programs
 - [NodeJS](https://nodejs.org/en), a JavaScript Engine
 - [pnpm](https://pnpm.io/installation#using-corepack), a package manager for handling libraries
   - Its recommended to use `corepack enable pnpm` install install it, corepack is included in the NodeJS install
 - [Git](https://git-scm.com/), for source control
   - I personally recommend installing it through the [Github CLI](https://cli.github.com/) for easy github sign-in
   
-### Recommended Programs:
+### Recommended Programs
 - [VSCode](https://code.visualstudio.com/Download), an all around IDE
   - Recommended Extensions:
     - [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss)
 
-### Project Setup:
+### Project Setup
 
 Download and navigate to the repo:
 ```shell
