@@ -55,7 +55,7 @@ export const AUTO_MATCH_FETCH_INTERVAL = 1000 * 60 * 5; // 5 minutes
  * The max size of each chunk of data in the qr code, in characters of base64 data.
  * Larger number means less chunks, but more data per chunk (larger qr codes, harder to scan).
  */
-export const QR_CHUNK_SIZE = 256;
+export const QR_CHUNK_SIZE = 180;
 
 /**
  * The time between each bluetooth broadcast, in milliseconds
