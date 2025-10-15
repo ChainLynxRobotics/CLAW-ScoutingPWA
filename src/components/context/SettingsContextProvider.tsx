@@ -1,6 +1,6 @@
 import { createContext, ReactElement, useEffect } from "react";
 import useLocalStorageState from "../hooks/localStorageState";
-import { COMPETITION_ID_EXPIRE_TIME } from "../../constants";
+import { COMPETITION_ID_EXPIRE_TIME, DEFAULT_COMPETITION_ID } from "../../constants";
 import useLocalStorageRef from "../hooks/localStorageRef";
 
 /**
@@ -57,6 +57,10 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
             console.log("CompetitionId was old, setting to the default: "+defaultCompetitionId);
         }
     }, [competitionIdLastUpdated, setCompetitionId, defaultCompetitionId, setCompetitionIdLastUpdated]);
+
+    useEffect(() => { // # only for girls gen, change later
+        setCompetitionId(DEFAULT_COMPETITION_ID);
+    }, [setCompetitionId]);
 
     // Assemble the value object to pass to the context provider
     const value = {
