@@ -56,6 +56,7 @@ export default function SettingsContextProvider({defaultCompetitionId, children}
             setCompetitionIdLastUpdated(Date.now());
             console.log("CompetitionId was old, setting to the default: "+defaultCompetitionId);
         }
+        setCompetitionId("2025wagg");
     }, [competitionIdLastUpdated, setCompetitionId, defaultCompetitionId, setCompetitionIdLastUpdated]);
 
     // Assemble the value object to pass to the context provider
